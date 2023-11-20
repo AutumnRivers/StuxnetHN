@@ -1,0 +1,8 @@
+{
+    "seq3": {
+        "requiredFlag": "testflag3",
+        "spinUpTime": 5.0,
+        "targetIDorIP": "testseq3",
+        "sequencerActions": "Actions/TestSequencers/3.xml"
+    }
+}

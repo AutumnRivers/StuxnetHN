@@ -1,0 +1,18 @@
+{
+    "testcode1": {
+        "files": {
+            "ThemeChanger.exe": "#THEMECHANGER_EXE#",
+            "TestFile.txt": "This is a test file!"
+        },
+        "radio": [
+            "songid"
+        ],
+        "themes": {
+            "ExampleTheme": "/Themes/ExampleTheme.xml"
+        },
+        "pfthemes": {
+
+        },
+        "email": "/Emails/TestCodeEmail.xml"
+    }
+}

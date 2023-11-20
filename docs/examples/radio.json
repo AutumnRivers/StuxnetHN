@@ -1,0 +1,19 @@
+{
+    "songid": {
+        "artist": "Example Artist 1",
+        "title": "Example Song Title 1",
+        "path": "/Music/example1.ogg",
+        "initial": false
+    },
+    "song2": {
+        "artist": "Example Artist 2",
+        "title": "Example Song Title 2",
+        "path": "/Music/example2.ogg",
+        "initial": true
+    },
+    "song3": {
+        "artist": "Example Artist 3 + Example Artist 4",
+        "title": "Example Song Title 3",
+        "path": "/Music/example3.ogg"
+    }
+}
