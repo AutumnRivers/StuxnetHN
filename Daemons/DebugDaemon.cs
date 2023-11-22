@@ -2,8 +2,10 @@
 
 using Hacknet;
 using Hacknet.PlatformAPI.Storage;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
 using Pathfinder.Daemon;
 using Pathfinder.Util;
 

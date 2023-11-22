@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
 using Hacknet;
@@ -14,11 +11,8 @@ using Pathfinder.Executable;
 using Newtonsoft.Json;
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 using Hacknet.Gui;
-
-using HarmonyLib;
 
 namespace Stuxnet_HN.Executables
 {

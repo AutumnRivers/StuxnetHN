@@ -35,3 +35,44 @@ Gone are the days of listening to the same song on repeat during a long mission,
 **RadioV3** is the next evolution in extension music - players unlock new songs by going through the extension, or by entering codes. You can also deny radio access to the player at any time - in the case of things like cutscenes.
 
 Get your golden funky groove on and grab yourself a copy of **RadioV3**!
+
+---
+
+## Patches / Features
+### Mission Logos
+![Mission Logo Example](./docs/images/missionlogoexample.png)
+
+Shows a logo for the target client in the mission. This has some prerequisites:
+
+1. The `client` attribute of your mission's `posting` tag *must* be non-empty. Example:
+    * `<posting title="HEXA Example" client="HEXA">HEXA needs your help!</posting>`
+    * In this case, `HEXA` is the `client`.
+2. You must have an associated image in the `/Images` folder of your extension, with the same name as the client. Case-sensitive.
+    * This will show a logo for HEXA: `/Images/HEXA.png`
+    * This will not: `/Images/hexa.png`
+3. Your mission **must** be in a `MissionHubServer`. There's no support for Entropy-style or DHS daemons yet.
+
+---
+
+# LICENSE
+MIT License
+
+Copyright (c) 2023 Autumn Rivers
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

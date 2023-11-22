@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Hacknet;
 using Hacknet.Gui;
-using Hacknet.UIUtils;
 using Hacknet.Extensions;
-
-using Pathfinder;
 using Pathfinder.Daemon;
-using Pathfinder.Replacements;
 using Pathfinder.Util;
 
 using Microsoft.Xna.Framework;
@@ -22,7 +15,6 @@ using BepInEx;
 using System.IO;
 
 using Newtonsoft.Json;
-using System.Xml;
 
 namespace Stuxnet_HN.Daemons
 {
