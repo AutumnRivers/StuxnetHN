@@ -14,3 +14,11 @@ Shows the extension's logo as defined in `ExtensionInfo.xml`.
 
 * `CodePrefix` - A string indicating what prefix to put behind the displayed user input. If omitted, it will not display a prefix.
 * `Message` - The server message. Displays `Enter your code here...` if omitted.
+
+# Debug Daemon
+### `<DebugDaemon RequiredPassword="string" />`
+![Computer connection screen](./images/debug_daemon_example.png)
+
+A daemon that makes it so the user can't connect to it if they don't have debug commands enabled. Additionally, you can require the player's save file to have a certain password for extra protection. Use this for your Cheater's Stash!
+
+* `RequiredPassword` - **OPTIONAL.** If set, the player's save file password must match the daemon's set password. Otherwise, it's treated as if though they don't have debug mode enabled.

@@ -85,6 +85,7 @@ namespace Stuxnet_HN
 
             LogDebug("Loading Daemons...");
             DaemonManager.RegisterDaemon<CodeRedemptionDaemon>();
+            DaemonManager.RegisterDaemon<DebugDaemon>();
 
             LogDebug("Registering Executables...");
             ExecutableManager.RegisterExecutable<RadioV3>("#RADIO_V3#");
@@ -106,6 +107,11 @@ namespace Stuxnet_HN
             ActionManager.RegisterAction<SaveActions.AllowSaves>("AllowSaves");
             ActionManager.RegisterAction<SaveActions.RequireFlagForSaves>("RequireFlagForSaves");
 
+            // Misc. Actions
+            ActionManager.RegisterAction<ForceConnect>("ForceConnectPlayer");
+            ActionManager.RegisterAction<DisableAlertsIcon>("DisableAlertsIcon");
+            ActionManager.RegisterAction<EnableAlertsIcon>("EnableAlertsIcon");
+
             LogDebug("Registering Conditions...");
             ConditionManager.RegisterCondition<OnSequencerKill>("OnExtSequencerKill");
 
@@ -122,13 +128,13 @@ namespace Stuxnet_HN
             LogDebug("--- Finished Initialization! \\o/");
 
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("---------------------------------------------------");
+            Console.WriteLine("----------------------------------------------------");
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("                      STUXNET                       ");
-            Console.WriteLine("              AUTUMN RIVERS (C) 2023               ");
-            Console.WriteLine("     This one won't destroy your PC. Probably.     ");
+            Console.WriteLine("                       STUXNET                      ");
+            Console.WriteLine("              AUTUMN RIVERS  (C) 2023               ");
+            Console.WriteLine("     This one won't destroy your PC.  Probably.     ");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("---------------------------------------------------");
+            Console.WriteLine("----------------------------------------------------");
             LogDebug("--> v" + ModVer);
             Console.ResetColor();
 

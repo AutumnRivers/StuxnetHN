@@ -8,6 +8,15 @@
 ## W.T.F. (What The FTPSprint) is Stuxnet?
 Depends on the context. This Stuxnet, the one you're looking at, is a Pathfinder mod for Hacknet that adds all sorts of goodies for extension developers to use.
 
+Outside of this context, [Stuxnet](https://en.wikipedia.org/wiki/Stuxnet) is widely considered to be the first "cyber weapon," affecting machines in real life, rather than only doing digital damage.
+
+## Who can use it?
+**Anyone!** (as long as they have Hacknet: Labyrinths installed...)
+
+Yeah, the mod uses some assets from Labyrinths. Certain things would break if Labyrinths were not installed.
+
+All I ask in return, if you do use this in your extensions, *please* be sure to credit me!
+
 ## Well, what does it add?
 Read on to find out. Impatient!
 

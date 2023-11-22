@@ -15,7 +15,9 @@ using Newtonsoft.Json;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
 using Hacknet.Gui;
+
 using HarmonyLib;
 
 namespace Stuxnet_HN.Executables
@@ -92,7 +94,7 @@ namespace Stuxnet_HN.Executables
 
             if (StuxnetCore.allowRadio == false) { return; }
 
-            if (currentSong != null) { selected = songs.IndexOf(currentSong); }
+            if (currentSong != null && selected > -1) { selected = songs.FindIndex(s => s.path == currentSong.path); }
 
             SelectableTextList.scrollOffset = scroll;
 
@@ -152,6 +154,8 @@ namespace Stuxnet_HN.Executables
 
                 SongEntry song = radioJSON[unlockedSongID];
 
+                song.songId = unlockedSongID;
+
                 songs.Add(song);
             }
 
@@ -178,5 +182,6 @@ namespace Stuxnet_HN.Executables
         public string title;
         public string path;
         public bool initial = false;
+        public string songId;
     }
 }

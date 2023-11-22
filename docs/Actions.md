@@ -48,3 +48,12 @@ Requires a flag in order for the user to be able to save.
 * `Flag` - The flag the user must have in order to save. If empty, then the user will no longer require a flag to save.
 * `AvoidFlag` - Whether or not to *avoid* the above flag in order for the user to save.
     * For example, if `Flag` is set to "badflag" and `AvoidFlag` is set to "true", then the user will not be able to save so long as they have the "badflag" flag applied to them.
+
+# Misc. Actions
+### `<DisableAlertsIcon /> / <EnableAlertsIcon />`
+**Delayable.** Turns the alert icon (email, irc, etc.) off and on, respectively. And yes, that means *completely* off. Nothing will be at the top right of the user's game window. Useful for cutscenes, sequencers, blah blah blah. You get the gist of what most of these actions are for.
+
+### `<ForceConnectUser TargetComp="CompID" LikeReallyForce="bool" />`
+Forcefully connects the user to the target computer, or at least tries to.
+
+Setting `LikeReallyForce` to `"true"` will constantly try to connect the player to the target computer. It's recommended **NOT** to use this unless you have some specific edge case where you *absolutely* have to.

@@ -80,11 +80,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\ForceConnect.cs" />
     <Compile Include="Actions\RadioActions.cs" />
     <Compile Include="Actions\SaveActions.cs" />
     <Compile Include="Actions\SequencerActions.cs" />
+    <Compile Include="Actions\ToggleAlertsIcon.cs" />
     <Compile Include="Conditions\OnSequencerKill.cs" />
     <Compile Include="Daemons\CodeRedemptionDaemon.cs" />
+    <Compile Include="Daemons\DebugDaemon.cs" />
     <Compile Include="Executables\RadioV3.cs" />
     <Compile Include="Patches\ExtSequencerPatch.cs" />
     <Compile Include="Patches\MissionDisplayLogo.cs" />
