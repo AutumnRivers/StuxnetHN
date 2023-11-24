@@ -49,6 +49,14 @@ Requires a flag in order for the user to be able to save.
 * `AvoidFlag` - Whether or not to *avoid* the above flag in order for the user to save.
     * For example, if `Flag` is set to "badflag" and `AvoidFlag` is set to "true", then the user will not be able to save so long as they have the "badflag" flag applied to them.
 
+# Vault Actions
+For use with the [Vault Daemon](./Daemons.md#vault-daemon).
+
+### `<AddVaultKey KeyName="TestVault" /> / <RemoveVaultKey KeyName="TestVault" />`
+**Delayable.** Adds/removes a key for the set key name of the vault. If the user has not visited the vault yet, adding a vault key will set the key amount to 1, while removing the key will set the key amount to 0.
+
+A maximum of 10 keys can be added (unrelated to the vault daemon itself) and the user can have a minimum of 0 keys. If you go over or under these limits, nothing will happen. It just won't add/remove the key.
+
 # Misc. Actions
 ### `<DisableAlertsIcon /> / <EnableAlertsIcon />`
 **Delayable.** Turns the alert icon (email, irc, etc.) off and on, respectively. And yes, that means *completely* off. Nothing will be at the top right of the user's game window. Useful for cutscenes, sequencers, blah blah blah. You get the gist of what most of these actions are for.

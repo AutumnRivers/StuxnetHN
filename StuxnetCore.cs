@@ -36,12 +36,14 @@ namespace Stuxnet_HN
     {
         public const string ModGUID = "autumnrivers.stuxnet";
         public const string ModName = "Stuxnet";
-        public const string ModVer = "1.0.1";
+        public const string ModVer = "1.1.0";
 
         private readonly bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
 
-        public static string[] redeemedCodes = new string[]{};
+        public static List<string> redeemedCodes = new List<string>();
         public static List<string> unlockedRadio = new List<string>();
+
+        public static Dictionary<string, int> receivedKeys = new Dictionary<string, int>();
 
         public static bool allowRadio = true;
 
@@ -81,6 +83,7 @@ namespace Stuxnet_HN
             LogDebug("Loading Daemons...");
             DaemonManager.RegisterDaemon<CodeRedemptionDaemon>();
             DaemonManager.RegisterDaemon<DebugDaemon>();
+            DaemonManager.RegisterDaemon<VaultDaemon>();
 
             LogDebug("Registering Executables...");
             ExecutableManager.RegisterExecutable<RadioV3>("#RADIO_V3#");
@@ -101,6 +104,10 @@ namespace Stuxnet_HN
             ActionManager.RegisterAction<SaveActions.DenySaves>("DenySaves");
             ActionManager.RegisterAction<SaveActions.AllowSaves>("AllowSaves");
             ActionManager.RegisterAction<SaveActions.RequireFlagForSaves>("RequireFlagForSaves");
+
+            // Vault Actions
+            ActionManager.RegisterAction<VaultKeyActions.AddVaultKey>("AddVaultKey");
+            ActionManager.RegisterAction<VaultKeyActions.RemoveVaultKey>("RemoveVaultKey");
 
             // Misc. Actions
             ActionManager.RegisterAction<ForceConnect>("ForceConnectPlayer");
@@ -181,21 +188,37 @@ namespace Stuxnet_HN
             save_event.Save.FirstNode.AddBeforeSelf(stuxnetElem);
 
             // Manual sequencer info
-            if(currentSequencerInfo == null) { return; }
+            if(currentSequencerInfo != null)
+            {
+                XElement seqElem = new XElement("StuxnetSequencerInfo");
 
-            XElement seqElem = new XElement("StuxnetSequencerInfo");
+                XAttribute seqTargetID = new XAttribute("TargetID", currentSequencerInfo.targetIDorIP);
+                XAttribute seqFlag = new XAttribute("RequiredFlag", currentSequencerInfo.requiredFlag);
+                XAttribute seqActions = new XAttribute("ActionsToRun", currentSequencerInfo.sequencerActions);
+                XAttribute seqSpinUp = new XAttribute("SpinUpTime", currentSequencerInfo.spinUpTime.ToString());
 
-            XAttribute seqTargetID = new XAttribute("TargetID", currentSequencerInfo.targetIDorIP);
-            XAttribute seqFlag = new XAttribute("RequiredFlag", currentSequencerInfo.requiredFlag);
-            XAttribute seqActions = new XAttribute("ActionsToRun", currentSequencerInfo.sequencerActions);
-            XAttribute seqSpinUp = new XAttribute("SpinUpTime", currentSequencerInfo.spinUpTime.ToString());
+                seqElem.Add(seqTargetID);
+                seqElem.Add(seqFlag);
+                seqElem.Add(seqActions);
+                seqElem.Add(seqSpinUp);
 
-            seqElem.Add(seqTargetID);
-            seqElem.Add(seqFlag);
-            seqElem.Add(seqActions);
-            seqElem.Add(seqSpinUp);
+                stuxnetElem.AddAfterSelf(seqElem);
+            }
 
-            stuxnetElem.AddAfterSelf(seqElem);
+            // Received keys for vaults
+            if(receivedKeys.Any())
+            {
+                XElement keysElem = new XElement("StuxnetKeys");
+
+                foreach(var entry in receivedKeys)
+                {
+                    XAttribute keyAttr = new XAttribute(entry.Key, entry.Value);
+
+                    keysElem.Add(keyAttr);
+                }
+
+                stuxnetElem.AddAfterSelf(keysElem);
+            }
         }
 
         private void InitializeRadio()
@@ -233,7 +256,7 @@ namespace Stuxnet_HN
     {
         public void LoadSaveData(ElementInfo info)
         {
-            StuxnetCore.redeemedCodes = info.Attributes["RedeemedCodes"].Split(' ');
+            StuxnetCore.redeemedCodes = info.Attributes["RedeemedCodes"].Split(' ').ToList();
             StuxnetCore.unlockedRadio = info.Attributes["UnlockedRadioIDs"].Split(',').ToList();
             StuxnetCore.currentSequencerID = info.Attributes["SetSequencerID"];
             StuxnetCore.saveFlag = info.Attributes["SaveFlag"];

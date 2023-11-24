@@ -85,10 +85,12 @@
     <Compile Include="Actions\SaveActions.cs" />
     <Compile Include="Actions\SequencerActions.cs" />
     <Compile Include="Actions\ToggleAlertsIcon.cs" />
+    <Compile Include="Actions\VaultKeyActions.cs" />
     <Compile Include="Actions\WriteToTerminal.cs" />
     <Compile Include="Conditions\OnSequencerKill.cs" />
     <Compile Include="Daemons\CodeRedemptionDaemon.cs" />
     <Compile Include="Daemons\DebugDaemon.cs" />
+    <Compile Include="Daemons\VaultDaemon.cs" />
     <Compile Include="Executables\RadioV3.cs" />
     <Compile Include="Patches\ExtSequencerPatch.cs" />
     <Compile Include="Patches\MissionDisplayLogo.cs" />

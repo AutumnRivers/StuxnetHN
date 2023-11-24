@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 
 using Hacknet;
@@ -11,8 +12,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using BepInEx;
-
-using System.IO;
 
 using Newtonsoft.Json;
 
@@ -169,6 +168,8 @@ namespace Stuxnet_HN.Daemons
         {
             Console.WriteLine(StuxnetCore.logPrefix + $"Checking against code {code}...");
 
+            if (StuxnetCore.redeemedCodes.Contains(code)) { return false; }
+
             string extensionFolder = ExtensionLoader.ActiveExtensionInfo.FolderPath;
             string expectedCodeFilePath = extensionFolder + "/codes.json";
 
@@ -189,6 +190,8 @@ namespace Stuxnet_HN.Daemons
             Console.WriteLine(StuxnetCore.logPrefix + $"codes.json has code {code}");
 
             CodeEntry validCode = codes[code];
+
+            StuxnetCore.redeemedCodes.Add(code);
 
             // Add files
             if(validCode.files != null)

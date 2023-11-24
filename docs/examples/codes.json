@@ -13,6 +13,7 @@
         "pfthemes": {
 
         },
-        "email": "/Emails/TestCodeEmail.xml"
+        "email": "/Emails/TestCodeEmail.xml",
+        "action": "Actions/TestAction.xml"
     }
 }
