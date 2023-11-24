@@ -85,6 +85,7 @@
     <Compile Include="Actions\SaveActions.cs" />
     <Compile Include="Actions\SequencerActions.cs" />
     <Compile Include="Actions\ToggleAlertsIcon.cs" />
+    <Compile Include="Actions\WriteToTerminal.cs" />
     <Compile Include="Conditions\OnSequencerKill.cs" />
     <Compile Include="Daemons\CodeRedemptionDaemon.cs" />
     <Compile Include="Daemons\DebugDaemon.cs" />

@@ -53,7 +53,10 @@ Requires a flag in order for the user to be able to save.
 ### `<DisableAlertsIcon /> / <EnableAlertsIcon />`
 **Delayable.** Turns the alert icon (email, irc, etc.) off and on, respectively. And yes, that means *completely* off. Nothing will be at the top right of the user's game window. Useful for cutscenes, sequencers, blah blah blah. You get the gist of what most of these actions are for.
 
-### `<ForceConnectUser TargetComp="CompID" LikeReallyForce="bool" />`
+### `<ForceConnectPlayer TargetCompID="CompID" LikeReallyForce="bool" />`
 Forcefully connects the user to the target computer, or at least tries to.
 
 Setting `LikeReallyForce` to `"true"` will constantly try to connect the player to the target computer. It's recommended **NOT** to use this unless you have some specific edge case where you *absolutely* have to.
+
+### `<WriteToTerminal [Quietly="bool"]>string</WriteToTerminal>`
+Ported from [LunarOSPathfinder](https://github.com/AutumnRivers/LunarOSPathfinder#writetoterminal-quietlyboolmessagewritetoterminal).

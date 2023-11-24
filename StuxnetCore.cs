@@ -36,7 +36,7 @@ namespace Stuxnet_HN
     {
         public const string ModGUID = "autumnrivers.stuxnet";
         public const string ModName = "Stuxnet";
-        public const string ModVer = "1.0.0";
+        public const string ModVer = "1.0.1";
 
         private readonly bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
 
@@ -106,6 +106,7 @@ namespace Stuxnet_HN
             ActionManager.RegisterAction<ForceConnect>("ForceConnectPlayer");
             ActionManager.RegisterAction<DisableAlertsIcon>("DisableAlertsIcon");
             ActionManager.RegisterAction<EnableAlertsIcon>("EnableAlertsIcon");
+            ActionManager.RegisterAction<WriteToTerminal>("WriteToTerminal");
 
             LogDebug("Registering Conditions...");
             ConditionManager.RegisterCondition<OnSequencerKill>("OnExtSequencerKill");

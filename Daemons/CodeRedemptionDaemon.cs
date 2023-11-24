@@ -149,8 +149,8 @@ namespace Stuxnet_HN.Daemons
 
             if(getPlayerInput)
             {
-                if (!os.terminal.prompt.StartsWith("Code:")) {
-                    os.execute("getString Code:");
+                if (!os.terminal.prompt.StartsWith("Code")) {
+                    os.execute("getString Code");
                     outlineThickness = 4;
                 }
 
@@ -253,6 +253,12 @@ namespace Stuxnet_HN.Daemons
                 emailToSend.sendEmail(os);
             }
 
+            // Load conditional actions (if any)
+            if(!validCode.action.IsNullOrWhiteSpace())
+            {
+                RunnableConditionalActions.LoadIntoOS(validCode.action, os);
+            }
+
             return true;
         }
 
@@ -282,5 +288,6 @@ namespace Stuxnet_HN.Daemons
         public Dictionary<string, string> themes;
         public Dictionary<string, string> pfthemes;
         public string email;
+        public string action;
     }
 }
