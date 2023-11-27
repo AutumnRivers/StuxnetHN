@@ -11,7 +11,10 @@ using Pathfinder.Executable;
 using Pathfinder.Action;
 using Pathfinder.Replacements;
 
+using Pathfinder.Event;
 using Pathfinder.Event.Saving;
+using Pathfinder.Event.Gameplay;
+
 using Pathfinder.Meta.Load;
 using Pathfinder.Util.XML;
 
@@ -21,13 +24,14 @@ using BepInEx.Hacknet;
 using Stuxnet_HN.Conditions;
 using Stuxnet_HN.Daemons;
 using Stuxnet_HN.Executables;
+using Stuxnet_HN.Static;
+
 using Stuxnet_HN.Actions;
+using Stuxnet_HN.Actions.Dialogue;
 
 using Newtonsoft.Json;
 
 using SongEntry = Stuxnet_HN.Executables.SongEntry;
-using Pathfinder.Event;
-using Pathfinder.Event.Gameplay;
 
 namespace Stuxnet_HN
 {
@@ -36,7 +40,7 @@ namespace Stuxnet_HN
     {
         public const string ModGUID = "autumnrivers.stuxnet";
         public const string ModName = "Stuxnet";
-        public const string ModVer = "1.1.0";
+        public const string ModVer = "1.2.0-alpha";
 
         private readonly bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
 
@@ -54,6 +58,13 @@ namespace Stuxnet_HN
 
         public static string saveFlag = null;
 
+        // Illustrator
+        public static States.IllustratorStates illustState = States.IllustratorStates.None;
+
+        // Illustrator - Chapter Data
+        public static string chapterTitle = "Chapter X";
+        public static string chapterSubTitle = "Chapter Title";
+
         public static readonly string[] postMsg = new string[]
         {
             "So I got that going for me, which is nice.",
@@ -70,7 +81,8 @@ namespace Stuxnet_HN
             "Track down everyone responsible for this mess.",
             "I'd just like to interject for moment.",
             "All hail Mott!",
-            "Splines: Reticulated."
+            "Splines: Reticulated.",
+            "All roads lead to Rome!"
         };
 
         public override bool Load()
@@ -108,6 +120,10 @@ namespace Stuxnet_HN
             // Vault Actions
             ActionManager.RegisterAction<VaultKeyActions.AddVaultKey>("AddVaultKey");
             ActionManager.RegisterAction<VaultKeyActions.RemoveVaultKey>("RemoveVaultKey");
+
+            // Dialogue / Chapter Actions
+            ActionManager.RegisterAction<ChapterTitleActions.ShowChapterTitle>("ShowChapterTitle");
+            ActionManager.RegisterAction<ChapterTitleActions.HideChapterTitle>("HideChapterTitle");
 
             // Misc. Actions
             ActionManager.RegisterAction<ForceConnect>("ForceConnectPlayer");
