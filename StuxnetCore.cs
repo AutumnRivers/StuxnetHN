@@ -31,6 +31,8 @@ using Stuxnet_HN.Actions.Dialogue;
 
 using Newtonsoft.Json;
 
+using Microsoft.Xna.Framework;
+
 using SongEntry = Stuxnet_HN.Executables.SongEntry;
 
 namespace Stuxnet_HN
@@ -57,6 +59,10 @@ namespace Stuxnet_HN
         public static SequencerInfo currentSequencerInfo = null;
 
         public static string saveFlag = null;
+
+        // Temp. cache
+        public static Dictionary<string, Color> colorsCache = new Dictionary<string, Color>();
+        public static Dictionary<string, string> stxStringCache = new Dictionary<string, string>();
 
         // Illustrator
         public static States.IllustratorStates illustState = States.IllustratorStates.None;

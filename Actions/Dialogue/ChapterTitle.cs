@@ -34,6 +34,12 @@ namespace Stuxnet_HN.Actions.Dialogue
                 {
                     os.DisableTopBarButtons = true;
                     os.DisableEmailIcon = true;
+
+                    StuxnetCore.colorsCache["topBarTextColor"] = os.topBarTextColor;
+                    StuxnetCore.colorsCache["topBarColor"] = os.topBarColor;
+
+                    os.topBarTextColor = Color.Transparent;
+                    os.topBarColor = Color.Transparent;
                 }
 
                 os.display.visible = false;
@@ -53,6 +59,12 @@ namespace Stuxnet_HN.Actions.Dialogue
             {
                 os.DisableTopBarButtons = false;
                 os.DisableEmailIcon = false;
+
+                if(StuxnetCore.colorsCache.ContainsKey("topBarTextColor"))
+                {
+                    os.topBarTextColor = StuxnetCore.colorsCache["topBarTextColor"];
+                    os.topBarColor = StuxnetCore.colorsCache["topBarColor"];
+                }
 
                 os.display.visible = true;
                 os.netMap.visible = true;

@@ -57,6 +57,21 @@ For use with the [Vault Daemon](./Daemons.md#vault-daemon).
 
 A maximum of 10 keys can be added (unrelated to the vault daemon itself) and the user can have a minimum of 0 keys. If you go over or under these limits, nothing will happen. It just won't add/remove the key.
 
+# Dialogue Actions
+Actions relating to dialogue / "story elements"
+
+## Chapter Titles
+### `<ShowChapterTitle ChapterTitle="string" ChapterSubTitle="string" [HideTopBar="bool"] />`
+**Delayable.** Shows a chapter title and subtitle. This hides all user modules, along with the top bar if `HideTopBar` is `true`.
+* `ChapterTitle` - The title. Shows up in the Hacknet logo font. e.g. `"Chapter 1"`
+* `ChapterSubTitle` - Admittedly, a misleading name. Typically you'll put the *actual* chapter title here. e.g. `"The first chapter"`
+* `HideTopBar` - Whether or not to hide the top bar. Defaults to `true`, and you'll probably want to keep it like that.
+
+**NOTE**: You should *not* save the player's game while the chapter title is shown, it'll break things! Only save before you've shown it, or after you've hidden it.
+
+### `<HideChapterTitle />`
+**Delayable.** Does the opposite of above. This will also enable the alerts icon, even if you've disabled it with `DisableAlertsIcon`. If you really need the alerts icon to stay hidden, you can just disable it right after hiding the chapter title.
+
 # Misc. Actions
 ### `<DisableAlertsIcon /> / <EnableAlertsIcon />`
 **Delayable.** Turns the alert icon (email, irc, etc.) off and on, respectively. And yes, that means *completely* off. Nothing will be at the top right of the user's game window. Useful for cutscenes, sequencers, blah blah blah. You get the gist of what most of these actions are for.

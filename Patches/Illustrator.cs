@@ -23,6 +23,19 @@ namespace Stuxnet_HN.Patches
         [HarmonyPatch(typeof(OS), "drawScanlines")]
         public static bool Prefix(OS __instance)
         {
+            switch(StuxnetCore.illustState)
+            {
+                case States.DrawTitle:
+                    DrawTitle(__instance);
+
+                    goto default;
+                default:
+                    return true;
+            }
+        }
+
+        public static void DrawTitle(OS os)
+        {
             SpriteFont titleFont = GuiData.titlefont;
             SpriteFont subTitleFont = GuiData.font;
 
@@ -32,36 +45,28 @@ namespace Stuxnet_HN.Patches
             int titleOffset = -50;
             int subTitleOffset = 50;
 
-            switch(StuxnetCore.illustState)
-            {
-                case States.DrawTitle:
-                    Rectangle userBounds = __instance.fullscreen;
+            Rectangle userBounds = os.fullscreen;
 
-                    RenderedRectangle.doRectangle(userBounds.X, userBounds.Y, userBounds.Width, userBounds.Height,
-                        Color.Black * 0.5f);
+            RenderedRectangle.doRectangle(userBounds.X, userBounds.Y, userBounds.Width, userBounds.Height,
+                Color.Black * 0.5f);
 
-                    // Draw chapter title
-                    Vector2 titleVector = titleFont.MeasureString(ChapterTitle);
-                    Vector2 titlePosition = new Vector2(
-                        (float)(userBounds.X + userBounds.Width / 2) - titleVector.X / 2f,
-                        userBounds.Center.Y + titleOffset
-                        );
+            // Draw chapter title
+            Vector2 titleVector = titleFont.MeasureString(ChapterTitle);
+            Vector2 titlePosition = new Vector2(
+                (float)(userBounds.X + userBounds.Width / 2) - titleVector.X / 2f,
+                userBounds.Center.Y + titleOffset
+                );
 
-                    GuiData.spriteBatch.DrawString(titleFont, ChapterTitle, titlePosition, Color.White);
+            GuiData.spriteBatch.DrawString(titleFont, ChapterTitle, titlePosition, Color.White);
 
-                    // Draw chapter subtitle
-                    Vector2 subTitleVector = subTitleFont.MeasureString(ChapterSubTitle);
-                    Vector2 subPosition = new Vector2(
-                        (float)(userBounds.X + userBounds.Width / 2) - subTitleVector.X / 2f,
-                        userBounds.Center.Y + subTitleOffset
-                        );
+            // Draw chapter subtitle
+            Vector2 subTitleVector = subTitleFont.MeasureString(ChapterSubTitle);
+            Vector2 subPosition = new Vector2(
+                (float)(userBounds.X + userBounds.Width / 2) - subTitleVector.X / 2f,
+                userBounds.Center.Y + subTitleOffset
+                );
 
-                    GuiData.spriteBatch.DrawString(subTitleFont, ChapterSubTitle, subPosition, Color.White);
-
-                    goto default;
-                default:
-                    return true;
-            }
+            GuiData.spriteBatch.DrawString(subTitleFont, ChapterSubTitle, subPosition, Color.White);
         }
     }
 }
