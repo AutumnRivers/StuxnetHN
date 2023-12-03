@@ -34,6 +34,7 @@ using Newtonsoft.Json;
 using Microsoft.Xna.Framework;
 
 using SongEntry = Stuxnet_HN.Executables.SongEntry;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Stuxnet_HN
 {
@@ -63,6 +64,7 @@ namespace Stuxnet_HN
         // Temp. cache
         public static Dictionary<string, Color> colorsCache = new Dictionary<string, Color>();
         public static Dictionary<string, string> stxStringCache = new Dictionary<string, string>();
+        public static Dictionary<string, Texture2D> texCache = new Dictionary<string, Texture2D>();
 
         // Illustrator
         public static States.IllustratorStates illustState = States.IllustratorStates.None;
@@ -97,6 +99,13 @@ namespace Stuxnet_HN
 
             LogDebug("Initializing...");
             HarmonyInstance.PatchAll(typeof(StuxnetCore).Assembly);
+
+            string extFolderPath = ExtensionLoader.ActiveExtensionInfo.FolderPath;
+
+            LogDebug("Preloading images...");
+            FileStream scanLinesStream = File.OpenRead(extFolderPath + "/Plugins/assets/ScanLinesFix.png");
+            texCache["ScanLinesFix"] = Texture2D.FromStream(GuiData.spriteBatch.GraphicsDevice ,scanLinesStream);
+            scanLinesStream.Dispose();
 
             LogDebug("Loading Daemons...");
             DaemonManager.RegisterDaemon<CodeRedemptionDaemon>();
