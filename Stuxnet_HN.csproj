@@ -108,5 +108,8 @@
   <ItemGroup>
     <Folder Include="docs\" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="assets\ScanLinesFix.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
