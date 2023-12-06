@@ -35,6 +35,10 @@ namespace Stuxnet_HN.Patches
                     IllustratorTypewriter.DrawCtcDialogue(__instance, StuxnetCore.dialogueText, StuxnetCore.dialogueEndActions);
 
                     goto default;
+                case States.AutoDialogue:
+                    IllustratorTypewriter.DrawCtcDialogue(__instance, StuxnetCore.dialogueText, StuxnetCore.dialogueEndActions);
+
+                    goto default;
                 default:
                     return true;
             }
@@ -80,6 +84,7 @@ namespace Stuxnet_HN.Patches
     {
         private static char[] displayedChars;
         private static float timeTracker = 0f;
+        private static float completeDelayTracker = 0f;
 
         private static int currentLine = 0;
         private static float totalLineHeight = 0f;
@@ -117,7 +122,7 @@ namespace Stuxnet_HN.Patches
                     (gameScreen.X + gameScreen.Width / 2) - lineVector.X / 2f,
                     (gameScreen.Center.Y - centerOffset) + lineOffset);
 
-                GuiData.spriteBatch.DrawString(targetLine.font, targetLine.text, linePosition, Color.White);
+                GuiData.spriteBatch.DrawString(targetLine.font, targetLine.text, linePosition, StuxnetCore.dialogueColor);
 
                 lineOffset += targetLine.lineOffset;
             }
@@ -141,7 +146,7 @@ namespace Stuxnet_HN.Patches
                 (gameScreen.Center.Y - centerOffset) + lineOffset);
 
             // Actually show the text
-            GuiData.spriteBatch.DrawString(dialogueFont, displayText, dialoguePosition, Color.White);
+            GuiData.spriteBatch.DrawString(dialogueFont, displayText, dialoguePosition, StuxnetCore.dialogueColor);
 
             if(timeTracker >= textLength && currentLine < (textLines.Count - 1))
             {
@@ -152,6 +157,20 @@ namespace Stuxnet_HN.Patches
             // Show CTC text
             if(currentLine >= (textLines.Count - 1) && timeTracker >= textLength)
             {
+                if(!StuxnetCore.dialogueIsCtc)
+                {
+                    float completeDelay = StuxnetCore.dialogueCompleteDelay;
+
+                    completeDelayTracker += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                    if(completeDelayTracker >= completeDelay)
+                    {
+                        ResetTypewriter(os, endActionsPath);
+                    }
+
+                    return;
+                }
+
                 Vector2 ctcVec = ctcFont.MeasureString(ctcText);
                 Vector2 ctcPos = new Vector2(
                     (gameScreen.X + gameScreen.Width / 2) - ctcVec.X / 2f,
@@ -163,38 +182,45 @@ namespace Stuxnet_HN.Patches
 
                 if(mouse.LeftButton == ButtonState.Pressed)
                 {
-                    displayedChars = null;
-
-                    currentLine = 0;
-                    timeTracker = 0f;
-
-                    totalLineHeight = 0;
-                    textLines.Clear();
-
-                    StuxnetCore.dialogueIsActive = false;
-
-                    if (endActionsPath.IsNullOrWhiteSpace()) {
-                        StuxnetCore.illustState = States.None;
-
-                        os.DisableTopBarButtons = false;
-
-                        if (StuxnetCore.colorsCache.ContainsKey("topBarTextColor"))
-                        {
-                            os.topBarTextColor = StuxnetCore.colorsCache["topBarTextColor"];
-                            os.topBarColor = StuxnetCore.colorsCache["topBarColor"];
-                        }
-
-                        os.display.visible = true;
-                        os.netMap.visible = true;
-                        os.ram.visible = true;
-                        os.terminal.visible = true;
-
-                        return;
-                    }
-
-                    RunnableConditionalActions.LoadIntoOS(endActionsPath, os);
+                    ResetTypewriter(os, endActionsPath);
                 }
             }
+        }
+
+        private static void ResetTypewriter(OS os, string endActionsPath)
+        {
+            displayedChars = null;
+
+            currentLine = 0;
+            timeTracker = 0f;
+            completeDelayTracker = 0f;
+
+            totalLineHeight = 0;
+            textLines.Clear();
+
+            StuxnetCore.dialogueIsActive = false;
+
+            if (endActionsPath.IsNullOrWhiteSpace())
+            {
+                StuxnetCore.illustState = States.None;
+
+                os.DisableTopBarButtons = false;
+
+                if (StuxnetCore.colorsCache.ContainsKey("topBarTextColor"))
+                {
+                    os.topBarTextColor = StuxnetCore.colorsCache["topBarTextColor"];
+                    os.topBarColor = StuxnetCore.colorsCache["topBarColor"];
+                }
+
+                os.display.visible = true;
+                os.netMap.visible = true;
+                os.ram.visible = true;
+                os.terminal.visible = true;
+
+                return;
+            }
+
+            RunnableConditionalActions.LoadIntoOS(endActionsPath, os);
         }
 
         private static void ParseText(string text)

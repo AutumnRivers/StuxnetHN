@@ -73,14 +73,17 @@ namespace Stuxnet_HN
         public static string chapterTitle = "Chapter X";
         public static string chapterSubTitle = "Chapter Title";
 
+        #region illustrator dialogue variables
         // Illustrator - Dialogue
         public static string dialogueText;
         public static bool dialogueIsCtc = false;
-        public static int dialogueCompleteDelay = 0;
+        public static float dialogueCompleteDelay = 0f;
         public static float dialogueSpeed = 1f;
         public static string dialogueEndActions;
+        public static Color dialogueColor = Color.White;
 
         public static bool dialogueIsActive = false;
+        #endregion illustrator dialogue variables
 
         public static readonly string[] postMsg = new string[]
         {
@@ -124,6 +127,7 @@ namespace Stuxnet_HN
             LogDebug("Registering Executables...");
             ExecutableManager.RegisterExecutable<RadioV3>("#RADIO_V3#");
 
+            #region register actions
             LogDebug("Registering Actions...");
             // Radio Actions
             ActionManager.RegisterAction<RadioActions.AddSong>("AddSongToRadio");
@@ -150,12 +154,14 @@ namespace Stuxnet_HN
             ActionManager.RegisterAction<ChapterTitleActions.HideChapterTitle>("HideChapterTitle");
 
             ActionManager.RegisterAction<VisualNovelText.CTCDialogueAction>("ShowCTCDialogue");
+            ActionManager.RegisterAction<VisualNovelText.AutoDialogueAction>("ShowAutoDialogue");
 
             // Misc. Actions
             ActionManager.RegisterAction<ForceConnect>("ForceConnectPlayer");
             ActionManager.RegisterAction<DisableAlertsIcon>("DisableAlertsIcon");
             ActionManager.RegisterAction<EnableAlertsIcon>("EnableAlertsIcon");
             ActionManager.RegisterAction<WriteToTerminal>("WriteToTerminal");
+            #endregion register actions
 
             LogDebug("Registering Conditions...");
             ConditionManager.RegisterCondition<OnSequencerKill>("OnExtSequencerKill");

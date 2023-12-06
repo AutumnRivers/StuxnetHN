@@ -94,6 +94,7 @@
     <Compile Include="Daemons\DebugDaemon.cs" />
     <Compile Include="Daemons\VaultDaemon.cs" />
     <Compile Include="Executables\RadioV3.cs" />
+    <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Patches\ExtSequencerPatch.cs" />
     <Compile Include="Patches\Illustrator.cs" />
     <Compile Include="Patches\MissionDisplayLogo.cs" />

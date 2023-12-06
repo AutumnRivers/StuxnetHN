@@ -10,6 +10,7 @@ using Pathfinder.Action;
 using Pathfinder.Util;
 
 using Microsoft.Xna.Framework;
+using Stuxnet_HN.Extensions;
 
 namespace Stuxnet_HN.Actions.Dialogue
 {
@@ -22,6 +23,9 @@ namespace Stuxnet_HN.Actions.Dialogue
 
             [XMLStorage]
             public string EndDialogueActions;
+
+            [XMLStorage]
+            public string TextColor = "255,255,255";
 
             [XMLStorage]
             public string TextSpeed = "1";
@@ -55,6 +59,7 @@ namespace Stuxnet_HN.Actions.Dialogue
                 StuxnetCore.dialogueText = Text;
                 StuxnetCore.dialogueSpeed = dialogueSpeed;
                 StuxnetCore.dialogueEndActions = EndDialogueActions;
+                StuxnetCore.dialogueColor = new Color().FromString(TextColor);
 
                 StuxnetCore.dialogueIsCtc = true;
                 StuxnetCore.dialogueIsActive = true;
@@ -69,8 +74,14 @@ namespace Stuxnet_HN.Actions.Dialogue
 
         public class AutoDialogueAction : PathfinderAction
         {
-            [XMLStorage]
+            [XMLStorage(IsContent = true)]
             public string Text;
+
+            [XMLStorage]
+            public string TextColor = "255,255,255";
+
+            [XMLStorage]
+            public string TextSpeed = "1";
 
             [XMLStorage]
             public string ContinueDelay = "0";
@@ -102,12 +113,20 @@ namespace Stuxnet_HN.Actions.Dialogue
                     os.topBarColor = Color.Transparent;
                 }
 
-                int continueDelay = int.Parse(ContinueDelay);
+                float continueDelay = float.Parse(ContinueDelay);
 
-                StuxnetCore.dialogueEndActions = EndDialogueActions;
                 StuxnetCore.dialogueIsCtc = false;
                 StuxnetCore.dialogueCompleteDelay = continueDelay;
                 StuxnetCore.dialogueIsActive = true;
+
+                float dialogueSpeed = float.Parse(TextSpeed);
+
+                StuxnetCore.dialogueText = Text;
+                StuxnetCore.dialogueSpeed = dialogueSpeed;
+                StuxnetCore.dialogueEndActions = EndDialogueActions;
+                StuxnetCore.dialogueColor = new Color().FromString(TextColor);
+
+                StuxnetCore.illustState = Static.States.IllustratorStates.AutoDialogue;
 
                 os.display.visible = false;
                 os.netMap.visible = false;
