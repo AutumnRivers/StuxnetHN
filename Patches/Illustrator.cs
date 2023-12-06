@@ -33,7 +33,6 @@ namespace Stuxnet_HN.Patches
                     goto default;
                 case States.CTCDialogue:
                     IllustratorTypewriter.DrawCtcDialogue(__instance, StuxnetCore.dialogueText, StuxnetCore.dialogueEndActions);
-                    StuxnetCore.dialogueIsActive = true;
 
                     goto default;
                 default:
@@ -84,11 +83,10 @@ namespace Stuxnet_HN.Patches
 
         private static int currentLine = 0;
         private static float totalLineHeight = 0f;
-        private static readonly List<TextLine> textLines;
+        private static readonly List<TextLine> textLines = new List<TextLine>();
 
         private const string ctcText = "Click to continue...";
 
-        private static readonly SpriteFont dialogueFont = GuiData.smallfont;
         private static readonly SpriteFont ctcFont = GuiData.detailfont;
 
         public static void DrawCtcDialogue(OS os, string textToWrite, string endActionsPath)
@@ -96,17 +94,35 @@ namespace Stuxnet_HN.Patches
             ParseText(textToWrite);
 
             TextLine currentTextLine = textLines[currentLine];
+            SpriteFont dialogueFont = currentTextLine.font;
 
-            displayedChars = textToWrite.ToCharArray();
+            displayedChars = currentTextLine.text.ToCharArray();
 
             GameTime gameTime = os.lastGameTime;
             Rectangle gameScreen = os.fullscreen;
             Rectangle userBounds = os.fullscreen;
 
+            float centerOffset = totalLineHeight / 2f;
+            float lineOffset = 0f;
+
             RenderedRectangle.doRectangle(userBounds.X, userBounds.Y, userBounds.Width, userBounds.Height,
                 Color.Black * 0.5f);
 
-            int textLength = textToWrite.Length;
+            for (int i = 0; i < currentLine; i++)
+            {
+                TextLine targetLine = textLines[i];
+
+                Vector2 lineVector = targetLine.font.MeasureString(targetLine.text);
+                Vector2 linePosition = new Vector2(
+                    (gameScreen.X + gameScreen.Width / 2) - lineVector.X / 2f,
+                    (gameScreen.Center.Y - centerOffset) + lineOffset);
+
+                GuiData.spriteBatch.DrawString(targetLine.font, targetLine.text, linePosition, Color.White);
+
+                lineOffset += targetLine.lineOffset;
+            }
+
+            int textLength = currentTextLine.length;
 
             if(timeTracker < textLength)
             {
@@ -119,16 +135,22 @@ namespace Stuxnet_HN.Patches
             string displayText = new string(displayChars);
 
             // Get measurements for the full text
-            Vector2 dialogueVector = dialogueFont.MeasureString(textToWrite);
+            Vector2 dialogueVector = dialogueFont.MeasureString(currentTextLine.text);
             Vector2 dialoguePosition = new Vector2(
                 (gameScreen.X + gameScreen.Width / 2) - dialogueVector.X / 2f,
-                gameScreen.Center.Y - (dialogueVector.Y / 2));
+                (gameScreen.Center.Y - centerOffset) + lineOffset);
 
             // Actually show the text
             GuiData.spriteBatch.DrawString(dialogueFont, displayText, dialoguePosition, Color.White);
 
+            if(timeTracker >= textLength && currentLine < (textLines.Count - 1))
+            {
+                timeTracker = 0f;
+                currentLine++;
+            }
+
             // Show CTC text
-            if(currentLine > textLines.Count)
+            if(currentLine >= (textLines.Count - 1) && timeTracker >= textLength)
             {
                 Vector2 ctcVec = ctcFont.MeasureString(ctcText);
                 Vector2 ctcPos = new Vector2(
@@ -141,13 +163,17 @@ namespace Stuxnet_HN.Patches
 
                 if(mouse.LeftButton == ButtonState.Pressed)
                 {
-                    StuxnetCore.dialogueIsActive = false;
                     displayedChars = null;
 
-
                     currentLine = 0;
+                    timeTracker = 0f;
 
-                    if(endActionsPath.IsNullOrWhiteSpace()) {
+                    totalLineHeight = 0;
+                    textLines.Clear();
+
+                    StuxnetCore.dialogueIsActive = false;
+
+                    if (endActionsPath.IsNullOrWhiteSpace()) {
                         StuxnetCore.illustState = States.None;
 
                         os.DisableTopBarButtons = false;
@@ -174,6 +200,7 @@ namespace Stuxnet_HN.Patches
         private static void ParseText(string text)
         {
             textLines.Clear();
+            totalLineHeight = 0;
 
             string[] textSplit = text.Split('\n');
 
@@ -189,20 +216,27 @@ namespace Stuxnet_HN.Patches
                         lineOffset = GuiData.font.MeasureString(textLine.Substring(1)).Y
                     };
 
-                    totalLineHeight += line.lineOffset + 5;
+                    totalLineHeight += line.lineOffset + 3;
 
                     textLines.Add(line);
                 } else
                 {
+                    string finalText = textLine;
+
+                    if(textLine.IsNullOrWhiteSpace())
+                    {
+                        finalText = " ";
+                    }
+
                     TextLine line = new TextLine()
                     {
                         font = GuiData.smallfont,
-                        text = textLine,
-                        length = textLine.Length,
-                        lineOffset = GuiData.smallfont.MeasureString(textLine).Y
+                        text = finalText,
+                        length = finalText.Length,
+                        lineOffset = GuiData.smallfont.MeasureString(finalText).Y
                     };
 
-                    totalLineHeight += line.lineOffset + 5;
+                    totalLineHeight += line.lineOffset + 3;
 
                     textLines.Add(line);
                 }
