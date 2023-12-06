@@ -81,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actions\Dialogue\ChapterTitle.cs" />
+    <Compile Include="Actions\Dialogue\VisualNovelText.cs" />
     <Compile Include="Actions\ForceConnect.cs" />
     <Compile Include="Actions\RadioActions.cs" />
     <Compile Include="Actions\SaveActions.cs" />

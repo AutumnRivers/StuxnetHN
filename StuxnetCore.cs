@@ -73,6 +73,15 @@ namespace Stuxnet_HN
         public static string chapterTitle = "Chapter X";
         public static string chapterSubTitle = "Chapter Title";
 
+        // Illustrator - Dialogue
+        public static string dialogueText;
+        public static bool dialogueIsCtc = false;
+        public static int dialogueCompleteDelay = 0;
+        public static float dialogueSpeed = 1f;
+        public static string dialogueEndActions;
+
+        public static bool dialogueIsActive = false;
+
         public static readonly string[] postMsg = new string[]
         {
             "So I got that going for me, which is nice.",
@@ -139,6 +148,8 @@ namespace Stuxnet_HN
             // Dialogue / Chapter Actions
             ActionManager.RegisterAction<ChapterTitleActions.ShowChapterTitle>("ShowChapterTitle");
             ActionManager.RegisterAction<ChapterTitleActions.HideChapterTitle>("HideChapterTitle");
+
+            ActionManager.RegisterAction<VisualNovelText.CTCDialogueAction>("ShowCTCDialogue");
 
             // Misc. Actions
             ActionManager.RegisterAction<ForceConnect>("ForceConnectPlayer");

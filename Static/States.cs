@@ -11,7 +11,9 @@ namespace Stuxnet_HN.Static
         public enum IllustratorStates : int
         {
             None = 0,
-            DrawTitle = 1
+            DrawTitle = 1,
+            CTCDialogue = 2,
+            AutoDialogue = 3
         }
     }
 }
