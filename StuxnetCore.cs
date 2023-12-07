@@ -35,6 +35,7 @@ using Microsoft.Xna.Framework;
 
 using SongEntry = Stuxnet_HN.Executables.SongEntry;
 using Microsoft.Xna.Framework.Graphics;
+using Stuxnet_HN.Actions.Nodes;
 
 namespace Stuxnet_HN
 {
@@ -155,6 +156,9 @@ namespace Stuxnet_HN
 
             ActionManager.RegisterAction<VisualNovelText.CTCDialogueAction>("ShowCTCDialogue");
             ActionManager.RegisterAction<VisualNovelText.AutoDialogueAction>("ShowAutoDialogue");
+
+            // Node Actions
+            ActionManager.RegisterAction<PlaceOnNetMap>("PlaceNodeOnNetMap");
 
             // Misc. Actions
             ActionManager.RegisterAction<ForceConnect>("ForceConnectPlayer");
