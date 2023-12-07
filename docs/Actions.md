@@ -72,6 +72,26 @@ Actions relating to dialogue / "story elements"
 ### `<HideChapterTitle />`
 **Delayable.** Does the opposite of above. This will also enable the alerts icon, even if you've disabled it with `DisableAlertsIcon`. If you really need the alerts icon to stay hidden, you can just disable it right after hiding the chapter title.
 
+### `<ShowCTCDialogue [TextSpeed="int" HideTopBar="bool" TextColor="int,int,int" EndDialogueActions="string"]>string</ShowCTCDialogue>`
+Shows dialogue that, when completed, will prompt the user to click the screen.
+* `TextSpeed` - Multiplier of the default text speed (10chars/s)
+* `HideTopBar` - Whether or not to hide the top bar. Defaults to `true`, and you'll probably want to keep it like that.
+* `TextColor` - The color of the text. Similar to how theme colors are done. Defaults to white, or `255,255,255`.
+* `EndDialogueActions` - Actions to run when the user clicks the screen after being prompted. If omitted, then the top bar and module visibility will return when the user has clicked.
+
+### `<ShowAutoDialogue [TextSpeed="1" HideTopBar="false" TextColor="255,0,0" ContinueDelay="3"]>string</ShowCTCDialogue>`
+Same as above, but for auto text. Auto text will fire end dialogue actions after the delay is finished. No user input required.
+* `ContinueDelay` - How long to wait until after the text is finished (in seconds) until `EndDialogueActions` is fired. Defaults to `0`.
+
+## Node Actions
+### `<PlaceNodeOnNetMap TargetCompID="jmail" [StartingPosition="string" Offset="float,float"]>`
+**Delayable.** Places the target node onto the netmap where you specify it.
+
+* `TargetCompID` - The ID of the target node.
+* `StartingPosition` - Where to start your offset from. Valid positions are `topleft,centerleft,bottomleft,topcenter,truecenter,bottomcenter,topright,centerright,bottomright`. Defaults to `truecenter`
+* `Offset` - The offset from the starting position. Percentage based. Defaults to `"0,0"`
+    * For example, a starting position of `topleft` and an offset of `0.5,0.25` will place the node halfway across the netmap, and a halfway to the center vertically.
+
 # Misc. Actions
 ### `<DisableAlertsIcon /> / <EnableAlertsIcon />`
 **Delayable.** Turns the alert icon (email, irc, etc.) off and on, respectively. And yes, that means *completely* off. Nothing will be at the top right of the user's game window. Useful for cutscenes, sequencers, blah blah blah. You get the gist of what most of these actions are for.
