@@ -12,6 +12,7 @@ using Pathfinder.Util;
 using Microsoft.Xna.Framework;
 
 using Stuxnet_HN.Static;
+using BepInEx;
 
 namespace Stuxnet_HN.Actions.Dialogue
 {
@@ -28,9 +29,17 @@ namespace Stuxnet_HN.Actions.Dialogue
             [XMLStorage]
             public string HideTopBar = "true";
 
+            [XMLStorage]
+            public string BackingOpacity;
+
             public override void Trigger(OS os)
             {
-                if(HideTopBar.ToLower() == "true")
+                if (!BackingOpacity.IsNullOrWhiteSpace())
+                {
+                    StuxnetCore.backingOpacity = float.Parse(BackingOpacity);
+                }
+
+                if (HideTopBar.ToLower() == "true")
                 {
                     os.DisableTopBarButtons = true;
                     os.DisableEmailIcon = true;

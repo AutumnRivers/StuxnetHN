@@ -19,7 +19,14 @@ namespace Stuxnet_HN.Patches
         [HarmonyPatch(typeof(OS), "drawScanlines")]
         public static void Postfix_ChangeScanlinesTexture(OS __instance)
         {
-            __instance.scanLines = StuxnetCore.texCache["ScanLinesFix"];
+            if(StuxnetCore.useScanLinesFix)
+            {
+                __instance.scanLines = StuxnetCore.texCache["ScanLinesFix"];
+            } else
+            {
+                if(StuxnetCore.originalScanlines == null) { return; }
+                __instance.scanLines = StuxnetCore.originalScanlines;
+            }
         }
 
         [HarmonyPostfix]

@@ -25,9 +25,11 @@ using Stuxnet_HN.Conditions;
 using Stuxnet_HN.Daemons;
 using Stuxnet_HN.Executables;
 using Stuxnet_HN.Static;
+using Stuxnet_HN.Commands;
 
 using Stuxnet_HN.Actions;
 using Stuxnet_HN.Actions.Dialogue;
+using Stuxnet_HN.Actions.Nodes;
 
 using Newtonsoft.Json;
 
@@ -35,7 +37,8 @@ using Microsoft.Xna.Framework;
 
 using SongEntry = Stuxnet_HN.Executables.SongEntry;
 using Microsoft.Xna.Framework.Graphics;
-using Stuxnet_HN.Actions.Nodes;
+
+using Pathfinder.Command;
 
 namespace Stuxnet_HN
 {
@@ -44,7 +47,7 @@ namespace Stuxnet_HN
     {
         public const string ModGUID = "autumnrivers.stuxnet";
         public const string ModName = "Stuxnet";
-        public const string ModVer = "1.2.0-alpha";
+        public const string ModVer = "1.2.0";
 
         private readonly bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
 
@@ -62,10 +65,14 @@ namespace Stuxnet_HN
 
         public static string saveFlag = null;
 
+        public static bool useScanLinesFix = false;
+
         // Temp. cache
         public static Dictionary<string, Color> colorsCache = new Dictionary<string, Color>();
         public static Dictionary<string, string> stxStringCache = new Dictionary<string, string>();
         public static Dictionary<string, Texture2D> texCache = new Dictionary<string, Texture2D>();
+
+        public static Texture2D originalScanlines;
 
         // Illustrator
         public static States.IllustratorStates illustState = States.IllustratorStates.None;
@@ -82,6 +89,7 @@ namespace Stuxnet_HN
         public static float dialogueSpeed = 1f;
         public static string dialogueEndActions;
         public static Color dialogueColor = Color.White;
+        public static float backingOpacity = 0.6f;
 
         public static bool dialogueIsActive = false;
         #endregion illustrator dialogue variables
@@ -127,6 +135,9 @@ namespace Stuxnet_HN
 
             LogDebug("Registering Executables...");
             ExecutableManager.RegisterExecutable<RadioV3>("#RADIO_V3#");
+
+            LogDebug("Registering Commands...");
+            CommandManager.RegisterCommand("slfix", ToggleScanLinesFix.ToggleFix, true, false);
 
             #region register actions
             LogDebug("Registering Actions...");

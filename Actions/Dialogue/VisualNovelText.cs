@@ -11,6 +11,7 @@ using Pathfinder.Util;
 
 using Microsoft.Xna.Framework;
 using Stuxnet_HN.Extensions;
+using BepInEx;
 
 namespace Stuxnet_HN.Actions.Dialogue
 {
@@ -33,11 +34,19 @@ namespace Stuxnet_HN.Actions.Dialogue
             [XMLStorage]
             public string HideTopBar = "true";
 
+            [XMLStorage]
+            public string BackingOpacity;
+
             public override void Trigger(object os_obj)
             {
                 if(StuxnetCore.dialogueIsActive)
                 {
                     return;
+                }
+
+                if(!BackingOpacity.IsNullOrWhiteSpace())
+                {
+                    StuxnetCore.backingOpacity = float.Parse(BackingOpacity);
                 }
 
                 OS os = (OS)os_obj;
@@ -92,11 +101,19 @@ namespace Stuxnet_HN.Actions.Dialogue
             [XMLStorage]
             public string HideTopBar = "true";
 
+            [XMLStorage]
+            public string BackingOpacity;
+
             public override void Trigger(object os_obj)
             {
                 if (StuxnetCore.dialogueIsActive)
                 {
                     return;
+                }
+
+                if (!BackingOpacity.IsNullOrWhiteSpace())
+                {
+                    StuxnetCore.backingOpacity = float.Parse(BackingOpacity);
                 }
 
                 OS os = (OS)os_obj;

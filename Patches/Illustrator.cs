@@ -25,6 +25,11 @@ namespace Stuxnet_HN.Patches
         [HarmonyPatch(typeof(OS), "drawScanlines")]
         public static bool Prefix(OS __instance)
         {
+            if(StuxnetCore.originalScanlines == null)
+            {
+                StuxnetCore.originalScanlines = __instance.scanLines;
+            }
+
             switch(StuxnetCore.illustState)
             {
                 case States.DrawTitle:
@@ -58,7 +63,7 @@ namespace Stuxnet_HN.Patches
             Rectangle userBounds = os.fullscreen;
 
             RenderedRectangle.doRectangle(userBounds.X, userBounds.Y, userBounds.Width, userBounds.Height,
-                Color.Black * 0.5f);
+                Color.Black * StuxnetCore.backingOpacity);
 
             // Draw chapter title
             Vector2 titleVector = titleFont.MeasureString(ChapterTitle);
@@ -111,7 +116,7 @@ namespace Stuxnet_HN.Patches
             float lineOffset = 0f;
 
             RenderedRectangle.doRectangle(userBounds.X, userBounds.Y, userBounds.Width, userBounds.Height,
-                Color.Black * 0.5f);
+                Color.Black * StuxnetCore.backingOpacity);
 
             for (int i = 0; i < currentLine; i++)
             {

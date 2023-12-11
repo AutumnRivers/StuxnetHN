@@ -19,21 +19,27 @@ namespace Stuxnet_HN.Replacements
         [HarmonyPrefix]
         [HarmonyPatch(typeof(OS), "drawScanlines")]
         public static bool Prefix(OS __instance)
-        {
-            Texture2D scanLines = __instance.scanLines;
-            Color scanlinesColor = __instance.scanlinesColor;
-
+        {   
             if (!PostProcessor.scanlinesEnabled)
             {
-                return true;
+                return false;
             }
+
+            Texture2D scanLines = __instance.scanLines;
+            Color scanlinesColor = __instance.scanlinesColor;
 
             Vector2 position = new Vector2(0f, 0f);
             while (position.X < (float)__instance.ScreenManager.GraphicsDevice.Viewport.Width)
             {
                 while (position.Y < (float)__instance.ScreenManager.GraphicsDevice.Viewport.Height)
                 {
-                    GuiData.spriteBatch.Draw(scanLines, position, scanlinesColor * (scanlinesColor.A / 255f));
+                    if(StuxnetCore.useScanLinesFix)
+                    {
+                        GuiData.spriteBatch.Draw(scanLines, position, scanlinesColor * (scanlinesColor.A / 255f));
+                    } else
+                    {
+                        GuiData.spriteBatch.Draw(scanLines, position, scanlinesColor);
+                    }
                     position.Y += scanLines.Height;
                 }
 

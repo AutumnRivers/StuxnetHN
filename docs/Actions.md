@@ -61,23 +61,26 @@ A maximum of 10 keys can be added (unrelated to the vault daemon itself) and the
 Actions relating to dialogue / "story elements"
 
 ## Chapter Titles
-### `<ShowChapterTitle ChapterTitle="string" ChapterSubTitle="string" [HideTopBar="bool"] />`
+### `<ShowChapterTitle ChapterTitle="string" ChapterSubTitle="string" [HideTopBar="bool" BackingOpacity="float"] />`
 **Delayable.** Shows a chapter title and subtitle. This hides all user modules, along with the top bar if `HideTopBar` is `true`.
 * `ChapterTitle` - The title. Shows up in the Hacknet logo font. e.g. `"Chapter 1"`
 * `ChapterSubTitle` - Admittedly, a misleading name. Typically you'll put the *actual* chapter title here. e.g. `"The first chapter"`
 * `HideTopBar` - Whether or not to hide the top bar. Defaults to `true`, and you'll probably want to keep it like that.
+* `BackingOpacity` - How opaque the dimmed background should be. Higher values means the background will be less visible.
 
 **NOTE**: You should *not* save the player's game while the chapter title is shown, it'll break things! Only save before you've shown it, or after you've hidden it.
 
 ### `<HideChapterTitle />`
 **Delayable.** Does the opposite of above. This will also enable the alerts icon, even if you've disabled it with `DisableAlertsIcon`. If you really need the alerts icon to stay hidden, you can just disable it right after hiding the chapter title.
 
-### `<ShowCTCDialogue [TextSpeed="int" HideTopBar="bool" TextColor="int,int,int" EndDialogueActions="string"]>string</ShowCTCDialogue>`
+## Dialogue
+### `<ShowCTCDialogue [TextSpeed="int" HideTopBar="bool" TextColor="int,int,int" EndDialogueActions="string" BackingOpacity="float"]>string</ShowCTCDialogue>`
 Shows dialogue that, when completed, will prompt the user to click the screen.
 * `TextSpeed` - Multiplier of the default text speed (10chars/s)
 * `HideTopBar` - Whether or not to hide the top bar. Defaults to `true`, and you'll probably want to keep it like that.
 * `TextColor` - The color of the text. Similar to how theme colors are done. Defaults to white, or `255,255,255`.
 * `EndDialogueActions` - Actions to run when the user clicks the screen after being prompted. If omitted, then the top bar and module visibility will return when the user has clicked.
+* `BackingOpacity` - How opaque the dimmed background should be. Higher values means the background will be less visible.
 
 ### `<ShowAutoDialogue [TextSpeed="1" HideTopBar="false" TextColor="255,0,0" ContinueDelay="3"]>string</ShowCTCDialogue>`
 Same as above, but for auto text. Auto text will fire end dialogue actions after the delay is finished. No user input required.

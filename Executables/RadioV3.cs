@@ -98,7 +98,7 @@ namespace Stuxnet_HN.Executables
             scroll = SelectableTextList.scrollOffset;
 
             bool exitButton = Button.doButton(192018, bounds.Center.X + 40, (bounds.Height + bounds.Y) - 30,
-                (bounds.Width - bounds.Center.X) - 50, 20, "Exit", Color.Red);
+                76, 20, "Exit", Color.Red);
 
             isExiting = exitButton;
 
