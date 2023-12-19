@@ -247,10 +247,12 @@ namespace Stuxnet_HN
         {
             XElement stuxnetElem = new XElement("StuxnetData");
 
+            LogDebug("Saving data...");
+
             XAttribute stuxCodes = new XAttribute("RedeemedCodes", string.Join(" ", redeemedCodes));
             XAttribute stuxRadio = new XAttribute("UnlockedRadioIDs", string.Join(",", unlockedRadio));
-            XAttribute stuxSeqID = new XAttribute("SetSequencerID", currentSequencerID);
-            XAttribute stuxSaveFlag = new XAttribute("SaveFlag", saveFlag);
+            XAttribute stuxSeqID = new XAttribute("SetSequencerID", currentSequencerID ?? "NONE");
+            XAttribute stuxSaveFlag = new XAttribute("SaveFlag", saveFlag ?? "NONE");
 
             stuxnetElem.Add(stuxCodes);
             stuxnetElem.Add(stuxRadio);
@@ -262,6 +264,8 @@ namespace Stuxnet_HN
             // Manual sequencer info
             if(currentSequencerInfo != null)
             {
+                LogDebug("Saving sequencer info...");
+
                 XElement seqElem = new XElement("StuxnetSequencerInfo");
 
                 XAttribute seqTargetID = new XAttribute("TargetID", currentSequencerInfo.targetIDorIP);
@@ -280,6 +284,8 @@ namespace Stuxnet_HN
             // Received keys for vaults
             if(receivedKeys.Any())
             {
+                LogDebug("Saving vault keys...");
+
                 XElement keysElem = new XElement("StuxnetKeys");
 
                 foreach(var entry in receivedKeys)
@@ -295,6 +301,8 @@ namespace Stuxnet_HN
             // Custom Replacements
             if(customReplacements.Any())
             {
+                LogDebug("Saving custom wildcards...");
+
                 XElement stxnReplacementsElem = new XElement("StuxnetWildcards");
 
                 foreach(var wildcard in customReplacements)
@@ -309,6 +317,8 @@ namespace Stuxnet_HN
 
                 stuxnetElem.AddAfterSelf(stxnReplacementsElem);
             }
+
+            LogDebug("Save Successful!");
         }
 
         private void InitializeRadio()
@@ -339,6 +349,19 @@ namespace Stuxnet_HN
         {
             Log.LogDebug(logPrefix + message);
         }
+
+        public static void UpdateCustomReplacement(string name, string value)
+        {
+            name = $"#{name.ToUpper()}#";
+
+            if(customReplacements.ContainsKey(name))
+            {
+                customReplacements[name] = value;
+            } else
+            {
+                customReplacements.Add(name, value);
+            }
+        }
     }
 
     [SaveExecutor("HacknetSave.StuxnetData")]
@@ -346,10 +369,13 @@ namespace Stuxnet_HN
     {
         public void LoadSaveData(ElementInfo info)
         {
+            string seqId = info.Attributes["SetSequencerID"] == "NONE" ? null : info.Attributes["SetSequencerID"];
+            string sFlag = info.Attributes["SaveFlag"] == "NONE" ? null : info.Attributes["SaveFlag"];
+
             StuxnetCore.redeemedCodes = info.Attributes["RedeemedCodes"].Split(' ').ToList();
             StuxnetCore.unlockedRadio = info.Attributes["UnlockedRadioIDs"].Split(',').ToList();
-            StuxnetCore.currentSequencerID = info.Attributes["SetSequencerID"];
-            StuxnetCore.saveFlag = info.Attributes["SaveFlag"];
+            StuxnetCore.currentSequencerID = seqId;
+            StuxnetCore.saveFlag = sFlag;
         }
 
         public override void Execute(EventExecutor exec, ElementInfo info)

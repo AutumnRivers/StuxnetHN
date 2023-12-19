@@ -21,13 +21,7 @@ namespace Stuxnet_HN.Actions
 
         public override void Trigger(object os_obj)
         {
-            if(StuxnetCore.customReplacements.ContainsKey(Name))
-            {
-                StuxnetCore.customReplacements[Name] = Value;
-            } else
-            {
-                StuxnetCore.customReplacements.Add($"#{Name.ToUpper()}#", Value);
-            }
+            StuxnetCore.UpdateCustomReplacement(Name, Value);
         }
     }
 
@@ -43,7 +37,7 @@ namespace Stuxnet_HN.Actions
         {
             Computer targetComp = ComputerLookup.FindById(CompID) ?? throw new NullReferenceException($"Computer ID {CompID} Not Found");
 
-            StuxnetCore.customReplacements.Add($"#{Name.ToUpper()}_IP#", targetComp.ip);
+            StuxnetCore.UpdateCustomReplacement($"{Name.ToUpper()}_IP", targetComp.ip);
         }
     }
 
@@ -59,7 +53,7 @@ namespace Stuxnet_HN.Actions
         {
             Computer targetComp = ComputerLookup.FindById(CompID) ?? throw new NullReferenceException($"Computer ID {CompID} Not Found");
 
-            StuxnetCore.customReplacements.Add($"#{Name.ToUpper()}_PASS#", targetComp.adminPass);
+            StuxnetCore.UpdateCustomReplacement($"{Name.ToUpper()}_PASS", targetComp.adminPass);
         }
     }
 }
