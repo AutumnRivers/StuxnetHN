@@ -36,6 +36,7 @@ using Newtonsoft.Json;
 using Microsoft.Xna.Framework;
 
 using SongEntry = Stuxnet_HN.Executables.SongEntry;
+
 using Microsoft.Xna.Framework.Graphics;
 
 using Pathfinder.Command;
@@ -47,7 +48,7 @@ namespace Stuxnet_HN
     {
         public const string ModGUID = "autumnrivers.stuxnet";
         public const string ModName = "Stuxnet";
-        public const string ModVer = "1.2.0";
+        public const string ModVer = "1.3.0";
 
         private readonly bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
 
@@ -66,6 +67,9 @@ namespace Stuxnet_HN
         public static string saveFlag = null;
 
         public static bool useScanLinesFix = false;
+
+        // Custom Replacements
+        public static Dictionary<string, string> customReplacements = new Dictionary<string, string>();
 
         // Temp. cache
         public static Dictionary<string, Color> colorsCache = new Dictionary<string, Color>();
@@ -170,6 +174,11 @@ namespace Stuxnet_HN
 
             // Node Actions
             ActionManager.RegisterAction<PlaceOnNetMap>("PlaceNodeOnNetMap");
+
+            // Custom Replacement Actions
+            ActionManager.RegisterAction<AddCustomReplacements>("AddCustomWildcard");
+            ActionManager.RegisterAction<AddNodeCustomReplacement>("AddNodeIPWildcard");
+            ActionManager.RegisterAction<AddAdminPassCustomReplacement>("AddNodeAdminWildcard");
 
             // Misc. Actions
             ActionManager.RegisterAction<ForceConnect>("ForceConnectPlayer");
@@ -282,6 +291,24 @@ namespace Stuxnet_HN
 
                 stuxnetElem.AddAfterSelf(keysElem);
             }
+
+            // Custom Replacements
+            if(customReplacements.Any())
+            {
+                XElement stxnReplacementsElem = new XElement("StuxnetWildcards");
+
+                foreach(var wildcard in customReplacements)
+                {
+                    XElement wildcardElem = new XElement("Wildcard");
+                    XAttribute wildcardName = new XAttribute("Name", wildcard.Key);
+                    XAttribute wildcardValue = new XAttribute("Value", wildcard.Value);
+
+                    wildcardElem.Add(wildcardName, wildcardValue);
+                    stxnReplacementsElem.Add(wildcardElem);
+                }
+
+                stuxnetElem.AddAfterSelf(stxnReplacementsElem);
+            }
         }
 
         private void InitializeRadio()
@@ -345,6 +372,21 @@ namespace Stuxnet_HN
             };
 
             StuxnetCore.currentSequencerInfo = savedSequencer;
+        }
+    }
+
+    [SaveExecutor("HacknetSave.StuxnetWildcards")]
+    public class ReadStuxnetSavedWildcards : SaveLoader.SaveExecutor
+    {
+        public override void Execute(EventExecutor exec, ElementInfo info)
+        {
+            if(!info.Children.Any()) { return; }
+
+            foreach(var wildcardElem in info.Children)
+            {
+                if(wildcardElem.Name != "Wildcard") { return; }
+                StuxnetCore.customReplacements.Add(wildcardElem.Attributes["Name"], wildcardElem.Attributes["Value"]);
+            }
         }
     }
 

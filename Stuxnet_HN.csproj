@@ -80,6 +80,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\CustomReplacements.cs" />
     <Compile Include="Actions\Dialogue\ChapterTitle.cs" />
     <Compile Include="Actions\Dialogue\VisualNovelText.cs" />
     <Compile Include="Actions\ForceConnect.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="Daemons\VaultDaemon.cs" />
     <Compile Include="Executables\RadioV3.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
+    <Compile Include="Patches\ApplyCustomReplacements.cs" />
     <Compile Include="Patches\ExtSequencerPatch.cs" />
     <Compile Include="Patches\Illustrator.cs" />
     <Compile Include="Patches\MissionDisplayLogo.cs" />
@@ -107,6 +109,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".gitignore" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>

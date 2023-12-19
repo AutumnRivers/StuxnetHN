@@ -86,7 +86,7 @@ Shows dialogue that, when completed, will prompt the user to click the screen.
 Same as above, but for auto text. Auto text will fire end dialogue actions after the delay is finished. No user input required.
 * `ContinueDelay` - How long to wait until after the text is finished (in seconds) until `EndDialogueActions` is fired. Defaults to `0`.
 
-## Node Actions
+# Node Actions
 ### `<PlaceNodeOnNetMap TargetCompID="jmail" [StartingPosition="string" Offset="float,float"]>`
 **Delayable.** Places the target node onto the netmap where you specify it.
 
@@ -94,6 +94,32 @@ Same as above, but for auto text. Auto text will fire end dialogue actions after
 * `StartingPosition` - Where to start your offset from. Valid positions are `topleft,centerleft,bottomleft,topcenter,truecenter,bottomcenter,topright,centerright,bottomright`. Defaults to `truecenter`
 * `Offset` - The offset from the starting position. Percentage based. Defaults to `"0,0"`
     * For example, a starting position of `topleft` and an offset of `0.5,0.25` will place the node halfway across the netmap, and a halfway to the center vertically.
+
+# Custom Replacements/"Wildcards"
+Create your own wildcards with these actions. This will only affect nodes that the player is not currently connected to. To keep immersion, you probably shouldn't use any custom wildcards in the base files of the player's node. If you use the same name twice, it will overwrite that wildcard's value.
+
+## Constants
+### `<AddCustomWildcard Name="string" Value="string" />`
+Adds a custom wildcard with a constant value.
+
+* `Name` - The name. This will be upper-cased in the code and surrounded by `#`s.
+    * For example, `Name="Test_Wildcard"` would be saved as `#TEST_WILDCARD#`.
+* `Value` - The value for the wildcard.
+
+## Node Replacements
+### `<AddNodeIPWildcard Name="string" CompID="string" />`
+Adds the IP of a node as a wildcard.
+
+* `Name` - Same as above, but `_IP` will be added to it.
+    * For example, `Name="BitComp"` would be saved as `#BITCOMP_IP#`.
+* `CompID` - Case-sensitive, the ID for the target node.
+
+### `<AddNodeAdminWildcard Name="string" CompID="string" />`
+Adds the admin pass of a node as a wildcard.
+
+* `Name` - Same as above, but `_PASS` will be added to it.
+    * For example, `Name="BitComp"` would be saved as `#BITCOMP_PASS#`.
+* `CompID` - Case-sensitive, the ID for the target node.
 
 # Misc. Actions
 ### `<DisableAlertsIcon /> / <EnableAlertsIcon />`
