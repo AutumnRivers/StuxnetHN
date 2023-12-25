@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using Hacknet;
 
+using BepInEx;
+
 using Pathfinder.Action;
 using Pathfinder.Util;
 
@@ -20,6 +22,11 @@ namespace Stuxnet_HN.Actions
 
             public override void Trigger(OS os)
             {
+                if(KeyName.IsNullOrWhiteSpace())
+                {
+                    throw new ArgumentNullException("\"KeyName\" cannot be null or whitespace.");
+                }
+
                 if(!StuxnetCore.receivedKeys.ContainsKey(KeyName))
                 {
                     StuxnetCore.receivedKeys.Add(KeyName, 1);
@@ -29,6 +36,11 @@ namespace Stuxnet_HN.Actions
 
                     StuxnetCore.receivedKeys[KeyName]++;
                 }
+
+                int keyCount = StuxnetCore.receivedKeys[KeyName];
+                string keyCountString = keyCount.ToString();
+
+                StuxnetCore.UpdateCustomReplacement($"{KeyName}_Keys", keyCountString);
             }
         }
 
@@ -39,6 +51,11 @@ namespace Stuxnet_HN.Actions
 
             public override void Trigger(OS os)
             {
+                if (KeyName.IsNullOrWhiteSpace())
+                {
+                    throw new ArgumentNullException("\"KeyName\" cannot be null or whitespace.");
+                }
+
                 if (!StuxnetCore.receivedKeys.ContainsKey(KeyName))
                 {
                     StuxnetCore.receivedKeys.Add(KeyName, 0);
@@ -49,6 +66,11 @@ namespace Stuxnet_HN.Actions
 
                     StuxnetCore.receivedKeys[KeyName]--;
                 }
+
+                int keyCount = StuxnetCore.receivedKeys[KeyName];
+                string keyCountString = keyCount.ToString();
+
+                StuxnetCore.UpdateCustomReplacement($"{KeyName}_Keys", keyCountString);
             }
         }
     }

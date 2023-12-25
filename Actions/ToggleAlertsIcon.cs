@@ -9,6 +9,7 @@ namespace Stuxnet_HN.Actions
         public override void Trigger(OS os)
         {
             os.DisableEmailIcon = true;
+            StuxnetCore.disableAlerts = true;
         }
     }
 
@@ -17,6 +18,7 @@ namespace Stuxnet_HN.Actions
         public override void Trigger(OS os)
         {
             os.DisableEmailIcon = false;
+            StuxnetCore.disableAlerts = false;
         }
     }
 }

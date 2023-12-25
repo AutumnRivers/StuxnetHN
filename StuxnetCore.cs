@@ -6,13 +6,16 @@ using System.IO;
 
 using Hacknet;
 using Hacknet.Extensions;
+
 using Pathfinder.Daemon;
 using Pathfinder.Executable;
 using Pathfinder.Action;
 using Pathfinder.Replacements;
+using Pathfinder.Command;
 
 using Pathfinder.Event;
 using Pathfinder.Event.Saving;
+using Pathfinder.Event.Loading;
 using Pathfinder.Event.Gameplay;
 
 using Pathfinder.Meta.Load;
@@ -34,12 +37,9 @@ using Stuxnet_HN.Actions.Nodes;
 using Newtonsoft.Json;
 
 using Microsoft.Xna.Framework;
-
-using SongEntry = Stuxnet_HN.Executables.SongEntry;
-
 using Microsoft.Xna.Framework.Graphics;
 
-using Pathfinder.Command;
+using SongEntry = Stuxnet_HN.Executables.SongEntry;
 
 namespace Stuxnet_HN
 {
@@ -67,6 +67,8 @@ namespace Stuxnet_HN
         public static string saveFlag = null;
 
         public static bool useScanLinesFix = false;
+
+        public static bool disableAlerts = false;
 
         // Custom Replacements
         public static Dictionary<string, string> customReplacements = new Dictionary<string, string>();
@@ -193,14 +195,16 @@ namespace Stuxnet_HN
             LogDebug("Creating events...");
             Action<SaveEvent> stuxnetSaveDelegate = InjectStuxnetSaveData;
             Action<OSUpdateEvent> stuxnetSaveCheckDelegate = CheckIfUserCanSave;
+            Action<OSLoadedEvent> stuxnetInitDelegate = InitializeStuxnet;
 
             EventManager<SaveEvent>.AddHandler(stuxnetSaveDelegate);
             EventManager<OSUpdateEvent>.AddHandler(stuxnetSaveCheckDelegate);
+            EventManager<OSLoadedEvent>.AddHandler(stuxnetInitDelegate);
 
             LogDebug("Reticulating more splines...");
             InitializeRadio();
 
-            LogDebug("--- Finished Initialization! \\o/");
+            LogDebug("--- Finished Loading! \\o/");
 
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("----------------------------------------------------");
@@ -216,6 +220,11 @@ namespace Stuxnet_HN
             LogDebug(postMsg[random.Next(0, postMsg.Length)]);
 
             return true;
+        }
+
+        public void InitializeStuxnet(OSLoadedEvent os_event)
+        {
+            if(disableAlerts) { os_event.Os.DisableEmailIcon = true; }
         }
 
         public void CheckIfUserCanSave(OSUpdateEvent os_update)
@@ -253,11 +262,13 @@ namespace Stuxnet_HN
             XAttribute stuxRadio = new XAttribute("UnlockedRadioIDs", string.Join(",", unlockedRadio));
             XAttribute stuxSeqID = new XAttribute("SetSequencerID", currentSequencerID ?? "NONE");
             XAttribute stuxSaveFlag = new XAttribute("SaveFlag", saveFlag ?? "NONE");
+            XAttribute stuxDisableAlerts = new XAttribute("DisableAlerts", disableAlerts);
 
             stuxnetElem.Add(stuxCodes);
             stuxnetElem.Add(stuxRadio);
             stuxnetElem.Add(stuxSeqID);
             stuxnetElem.Add(stuxSaveFlag);
+            stuxnetElem.Add(stuxDisableAlerts);
 
             save_event.Save.FirstNode.AddBeforeSelf(stuxnetElem);
 
@@ -376,6 +387,7 @@ namespace Stuxnet_HN
             StuxnetCore.unlockedRadio = info.Attributes["UnlockedRadioIDs"].Split(',').ToList();
             StuxnetCore.currentSequencerID = seqId;
             StuxnetCore.saveFlag = sFlag;
+            StuxnetCore.disableAlerts = bool.Parse(info.Attributes["DisableAlerts"] ?? "false");
         }
 
         public override void Execute(EventExecutor exec, ElementInfo info)

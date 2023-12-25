@@ -1,31 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Hacknet;
+﻿using Hacknet;
 
 using HarmonyLib;
-using Pathfinder.Util;
 
 namespace Stuxnet_HN.Patches
 {
     [HarmonyPatch]
     public class ApplyCustomReplacements
     {
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         [HarmonyPatch(typeof(ComputerLoader), "filter")]
-        static void Postfix(ref string s, ref string __result)
+        static bool Prefix(ref string s, ref string __result)
         {
-            string text = s;
-
-            foreach(var replacement in StuxnetCore.customReplacements)
-            {
-                text = s.Replace(replacement.Key, replacement.Value);
-            }
+            string text = CustomFilter(s);
 
             __result = text;
+
+            return true;
+        }
+
+        public static string CustomFilter(string s)
+        {
+            foreach (var replacement in StuxnetCore.customReplacements)
+            {
+                s = s.Replace(replacement.Key, replacement.Value);
+            }
+
+            return s;
         }
     }
 

@@ -67,7 +67,11 @@ namespace Stuxnet_HN.Actions.Dialogue
             public override void Trigger(OS os)
             {
                 os.DisableTopBarButtons = false;
-                os.DisableEmailIcon = false;
+
+                if(!StuxnetCore.disableAlerts)
+                {
+                    os.DisableEmailIcon = false;
+                }
 
                 if(StuxnetCore.colorsCache.ContainsKey("topBarTextColor"))
                 {

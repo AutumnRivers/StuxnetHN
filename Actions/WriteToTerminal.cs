@@ -3,6 +3,8 @@
 using Pathfinder.Action;
 using Pathfinder.Util;
 
+using Stuxnet_HN.Patches;
+
 namespace Stuxnet_HN.Actions
 {
     class WriteToTerminal : DelayablePathfinderAction
@@ -22,8 +24,11 @@ namespace Stuxnet_HN.Actions
                 os.beepSound.Play();
             };
 
+            string filteredMessage = ComputerLoader.filter(message);
+            filteredMessage = ApplyCustomReplacements.CustomFilter(filteredMessage);
+
             os.terminal.writeLine(" ");
-            os.terminal.writeLine(message);
+            os.terminal.writeLine(filteredMessage);
             os.terminal.writeLine(" ");
         }
     }
