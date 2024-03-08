@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-
+using BepInEx;
 using Hacknet;
 
 using HarmonyLib;
@@ -69,6 +69,8 @@ namespace Stuxnet_HN.Patches
 
         private const string key = "82904-39431-39";
 
+        public bool IsValid { get; private set; }
+
         public string GetSaveString()
         {
             StringBuilder saveString = new StringBuilder();
@@ -102,13 +104,15 @@ namespace Stuxnet_HN.Patches
 
                 if (xml.Name == "pcap" && xml.IsStartElement())
                 {
+                    contents.IsValid = true;
+
                     Console.WriteLine(2);
 
                     uint id = 0;
-                    string source = "";
-                    string destination = "";
-                    string method = "";
-                    string protocol = "";
+                    string source = "127.0.0.1";
+                    string destination = "192.168.1.1";
+                    string method = "GET";
+                    string protocol = "TCP";
                     bool isSecure = false;
 
                     if (xml.MoveToAttribute("id"))
@@ -179,12 +183,15 @@ namespace Stuxnet_HN.Patches
 
                 if(xml.Name == "pcap" && xml.IsStartElement())
                 {
+                    contents.IsValid = true;
+
                     uint id = 0;
-                    string source = "";
-                    string destination = "";
-                    string method = "";
-                    string protocol = "";
+                    string source = "127.0.0.1";
+                    string destination = "192.168.1.1";
+                    string method = "GET";
+                    string protocol = "TCP";
                     bool isSecure = false;
+
                     string content = "";
 
                     if (xml.MoveToAttribute("id"))

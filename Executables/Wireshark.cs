@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using BepInEx;
 using Hacknet;
 using Hacknet.Gui;
 using Hacknet.UIUtils;
@@ -12,6 +12,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using Pathfinder.Executable;
+using Pathfinder.GUI;
 using Pathfinder.Util;
 
 using Stuxnet_HN.Patches;
@@ -25,7 +26,10 @@ namespace Stuxnet_HN.Executables
             Loading,
             ShowEntries,
             ShowEntry,
-            Error
+            Error,
+            Capturing,
+            CaptureSuccess,
+            CaptureFailure
         }
 
         private ScrollableSectionedPanel entriesPanel;
@@ -41,16 +45,22 @@ namespace Stuxnet_HN.Executables
         private float loadingProgressWhole = 0f;
 
         private WiresharkState currentState = WiresharkState.Loading;
+        private bool loaded = false;
+
+        public TrailLoadingSpinnerEffect spinner;
+        public float timeActive = 0f;
 
         public WiresharkEntry CurrentEntry { get; private set; }
 
         public WiresharkExecutable() : base()
         {
-            this.baseRamCost = 350;
-            this.ramCost = 350;
+            this.baseRamCost = 250;
+            this.ramCost = 250;
             this.IdentifierName = "Wireshark";
             this.name = "Wireshark";
             this.needsProxyAccess = false;
+
+            spinner = new TrailLoadingSpinnerEffect(os);
         }
 
         public override void OnInitialize()
@@ -58,12 +68,6 @@ namespace Stuxnet_HN.Executables
             base.OnInitialize();
 
             Computer targetComp = ComputerLookup.FindByIp(targetIP);
-
-            if (!targetComp.PlayerHasAdminPermissions())
-            {
-                this.needsRemoval = true;
-                os.terminal.writeLine("[WSHRK] Wireshark requires admin permissions to read from a node's PCAP files!");
-            }
 
             foreach (var exe in os.exes)
             {
@@ -74,8 +78,35 @@ namespace Stuxnet_HN.Executables
                 }
             }
 
+            if(Args.Length < 2)
+            {
+                this.needsRemoval = true;
+                os.terminal.writeLine("[WSHRK] No Arguments Found - Please refer to the user manual");
+                return;
+            }
+
             DisplayOverrideIsActive = true;
             entriesPanel = new ScrollableSectionedPanel(415, GuiData.spriteBatch.GraphicsDevice);
+
+            if (Args[1] == "--capture")
+            {
+                if(!targetComp.PlayerHasAdminPermissions())
+                {
+                    this.needsRemoval = true;
+                    os.terminal.writeLine("[WSHRK] You must have administrator access to capture a node's traffic.");
+                } else if(os.ramAvaliable < 350)
+                {
+                    this.needsRemoval = true;
+                    os.terminal.writeLine("[WSHRK] Capturing traffic requires 350mb of RAM or more.");
+                }
+
+                this.ramCost = 350;
+                this.CanBeKilled = false;
+
+                currentState = WiresharkState.Capturing;
+
+                return;
+            }
 
             string filename = Args[1];
 
@@ -94,7 +125,7 @@ namespace Stuxnet_HN.Executables
 
                 WiresharkContents captureContents = WiresharkContents.GetContentsFromEncodedFileString(captureFile.data);
 
-                if(captureContents == null)
+                if(captureContents == null || !captureContents.IsValid)
                 {
                     currentState = WiresharkState.Error;
                     os.terminal.writeLine("[WHSRK] Invalid File");
@@ -109,7 +140,9 @@ namespace Stuxnet_HN.Executables
         {
             base.Update(t);
 
-            if (loadingProgress < 1.0f)
+            if(isExiting) { return; }
+
+            if (loadingProgress < 1.0f && currentState == WiresharkState.Loading)
             {
                 loadingProgress += t / 5f;
                 loadingProgressWhole += t;
@@ -118,20 +151,73 @@ namespace Stuxnet_HN.Executables
                 {
                     visibleProgress = loadingProgress;
                 }
-            } else if (currentState != WiresharkState.ShowEntry)
+            } else if(loaded == false && currentState == WiresharkState.Loading)
             {
+                loaded = true;
                 currentState = WiresharkState.ShowEntries;
             }
         }
 
         public override void Draw(float t)
         {
+            base.Draw(t);
             drawTarget();
             drawOutline();
+
+            if(currentState != WiresharkState.Capturing)
+            {
+                timeActive += (float)os.lastGameTime.ElapsedGameTime.TotalSeconds;
+                spinner.Draw(bounds, GuiData.spriteBatch, 1f, 1f - timeActive * 0.4f, 0f, Color.CornflowerBlue * 0.15f);
+            }
+
+            string currentStateString = "UNKNWON";
+
+            switch(currentState)
+            {
+                case WiresharkState.Loading:
+                    currentStateString = "LOADING...";
+                    break;
+                case WiresharkState.ShowEntry:
+                case WiresharkState.ShowEntries:
+                case WiresharkState.CaptureSuccess:
+                    currentStateString = "ACTIVE";
+                    break;
+                case WiresharkState.Capturing:
+                    currentStateString = "CAPTURING";
+                    break;
+                case WiresharkState.CaptureFailure:
+                case WiresharkState.Error:
+                    currentStateString = "!! ERROR !!";
+                    break;
+            }
+
+            if(isExiting) { currentStateString = "Shutting down..."; }
+
+            Vector2 smallVec = GuiData.tinyfont.MeasureString("test");
+
+            TextItem.doTinyLabel(new Vector2(bounds.X + 5, bounds.Y + 10), "-- Wireshark --\n(c)Wireshark Foundation",
+                Color.White);
+            TextItem.doLabel(new Vector2(bounds.X + 5, bounds.Y + smallVec.Y + 18), currentStateString,
+                Color.White);
+
+            if(currentState == WiresharkState.Capturing) { return; }
+
+            int buttonID = 10394832;
+
+            bool exitButton = Button.doButton(buttonID, bounds.X + 5, bounds.Y + bounds.Height - 30, bounds.Width / 3,
+                25, "Exit...", Color.Red);
+
+            if(exitButton)
+            {
+                this.DisplayOverrideIsActive = false;
+                this.isExiting = true;
+            }
         }
 
         public void RenderMainDisplay(Rectangle dest, SpriteBatch sb)
         {
+            if(isExiting) { return; }
+
             if (currentState == WiresharkState.Loading)
             {
                 PatternDrawer.draw(dest, 1f, Color.Transparent, Color.CornflowerBlue * 0.3f, sb);
@@ -147,6 +233,21 @@ namespace Stuxnet_HN.Executables
             } else
             {
                 PatternDrawer.draw(dest, 1f, Color.Transparent, Color.CornflowerBlue * 0.3f, sb);
+                RenderErrorScreen(dest);
+            }
+        }
+
+        public void RenderErrorScreen(Rectangle dest)
+        {
+            DrawCenteredText(dest, "ERROR :: Check Terminal for More Information", GuiData.font);
+
+            bool errorExitButton = Button.doButton(28187382 ,bounds.X + 5, bounds.Y + bounds.Height - 60,
+                150, 35, "Exit...", Color.Red);
+
+            if(errorExitButton)
+            {
+                DisplayOverrideIsActive = false;
+                this.needsRemoval = true;
             }
         }
 
@@ -231,9 +332,21 @@ namespace Stuxnet_HN.Executables
             Vector2 titleVector = GuiData.smallfont.MeasureString(pageTitle);
             Color textColor = Color.White;
 
-            int offset = bounds.Y + (int)titleVector.Y + 18;
+            Vector2 fontVector = GuiData.font.MeasureString("test");
 
-            TextItem.doLabel(new Vector2(bounds.X + 10, offset), CurrentEntry.id.ToString(), textColor);
+            int offset = bounds.Y + (int)titleVector.Y + 20;
+            string id = CurrentEntry.id.ToString();
+
+            TextItem.doLabel(new Vector2(bounds.X + 10, offset), $"Packet ID: {id} :: " +
+                $"{CurrentEntry.ipFrom} -> {CurrentEntry.ipTo}", textColor);
+            TextItem.doFontLabel(new Vector2(bounds.X + 10, offset + fontVector.Y + 5),
+                $"PROTOCOL: {CurrentEntry.protocol}", GuiData.smallfont, textColor);
+
+            RenderedRectangle.doRectangle(bounds.X, bounds.Center.Y - 1, bounds.Width, 2, Color.White);
+
+            TextItem.doFontLabel(new Vector2(bounds.X + 10, bounds.Center.Y + 5), "--- PACKET CONTENTS:",
+                GuiData.smallfont, textColor);
+            TextItem.doLabel(new Vector2(bounds.X + 10, bounds.Center.Y + 20), CurrentEntry.Content, textColor);
 
             bool exitButton = Button.doButton(49120473, bounds.X + 10, bounds.Height + bounds.Y - 60,
                 150, 50, "Go Back...", Color.Red);
@@ -400,9 +513,15 @@ namespace Stuxnet_HN.Executables
             this.protocol = protocol;
             this.secure = isSecure;
 
-            Content = content;
-
-            this.length = content.Length;
+            if (content.IsNullOrWhiteSpace())
+            {
+                Content = "-- Empty Packet Data --";
+                this.length = 0;
+            } else
+            {
+                Content = content;
+                this.length = Content.Length;
+            }
         }
     }
 }
