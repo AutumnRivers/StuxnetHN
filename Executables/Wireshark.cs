@@ -6,13 +6,15 @@ using System.Threading.Tasks;
 
 using Hacknet;
 using Hacknet.Gui;
+using Hacknet.UIUtils;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using Pathfinder.Executable;
 using Pathfinder.Util;
-using Pathfinder.GUI;
+
+using Stuxnet_HN.Patches;
 
 namespace Stuxnet_HN.Executables
 {
@@ -26,12 +28,9 @@ namespace Stuxnet_HN.Executables
             Error
         }
 
-        private readonly List<WiresharkEntry> entries = new List<WiresharkEntry>()
-        {
-            new WiresharkEntry(1, "1.2.3.4"),
-            new WiresharkEntry(323, "127.0.0.1", "5.6.7.8", "Test Content", "GET", "TLSv1.2"),
-            new WiresharkEntry(42, "127.0.0.1", "1.2.3.4", "More Test Content", "POST", "TCP")
-        };
+        private ScrollableSectionedPanel entriesPanel;
+
+        private List<WiresharkEntry> entries = new List<WiresharkEntry>();
 
         public bool DisplayOverrideIsActive { get; set; }
 
@@ -75,27 +74,51 @@ namespace Stuxnet_HN.Executables
                 }
             }
 
-            foreach(var entry in entries)
-            {
-                Console.WriteLine(entry.id.ToString());
-            }
-
             DisplayOverrideIsActive = true;
+            entriesPanel = new ScrollableSectionedPanel(415, GuiData.spriteBatch.GraphicsDevice);
+
+            string filename = Args[1];
+
+            Folder currentFolder = Programs.getCurrentFolder(os);
+
+            if(currentFolder.searchForFile(filename) != null)
+            {
+                FileEntry captureFile = currentFolder.searchForFile(filename);
+
+                if(!captureFile.data.StartsWith("WIRESHARK_NETWORK_CAPTURE(PCAP) :: 1.37.2 -----------"))
+                {
+                    currentState = WiresharkState.Error;
+                    os.terminal.writeLine("[WHSRK] Invalid File");
+                    return;
+                }
+
+                WiresharkContents captureContents = WiresharkContents.GetContentsFromEncodedFileString(captureFile.data);
+
+                if(captureContents == null)
+                {
+                    currentState = WiresharkState.Error;
+                    os.terminal.writeLine("[WHSRK] Invalid File");
+                    return;
+                }
+
+                entries = captureContents.entries;
+            }
         }
 
         public override void Update(float t)
         {
             base.Update(t);
 
-            loadingProgress += t / 5f;
-            loadingProgressWhole += t;
-
-            if (Math.Floor(loadingProgressWhole) % 2 == 0)
+            if (loadingProgress < 1.0f)
             {
-                visibleProgress = loadingProgress;
-            }
+                loadingProgress += t / 5f;
+                loadingProgressWhole += t;
 
-            if (loadingProgress >= 1.0f)
+                if (Math.Floor(loadingProgressWhole) % 2 == 0)
+                {
+                    visibleProgress = loadingProgress;
+                }
+            } else if (currentState != WiresharkState.ShowEntry)
             {
                 currentState = WiresharkState.ShowEntries;
             }
@@ -159,40 +182,60 @@ namespace Stuxnet_HN.Executables
                 return;
             }
 
+            entriesPanel.NumberOfPanels = entries.Count + 1;
+
+            Vector2 textVec = GuiData.smallfont.MeasureString("test");
+
+            entriesPanel.PanelHeight = (int)(textVec.Y + 3);
+
+            Vector2 headerPosition = new Vector2(bounds.X + 5, bounds.Y + 23 + (int)titleVector.Y);
+            Vector2 entryPosition = new Vector2(bounds.X + 5, headerPosition.Y + textVec.Y + 8);
+
             Rectangle panelRect = new Rectangle()
             {
                 X = bounds.X,
-                Y = bounds.Y + 18 + (int)titleVector.Y,
+                Y = bounds.Y + ((int)headerPosition.Y),
                 Width = bounds.Width,
-                Height = bounds.Height - 18 + (int)titleVector.Y
+                Height = bounds.Height - (int)headerPosition.Y
             };
 
-            ScrollablePanel.beginPanel(12982387, panelRect, lastScroll);
-
-            Vector2 entryPosition = new Vector2(5, 23 + (int)titleVector.Y);
-            Vector2 textVec = GuiData.smallfont.MeasureString("test");
-
-            DrawHeader(bounds, entryPosition, textColor);
-            entryPosition.Y += textVec.Y + 3;
-            RenderedRectangle.doRectangle(0, (int)(entryPosition.Y - 5), bounds.Width, 2,
+            DrawHeader(bounds, headerPosition, textColor);
+            RenderedRectangle.doRectangle(bounds.X, (int)(headerPosition.Y + textVec.Y + 3), bounds.Width, 2,
                 Color.White);
 
             int entryNumber = 0;
 
-            foreach (var entry in entries)
+            Action<int, Rectangle, SpriteBatch> drawEntries = delegate (int index, Rectangle drawbounds, SpriteBatch sb)
             {
-                DrawEntryLine(entry, panelRect, entryPosition, textColor, 3718347 + entryNumber++);
-                entryPosition.Y += textVec.Y + 3;
-            }
+                if(index + 1 < entries.Count)
+                {
+                    DrawEntryLine(entries[index], drawbounds, entryPosition, textColor, 3718347 + entryNumber);
+                    entryPosition.Y += textVec.Y + 3;
+                    entryNumber++;
+                } else
+                {
+                    DrawEntryLine(entries[entries.Count - 1], drawbounds, entryPosition, textColor, 3718347 + entryNumber);
+                    return;
+                }
+            };
 
-            lastScroll = ScrollablePanel.endPanel(12982387, lastScroll, bounds, bounds.Height);
+            Vector2 panelPosition = new Vector2(5, 23 + (int)titleVector.Y);
+            entriesPanel.Draw(drawEntries, GuiData.spriteBatch, panelRect);
         }
 
         private void RenderEntryDetails(Rectangle bounds)
         {
             DrawMainWindowTitle(bounds);
 
-            bool exitButton = Button.doButton(49120473, bounds.X + 10, bounds.Height + bounds.Y - 10,
+            string pageTitle = "The Wireshark Network Analyzer";
+            Vector2 titleVector = GuiData.smallfont.MeasureString(pageTitle);
+            Color textColor = Color.White;
+
+            int offset = bounds.Y + (int)titleVector.Y + 18;
+
+            TextItem.doLabel(new Vector2(bounds.X + 10, offset), CurrentEntry.id.ToString(), textColor);
+
+            bool exitButton = Button.doButton(49120473, bounds.X + 10, bounds.Height + bounds.Y - 60,
                 150, 50, "Go Back...", Color.Red);
 
             if(exitButton)
@@ -314,10 +357,13 @@ namespace Stuxnet_HN.Executables
         public string method;
         public string protocol;
         public int length;
+        public bool secure;
+
+        public string originIP = "#PLAYER_IP#";
 
         public string Content { get; private set; }
 
-        public WiresharkEntry(uint id, string ipTo, string method = "GET", string protocol = "TCP")
+        public WiresharkEntry(uint id, string ipTo, bool isSecure = false, string method = "GET", string protocol = "TCP")
         {
             this.id = id;
             this.ipFrom = "127.0.0.1";
@@ -325,9 +371,13 @@ namespace Stuxnet_HN.Executables
             this.method = method;
             this.protocol = protocol;
             this.length = 0;
+            this.secure = isSecure;
+
+            Content = "-- Empty Packet Data --";
         }
 
-        public WiresharkEntry(uint id, string ipFrom, string ipTo, string method = "GET", string protocol = "TCP")
+        public WiresharkEntry(uint id, string ipFrom, string ipTo,
+            bool isSecure = false, string method = "GET", string protocol = "TCP")
         {
             this.id = id;
             this.ipFrom = ipFrom;
@@ -335,15 +385,20 @@ namespace Stuxnet_HN.Executables
             this.method = method;
             this.protocol = protocol;
             this.length = 0;
+            this.secure = isSecure;
+
+            Content = "-- Empty Packet Data --";
         }
 
-        public WiresharkEntry(uint id, string ipFrom, string ipTo, string content, string method = "GET", string protocol = "TCP")
+        public WiresharkEntry(uint id, string ipFrom, string ipTo, string content,
+            bool isSecure = false, string method = "GET", string protocol = "TCP")
         {
             this.id = id;
             this.ipFrom = ipFrom;
             this.ipTo = ipTo;
             this.method = method;
             this.protocol = protocol;
+            this.secure = isSecure;
 
             Content = content;
 

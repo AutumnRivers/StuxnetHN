@@ -104,6 +104,7 @@
     <Compile Include="Patches\Illustrator.cs" />
     <Compile Include="Patches\MissionDisplayLogo.cs" />
     <Compile Include="Patches\ScanlinesColor.cs" />
+    <Compile Include="Patches\WiresharkComputerPatch.cs" />
     <Compile Include="Replacements\DrawScanlines.cs" />
     <Compile Include="Static\States.cs" />
     <Compile Include="StuxnetCore.cs" />

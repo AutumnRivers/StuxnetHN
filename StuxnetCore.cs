@@ -34,6 +34,8 @@ using Stuxnet_HN.Actions;
 using Stuxnet_HN.Actions.Dialogue;
 using Stuxnet_HN.Actions.Nodes;
 
+using Stuxnet_HN.Patches;
+
 using Newtonsoft.Json;
 
 using Microsoft.Xna.Framework;
@@ -69,6 +71,8 @@ namespace Stuxnet_HN
         public static bool useScanLinesFix = false;
 
         public static bool disableAlerts = false;
+
+        public static Dictionary<string, WiresharkContents> wiresharkComps = new Dictionary<string, WiresharkContents>();
 
         // Custom Replacements
         public static Dictionary<string, string> customReplacements = new Dictionary<string, string>();
