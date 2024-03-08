@@ -7,15 +7,11 @@ namespace Stuxnet_HN.Patches
     [HarmonyPatch]
     public class ApplyCustomReplacements
     {
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(ComputerLoader), "filter")]
-        static bool Prefix(ref string s, ref string __result)
+        static void Postfix(ref string __result)
         {
-            string text = CustomFilter(s);
-
-            __result = text;
-
-            return true;
+            __result = CustomFilter(__result);
         }
 
         public static string CustomFilter(string s)

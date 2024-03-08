@@ -141,6 +141,7 @@ namespace Stuxnet_HN
 
             LogDebug("Registering Executables...");
             ExecutableManager.RegisterExecutable<RadioV3>("#RADIO_V3#");
+            ExecutableManager.RegisterExecutable<WiresharkExecutable>("#WIRESHARK_EXE#");
 
             LogDebug("Registering Commands...");
             CommandManager.RegisterCommand("slfix", ToggleScanLinesFix.ToggleFix, true, false);

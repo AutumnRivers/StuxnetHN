@@ -36,7 +36,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
@@ -45,7 +45,7 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
@@ -97,6 +97,7 @@
     <Compile Include="Daemons\DebugDaemon.cs" />
     <Compile Include="Daemons\VaultDaemon.cs" />
     <Compile Include="Executables\RadioV3.cs" />
+    <Compile Include="Executables\Wireshark.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Patches\ApplyCustomReplacements.cs" />
     <Compile Include="Patches\ExtSequencerPatch.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include=".gitignore" />
     <None Include="README.md" />
   </ItemGroup>
