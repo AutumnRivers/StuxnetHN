@@ -61,6 +61,33 @@ namespace Stuxnet_HN.Patches
             xml.Close();
             fileStream.Close();
         }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(ComputerLoader), "loadComputer")]
+        static void Postfix_WiresharkedPC(ref string filename, ref object __result)
+        {
+            Computer c = (Computer)__result;
+            Stream fileStream = File.OpenRead(filename);
+            XmlReader xml = XmlReader.Create(fileStream);
+
+            while (xml.Name != "WiresharkEntries")
+            {
+                xml.Read();
+                if (xml.EOF)
+                {
+                    return;
+                }
+            }
+
+            if(xml.Name == "WiresharkEntries")
+            {
+                WiresharkContents contents = WiresharkContents.Deserialize(xml);
+
+                if(!contents.IsValid) { return; }
+
+                StuxnetCore.wiresharkComps.Add(c.idName, contents);
+            }
+        }
     }
 
     public class WiresharkContents

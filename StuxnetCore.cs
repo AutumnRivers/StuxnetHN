@@ -201,10 +201,14 @@ namespace Stuxnet_HN
             Action<SaveEvent> stuxnetSaveDelegate = InjectStuxnetSaveData;
             Action<OSUpdateEvent> stuxnetSaveCheckDelegate = CheckIfUserCanSave;
             Action<OSLoadedEvent> stuxnetInitDelegate = InitializeStuxnet;
+            Action<SaveComputerEvent> wiresharkSaveDelegate = InjectWiresharkIntoComps;
+            Action<SaveComputerLoadedEvent> wiresharkLoadDelegate = ParseWiresharkComps;
 
             EventManager<SaveEvent>.AddHandler(stuxnetSaveDelegate);
             EventManager<OSUpdateEvent>.AddHandler(stuxnetSaveCheckDelegate);
             EventManager<OSLoadedEvent>.AddHandler(stuxnetInitDelegate);
+            EventManager<SaveComputerEvent>.AddHandler(wiresharkSaveDelegate);
+            EventManager<SaveComputerLoadedEvent>.AddHandler(wiresharkLoadDelegate);
 
             LogDebug("Reticulating more splines...");
             InitializeRadio();
@@ -215,7 +219,7 @@ namespace Stuxnet_HN
             Console.WriteLine("----------------------------------------------------");
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("                       STUXNET                      ");
-            Console.WriteLine("              AUTUMN RIVERS  (C) 2023               ");
+            Console.WriteLine("              AUTUMN RIVERS  (C) 2024               ");
             Console.WriteLine("     This one won't destroy your PC.  Probably.     ");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("----------------------------------------------------");
@@ -335,6 +339,67 @@ namespace Stuxnet_HN
             }
 
             LogDebug("Save Successful!");
+        }
+
+        public void InjectWiresharkIntoComps(SaveComputerEvent saveComp)
+        {
+            Computer c = saveComp.Comp;
+
+            if(wiresharkComps.ContainsKey(c.idName))
+            {
+                WiresharkContents contents = wiresharkComps[c.idName];
+                XElement compElem = saveComp.Element;
+
+                LogDebug($"Saving Wireshark data on node {c.idName}...");
+
+                XElement wiresharkElem = new XElement("WiresharkEntries");
+
+                foreach(var entry in contents.entries)
+                {
+                    XElement wiresharkEntryElem = new XElement("pcap");
+
+                    XAttribute wID = new XAttribute("id", entry.id.ToString());
+                    XAttribute wFrom = new XAttribute("from", entry.ipFrom);
+                    XAttribute wTo = new XAttribute("to", entry.ipTo);
+                    XAttribute wMethod = new XAttribute("method", entry.method);
+                    XAttribute wProtocol = new XAttribute("protocol", entry.protocol);
+                    XAttribute wSecure = new XAttribute("secure", entry.secure.ToString());
+
+                    wiresharkEntryElem.SetValue(entry.Content);
+
+                    wiresharkEntryElem.Add(wID, wFrom, wTo, wMethod, wProtocol, wSecure);
+                    wiresharkElem.Add(wiresharkEntryElem);
+                }
+
+                compElem.FirstNode.AddAfterSelf(wiresharkElem);
+            }
+        }
+
+        public void ParseWiresharkComps(SaveComputerLoadedEvent saveComp)
+        {
+            Computer comp = saveComp.Comp;
+            ElementInfo xCompElem = saveComp.Info;
+
+            if(xCompElem.Children.FirstOrDefault(e => e.Name == "WiresharkEntries") != null)
+            {
+                ElementInfo wiresharkElem = xCompElem.Children.First(e => e.Name == "WiresharkEntries");
+                WiresharkContents contents = new WiresharkContents();
+
+                for (var i = 0; i < wiresharkElem.Children.Count; i++)
+                {
+                    ElementInfo e = wiresharkElem.Children[i];
+
+                    uint id = uint.Parse(e.Attributes["id"]);
+                    bool secure = bool.Parse(e.Attributes["secure"].ToLower());
+
+                    WiresharkEntry entry = new WiresharkEntry(id, e.Attributes["from"], e.Attributes["to"],
+                        e.Content, secure, e.Attributes["method"], e.Attributes["protocol"]);
+
+                    contents.entries.Add(entry);
+                }
+
+                wiresharkComps.Add(comp.idName, contents);
+            }
         }
 
         private void InitializeRadio()

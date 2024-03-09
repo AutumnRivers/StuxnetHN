@@ -47,6 +47,11 @@ namespace Stuxnet_HN.Executables
         private WiresharkState currentState = WiresharkState.Loading;
         private bool loaded = false;
 
+        private float captureProgress = 0f;
+        private bool isWiresharkedPC = false;
+
+        private WiresharkContents capturedContents;
+
         public TrailLoadingSpinnerEffect spinner;
         public float timeActive = 0f;
 
@@ -103,6 +108,8 @@ namespace Stuxnet_HN.Executables
                 this.ramCost = 350;
                 this.CanBeKilled = false;
 
+                os.terminal.writeLine("[WSHRK] Capturing network traffic...");
+
                 currentState = WiresharkState.Capturing;
 
                 return;
@@ -156,6 +163,31 @@ namespace Stuxnet_HN.Executables
                 loaded = true;
                 currentState = WiresharkState.ShowEntries;
             }
+
+            if(currentState == WiresharkState.CaptureSuccess)
+            {
+                GenerateCaptureFile();
+                isExiting = true;
+                return;
+            }
+        }
+
+        private void GenerateCaptureFile()
+        {
+            WiresharkContents contents = capturedContents;
+            string filename = $"{targetIP}.pcap";
+
+            Folder userWiresharkFolder = os.thisComputer.getFolderFromPath("home/wireshark", true);
+
+            if(userWiresharkFolder.containsFile(filename))
+            {
+                return;
+            }
+
+            FileEntry pcapFile = new FileEntry(contents.GetEncodedFileString(), $"{targetIP}.pcap");
+            userWiresharkFolder.files.Add(pcapFile);
+
+            os.terminal.writeLine($"[WSHRK] Capture file written to /home/wireshark/{filename}! <3");
         }
 
         public override void Draw(float t)
@@ -164,7 +196,7 @@ namespace Stuxnet_HN.Executables
             drawTarget();
             drawOutline();
 
-            if(currentState != WiresharkState.Capturing)
+            if(currentState != WiresharkState.Capturing && currentState != WiresharkState.Error)
             {
                 timeActive += (float)os.lastGameTime.ElapsedGameTime.TotalSeconds;
                 spinner.Draw(bounds, GuiData.spriteBatch, 1f, 1f - timeActive * 0.4f, 0f, Color.CornflowerBlue * 0.15f);
@@ -176,18 +208,23 @@ namespace Stuxnet_HN.Executables
             {
                 case WiresharkState.Loading:
                     currentStateString = "LOADING...";
+                    DisplayOverrideIsActive = true;
                     break;
                 case WiresharkState.ShowEntry:
                 case WiresharkState.ShowEntries:
                 case WiresharkState.CaptureSuccess:
                     currentStateString = "ACTIVE";
+                    DisplayOverrideIsActive = true;
                     break;
                 case WiresharkState.Capturing:
                     currentStateString = "CAPTURING";
+                    RenderCaptureProgress(bounds, t);
+                    DisplayOverrideIsActive = false;
                     break;
                 case WiresharkState.CaptureFailure:
                 case WiresharkState.Error:
                     currentStateString = "!! ERROR !!";
+                    DisplayOverrideIsActive = false;
                     break;
             }
 
@@ -214,6 +251,55 @@ namespace Stuxnet_HN.Executables
             }
         }
 
+        public void RenderCaptureProgress(Rectangle bounds, float t)
+        {
+            captureProgress += t;
+
+            if(captureProgress >= 7.5f && !isWiresharkedPC)
+            {
+                Computer targetComp = ComputerLookup.FindByIp(targetIP);
+
+                if(!StuxnetCore.wiresharkComps.ContainsKey(targetComp.idName))
+                {
+                    currentState = WiresharkState.Error;
+                    os.terminal.writeLine("[WSHRK] No Relevant Network Traffic Found");
+                    return;
+                }
+
+                isWiresharkedPC = true;
+            }
+
+            if(captureProgress >= 20f)
+            {
+                Computer targetComp = ComputerLookup.FindByIp(targetIP);
+
+                currentState = WiresharkState.CaptureSuccess;
+                capturedContents = StuxnetCore.wiresharkComps[targetComp.idName];
+            }
+
+            string startBar = "[";
+            string endBar = "]";
+
+            StringBuilder loadingBar = new StringBuilder("");
+
+            Vector2 smallVec = GuiData.smallfont.MeasureString("[");
+
+            TextItem.doSmallLabel(new Vector2(bounds.X + 10, bounds.Center.Y - (smallVec.Y / 2f)),
+                startBar, Color.White);
+            TextItem.doSmallLabel(new Vector2(bounds.X + bounds.Width - 15, bounds.Center.Y - (smallVec.Y / 2f)),
+                endBar, Color.White);
+
+            int circlesToDraw = (int)Math.Floor(captureProgress);
+
+            for(var i = 0; i < circlesToDraw; i++)
+            {
+                loadingBar.Append("=");
+            }
+
+            TextItem.doSmallLabel(new Vector2(bounds.X + smallVec.X + 8, bounds.Center.Y - (smallVec.Y / 2f)),
+                loadingBar.ToString(), Color.CornflowerBlue);
+        }
+
         public void RenderMainDisplay(Rectangle dest, SpriteBatch sb)
         {
             if(isExiting) { return; }
@@ -230,6 +316,10 @@ namespace Stuxnet_HN.Executables
             {
                 PatternDrawer.draw(dest, 1f, Color.Transparent, Color.CornflowerBlue * 0.15f, sb);
                 RenderEntryDetails(dest);
+            } else if (currentState == WiresharkState.Capturing)
+            {
+                PatternDrawer.draw(dest, 1f, Color.Transparent, Color.CornflowerBlue * 0.3f, sb);
+                RenderCapturingScreen(dest);
             } else
             {
                 PatternDrawer.draw(dest, 1f, Color.Transparent, Color.CornflowerBlue * 0.3f, sb);
@@ -240,15 +330,6 @@ namespace Stuxnet_HN.Executables
         public void RenderErrorScreen(Rectangle dest)
         {
             DrawCenteredText(dest, "ERROR :: Check Terminal for More Information", GuiData.font);
-
-            bool errorExitButton = Button.doButton(28187382 ,bounds.X + 5, bounds.Y + bounds.Height - 60,
-                150, 35, "Exit...", Color.Red);
-
-            if(errorExitButton)
-            {
-                DisplayOverrideIsActive = false;
-                this.needsRemoval = true;
-            }
         }
 
         private void RenderLoadingScreen(Rectangle bounds)
@@ -355,6 +436,11 @@ namespace Stuxnet_HN.Executables
             {
                 currentState = WiresharkState.ShowEntries;
             }
+        }
+
+        public void RenderCapturingScreen(Rectangle bounds)
+        {
+            DrawCenteredText(bounds, "Capturing... Follow Progress In EXE Display", GuiData.smallfont);
         }
 
         private void DrawMainWindowTitle(Rectangle bounds)
