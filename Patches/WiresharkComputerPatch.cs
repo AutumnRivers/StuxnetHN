@@ -43,6 +43,7 @@ namespace Stuxnet_HN.Patches
                 string wFilename = xml.ReadContentAsString();
 
                 WiresharkContents contents = WiresharkContents.ReadWiresharkCaptureFileXML(xml);
+                contents.originID = c.idName;
 
                 string filedata = contents.GetEncodedFileString();
                 Folder targetFolder = c.getFolderFromPath(folderPath, true);
@@ -81,7 +82,7 @@ namespace Stuxnet_HN.Patches
 
             if(xml.Name == "WiresharkEntries")
             {
-                WiresharkContents contents = WiresharkContents.Deserialize(xml);
+                WiresharkContents contents = WiresharkContents.Deserialize(xml, c.idName);
 
                 if(!contents.IsValid) { return; }
 
@@ -93,6 +94,7 @@ namespace Stuxnet_HN.Patches
     public class WiresharkContents
     {
         public List<WiresharkEntry> entries = new List<WiresharkEntry>();
+        public string originID = "playerComp";
 
         private const string key = "82904-39431-39";
 
@@ -102,7 +104,7 @@ namespace Stuxnet_HN.Patches
         {
             StringBuilder saveString = new StringBuilder();
 
-            saveString.Append("<WiresharkEntries>\r\n");
+            saveString.Append($"<WiresharkEntries origin=\"{originID}\">\r\n");
             foreach(var entry in entries)
             {
                 saveString.Append($"<pcap id=\"{entry.id}\" from=\"{entry.ipFrom}\" " +
@@ -115,14 +117,29 @@ namespace Stuxnet_HN.Patches
             return saveString.ToString();
         }
 
-        public static WiresharkContents ReadWiresharkCaptureFileXML(XmlReader xml)
+        public static WiresharkContents ReadWiresharkCaptureFileXML(XmlReader xml, string originID = "playerComp")
         {
-            WiresharkContents contents = new WiresharkContents();
+            WiresharkContents contents = new WiresharkContents
+            {
+                originID = originID
+            };
 
             Console.WriteLine(1);
 
             do
             {
+                if (xml.Name == "WiresharkEntries")
+                {
+                    if (xml.MoveToAttribute("origin"))
+                    {
+                        contents.originID = xml.ReadContentAsString();
+                    }
+                    else
+                    {
+                        contents.originID = originID;
+                    }
+                }
+
                 xml.Read();
                 if(xml.Name == "wiresharkCapture" && !xml.IsStartElement())
                 {
@@ -188,7 +205,7 @@ namespace Stuxnet_HN.Patches
             throw new FormatException("Unexpected end of file trying to deserialize wireshark contents!");
         }
 
-        public static WiresharkContents Deserialize(XmlReader xml)
+        public static WiresharkContents Deserialize(XmlReader xml, string originID = "playerComp")
         {
             WiresharkContents contents = new WiresharkContents();
             while(xml.Name != "WiresharkEntries")
@@ -202,6 +219,17 @@ namespace Stuxnet_HN.Patches
 
             do
             {
+                if(xml.Name == "WiresharkEntries")
+                {
+                    if(xml.MoveToAttribute("origin"))
+                    {
+                        contents.originID = xml.ReadContentAsString();
+                    } else
+                    {
+                        contents.originID = originID;
+                    }
+                }
+
                 xml.Read();
                 if (xml.Name == "WiresharkEntries" && !xml.IsStartElement())
                 {

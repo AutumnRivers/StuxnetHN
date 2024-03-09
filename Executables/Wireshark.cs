@@ -50,6 +50,7 @@ namespace Stuxnet_HN.Executables
         private float captureProgress = 0f;
         private bool isWiresharkedPC = false;
 
+        private WiresharkContents currentContents;
         private WiresharkContents capturedContents;
 
         public TrailLoadingSpinnerEffect spinner;
@@ -139,6 +140,7 @@ namespace Stuxnet_HN.Executables
                     return;
                 }
 
+                currentContents = captureContents;
                 entries = captureContents.entries;
             }
         }
@@ -175,7 +177,9 @@ namespace Stuxnet_HN.Executables
         private void GenerateCaptureFile()
         {
             WiresharkContents contents = capturedContents;
+            Computer target = ComputerLookup.FindByIp(targetIP);
             string filename = $"{targetIP}.pcap";
+            contents.originID = target.idName;
 
             Folder userWiresharkFolder = os.thisComputer.getFolderFromPath("home/wireshark", true);
 
@@ -188,6 +192,8 @@ namespace Stuxnet_HN.Executables
             userWiresharkFolder.files.Add(pcapFile);
 
             os.terminal.writeLine($"[WSHRK] Capture file written to /home/wireshark/{filename}! <3");
+
+            target.log("WIRESHARK_CAPTURE_CREATED");
         }
 
         public override void Draw(float t)
@@ -409,6 +415,8 @@ namespace Stuxnet_HN.Executables
         {
             DrawMainWindowTitle(bounds);
 
+            Computer targetComp = ComputerLookup.FindByIp(targetIP);
+
             string pageTitle = "The Wireshark Network Analyzer";
             Vector2 titleVector = GuiData.smallfont.MeasureString(pageTitle);
             Color textColor = Color.White;
@@ -427,7 +435,20 @@ namespace Stuxnet_HN.Executables
 
             TextItem.doFontLabel(new Vector2(bounds.X + 10, bounds.Center.Y + 5), "--- PACKET CONTENTS:",
                 GuiData.smallfont, textColor);
-            TextItem.doLabel(new Vector2(bounds.X + 10, bounds.Center.Y + 20), CurrentEntry.Content, textColor);
+
+            // Packet Contents
+            string displayContent = CurrentEntry.Content;
+
+            if(CurrentEntry.secure && 
+                ((!targetComp.PlayerHasAdminPermissions() && targetComp.idName == currentContents.originID) ||
+                targetComp.idName != currentContents.originID)
+                )
+            {
+                displayContent = "-- UNABLE TO VIEW ENCRYPTED PACKET --\n\n" +
+                    "Please refer to the user manual.";
+            }
+
+            TextItem.doLabel(new Vector2(bounds.X + 10, bounds.Center.Y + 20), displayContent, textColor);
 
             bool exitButton = Button.doButton(49120473, bounds.X + 10, bounds.Height + bounds.Y - 60,
                 150, 50, "Go Back...", Color.Red);

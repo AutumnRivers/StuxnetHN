@@ -398,6 +398,8 @@ namespace Stuxnet_HN
                     contents.entries.Add(entry);
                 }
 
+                contents.originID = comp.idName;
+
                 wiresharkComps.Add(comp.idName, contents);
             }
         }
