@@ -36,6 +36,8 @@ using Stuxnet_HN.Actions.Nodes;
 
 using Stuxnet_HN.Patches;
 
+using Stuxnet_HN.Cutscenes;
+
 using Newtonsoft.Json;
 
 using Microsoft.Xna.Framework;
@@ -104,6 +106,10 @@ namespace Stuxnet_HN
         public static bool dialogueIsActive = false;
         #endregion illustrator dialogue variables
 
+        public static Dictionary<string, StuxnetCutscene> cutscenes = new Dictionary<string, StuxnetCutscene>();
+        public static string activeCutsceneID = "NONE";
+        public static bool cutsceneIsActive = false;
+
         public static readonly string[] postMsg = new string[]
         {
             "So I got that going for me, which is nice.",
@@ -149,6 +155,7 @@ namespace Stuxnet_HN
 
             LogDebug("Registering Commands...");
             CommandManager.RegisterCommand("slfix", ToggleScanLinesFix.ToggleFix, true, false);
+            CommandManager.RegisterCommand("logcutscenedata", CutsceneDebugCommands.LogCutsceneData, true, false);
 
             #region register actions
             LogDebug("Registering Actions...");
@@ -186,6 +193,10 @@ namespace Stuxnet_HN
             ActionManager.RegisterAction<AddCustomReplacements>("AddCustomWildcard");
             ActionManager.RegisterAction<AddNodeCustomReplacement>("AddNodeIPWildcard");
             ActionManager.RegisterAction<AddAdminPassCustomReplacement>("AddNodeAdminWildcard");
+
+            // Cutscene Actions
+            ActionManager.RegisterAction<Cutscenes.Actions.RegisterCutscene>("RegisterStuxnetCutscene");
+            ActionManager.RegisterAction<Cutscenes.Actions.TriggerCutscene>("TriggerStuxnetCutscene");
 
             // Misc. Actions
             ActionManager.RegisterAction<ForceConnect>("ForceConnectPlayer");
