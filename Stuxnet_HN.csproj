@@ -104,6 +104,7 @@
     <Compile Include="Executables\RadioV3.cs" />
     <Compile Include="Executables\Wireshark.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
+    <Compile Include="Extensions\Texture2DExtensions.cs" />
     <Compile Include="Extensions\Vector2Extensions.cs" />
     <Compile Include="Extensions\XmlReaderExtensions.cs" />
     <Compile Include="Patches\ApplyCustomReplacements.cs" />

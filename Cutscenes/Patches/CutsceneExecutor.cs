@@ -53,8 +53,8 @@ namespace Stuxnet_HN.Cutscenes.Patches
                 {
                     X = (int)img.GetCalculatedPosition().X,
                     Y = (int)img.GetCalculatedPosition().Y,
-                    Width = (int)img.size.X,
-                    Height = (int)img.size.Y
+                    Width = (int)img.GetCalculatedSize().X,
+                    Height = (int)img.GetCalculatedSize().Y
                 };
                 Rectangle source = new Rectangle()
                 {

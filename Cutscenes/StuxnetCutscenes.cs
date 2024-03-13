@@ -10,7 +10,9 @@ using Hacknet.Extensions;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
 using Stuxnet_HN.Cutscenes.Patches;
+using Stuxnet_HN.Extensions;
 
 namespace Stuxnet_HN.Cutscenes
 {
@@ -38,13 +40,29 @@ namespace Stuxnet_HN.Cutscenes
 
         public void ResetPositions()
         {
-            for(int i = 0; i < rectangles.Count; i++)
+            if(rectangles.Any())
             {
-                var rect = rectangles.ElementAt(i);
-                Rectangle r = rect.Value;
-                r.X = 0;
-                r.Y = 0;
-                rectangles[rect.Key] = r;
+                for (int i = 0; i < rectangles.Count; i++)
+                {
+                    var rect = rectangles.ElementAt(i);
+                    Rectangle r = rect.Value;
+                    r.X = 0;
+                    r.Y = 0;
+                    rectangles[rect.Key] = r;
+                }
+            }
+
+            if(images.Any())
+            {
+                for (int i = 0; i < images.Count; i++)
+                {
+                    var img = images.ElementAt(i);
+                    StuxnetCutsceneImage image = img.Value;
+                    image.position.X = 0;
+                    image.position.Y = 0;
+                    image.currentRotation = 0;
+                    images[img.Key] = image;
+                }
             }
         }
 
@@ -127,10 +145,18 @@ namespace Stuxnet_HN.Cutscenes
 
     public class StuxnetCutsceneImage
     {
+        public enum AspectFocus
+        {
+            Width, Height, None
+        }
+
         public Texture2D image;
         public Vector2 position;
         public Vector2 size;
         public float currentRotation = 0f;
+
+        public bool lockWidth = false;
+        public bool lockHeight = false;
 
         public Vector2 GetCalculatedPosition()
         {
@@ -140,6 +166,15 @@ namespace Stuxnet_HN.Cutscenes
                 Y = (float)Math.Floor(position.Y - (size.Y / 2))
             };
             return calcedPos;
+        }
+
+        public Vector2 GetCalculatedSize()
+        {
+            GraphicsDevice userGraphics = GuiData.spriteBatch.GraphicsDevice;
+            Vector2 newSize = image.GetSizeAspect(size.X * userGraphics.Viewport.Width,
+                size.Y * userGraphics.Viewport.Height);
+
+            return newSize;
         }
     }
 
