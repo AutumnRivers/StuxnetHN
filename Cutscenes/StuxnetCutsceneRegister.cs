@@ -95,7 +95,7 @@ namespace Stuxnet_HN.Cutscenes
                     StuxnetCutsceneInstruction inst;
 
                     string id = xml.ReadRequiredAttribute("id");
-                    float delay = float.Parse(xml.ReadRequiredAttribute("delay"));
+                    float delay = xml.GetDelay();
 
                     inst = StuxnetCutsceneInstruction.CreateInstantTransition(StuxnetCutsceneInstruction.StuxnetCutsceneObjectTypes.Rectangle,
                         id, true);
@@ -110,7 +110,7 @@ namespace Stuxnet_HN.Cutscenes
                     StuxnetCutsceneInstruction inst;
 
                     string id = xml.ReadRequiredAttribute("id");
-                    float delay = float.Parse(xml.ReadRequiredAttribute("delay"));
+                    float delay = xml.GetDelay();
 
                     inst = StuxnetCutsceneInstruction.CreateInstantTransition(StuxnetCutsceneInstruction.StuxnetCutsceneObjectTypes.Rectangle,
                         id, false);
@@ -136,7 +136,7 @@ namespace Stuxnet_HN.Cutscenes
 
                     Vector2 newPos = new Vector2().FromString(pos);
 
-                    float delay = float.Parse(xml.ReadRequiredAttribute("delay"));
+                    float delay = xml.GetDelay();
 
                     inst = StuxnetCutsceneInstruction.CreateMovementInstruction(StuxnetCutsceneInstruction.StuxnetCutsceneObjectTypes.Rectangle,
                         id, newPos, tween, tweenDuration);
@@ -204,11 +204,68 @@ namespace Stuxnet_HN.Cutscenes
                     cutscene.RegisterInstruction(inst);
                 }
 
+                if(xml.Name == "RotateImage" && isReadingInstructions)
+                {
+                    StuxnetCutsceneInstruction inst;
+                    float targetAngle = 0f;
+                    float rotationTime = 0f;
+                    float rotationSpeed = 1f;
+
+                    string id = xml.ReadRequiredAttribute("id");
+                    
+                    bool forever = false;
+                    bool clockwise = true;
+
+                    if(xml.MoveToAttribute("forever"))
+                    {
+                        forever = bool.Parse(xml.ReadContentAsString());
+                    }
+
+                    if(xml.MoveToAttribute("clockwise"))
+                    {
+                        clockwise = bool.Parse(xml.ReadContentAsString());
+                    }
+
+                    if(forever)
+                    {
+                        rotationSpeed = float.Parse(xml.ReadRequiredAttribute("speed"));
+                    } else
+                    {
+                        targetAngle = float.Parse(xml.ReadRequiredAttribute("angle"));
+                        rotationTime = float.Parse(xml.ReadRequiredAttribute("duration"));
+                    }
+
+                    float delay = xml.GetDelay();
+
+                    inst = StuxnetCutsceneInstruction.CreateRotationInstruction(id, targetAngle, rotationTime,
+                        forever, rotationSpeed, clockwise);
+
+                    inst.Delay = delay;
+                    inst.Cutscene = cutscene;
+
+                    cutscene.RegisterInstruction(inst);
+                }
+
+                if(xml.Name == "StopRotation" && isReadingInstructions)
+                {
+                    StuxnetCutsceneInstruction inst;
+
+                    string id = xml.ReadRequiredAttribute("id");
+                    float delay = xml.GetDelay();
+
+                    inst = StuxnetCutsceneInstruction.CreateStopRotation(id);
+
+                    inst.Delay = delay;
+                    inst.Cutscene = cutscene;
+
+                    cutscene.RegisterInstruction(inst);
+                }
+
                 if(xml.Name == "DelayEnding" && isReadingInstructions)
                 {
                     StuxnetCutsceneInstruction inst;
 
-                    float delay = float.Parse(xml.ReadRequiredAttribute("delay"));
+                    float delay = xml.GetDelay();
 
                     inst = StuxnetCutsceneInstruction.CreateDelayEnding();
                     inst.Delay = delay;

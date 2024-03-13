@@ -130,6 +130,7 @@ namespace Stuxnet_HN.Cutscenes
         public Texture2D image;
         public Vector2 position;
         public Vector2 size;
+        public float currentRotation = 0f;
 
         public Vector2 GetCalculatedPosition()
         {
@@ -147,13 +148,13 @@ namespace Stuxnet_HN.Cutscenes
         public enum InstructionTypes
         {
             Move,
-            BlipIn,
-            BlipOut,
             Rotate,
-            Flicker,
+            RotateForever,
+            StopRotation,
+            Tint,
+            Resize,
             FadeIn,
             FadeOut,
-            Tint,
             InstantIn,
             InstantOut,
             ResetCutscene,
@@ -217,6 +218,7 @@ namespace Stuxnet_HN.Cutscenes
             }
         }
 
+        // Rotation Instructions
         private float rotationAngle;
         public float RotationAngle
         {
@@ -226,12 +228,44 @@ namespace Stuxnet_HN.Cutscenes
             }
             set
             {
-                if(value < 0f || value > 359.9f)
+                if(value < 0f)
                 {
                     rotationAngle = 0f;
                 } else
                 {
                     rotationAngle = value;
+                }
+            }
+        }
+        private float rotationTime = 0f;
+        public float RotationTime
+        {
+            get { return rotationTime; }
+            set
+            {
+                if(value < 0f)
+                {
+                    rotationTime = 0f;
+                } else
+                {
+                    rotationTime = value;
+                }
+            }
+        }
+        public bool rotateClockwise = true;
+
+        private float rotationSpeed = 1f;
+        public float RotationSpeed
+        {
+            get { return rotationSpeed; }
+            set
+            {
+                if(value < 0f)
+                {
+                    rotationSpeed = 0f;
+                } else
+                {
+                    rotationSpeed = value;
                 }
             }
         }
@@ -256,23 +290,31 @@ namespace Stuxnet_HN.Cutscenes
             }
         }
 
-        // Flicker Instructions
-        private float flickerFrequency;
-        public float FlickerFrequency
+        // Resize Instructions
+        private Vector2 newSize;
+        public Vector2 ResizeTo
         {
-            get { return flickerFrequency; }
+            get { return newSize; }
             set
             {
-                if(value < 0f)
-                {
-                    flickerFrequency = 0f;
-                } else if(value > 1f)
-                {
-                    flickerFrequency = 1f;
+                Vector2 vec = new Vector2();
+
+                if(value.X < 0) {
+                    vec.X = 0;
                 } else
                 {
-                    flickerFrequency = value;
+                    vec.X = value.X;
                 }
+
+                if(value.Y < 0)
+                {
+                    vec.Y = 0;
+                } else
+                {
+                    vec.Y = value.Y;
+                }
+
+                newSize = vec;
             }
         }
 
@@ -322,6 +364,15 @@ namespace Stuxnet_HN.Cutscenes
                 case InstructionTypes.ResetCutscene:
                     ExecuteReset();
                     break;
+                case InstructionTypes.Rotate:
+                    ExecuteTimedRotation(typeID);
+                    break;
+                case InstructionTypes.RotateForever:
+                    ExecuteInfiniteRotation(typeID);
+                    break;
+                case InstructionTypes.StopRotation:
+                    ExecuteStopRotation(typeID);
+                    break;
             }
         }
 
@@ -336,8 +387,6 @@ namespace Stuxnet_HN.Cutscenes
                 X = newPosition.X * userGraphics.Viewport.Width,
                 Y = newPosition.Y * userGraphics.Viewport.Height
             };
-
-            Console.WriteLine(targetPos);
 
             if (objectType == "Rectangle")
             {
@@ -404,6 +453,29 @@ namespace Stuxnet_HN.Cutscenes
             }
         }
 
+        public void ExecuteTimedRotation(string id)
+        {
+            CutsceneExecutor.AddTimedRotation(id, rotationAngle, rotationTime, rotateClockwise);
+        }
+
+        public void ExecuteInfiniteRotation(string id)
+        {
+            CutsceneExecutor.AddInfiniteRotation(id, rotationSpeed, rotateClockwise);
+        }
+
+        public void ExecuteStopRotation(string id)
+        {
+            if(CutsceneExecutor.targetRotations.FirstOrDefault(tp => tp.Item1 == id)
+                == null)
+            {
+                Console.WriteLine(StuxnetCore.logPrefix + " WARN - Couldn't find image ID in targetRotations. Skipping...");
+                return;
+            }
+
+            int index = CutsceneExecutor.targetRotations.FindIndex(tp => tp.Item1 == id);
+            CutsceneExecutor.targetRotations.RemoveAt(index);
+        }
+
         public void ExecuteReset()
         {
             cutscene.HideAllObjects();
@@ -414,6 +486,7 @@ namespace Stuxnet_HN.Cutscenes
 
             CutsceneExecutor.hasSetDelays = false;
             CutsceneExecutor.targetVectorRects.Clear();
+            CutsceneExecutor.targetVectorImgs.Clear();
         }
 
         public static StuxnetCutsceneInstruction CreateMovementInstruction(StuxnetCutsceneObjectTypes objectType,
@@ -427,6 +500,31 @@ namespace Stuxnet_HN.Cutscenes
                 newPosition = newPosition,
                 tweenMovement = tweenMovement,
                 TweenDuration = tweenDuration
+            };
+        }
+
+        public static StuxnetCutsceneInstruction CreateRotationInstruction(string id, float targetAngle, float rotationTime = 0f,
+            bool forever = false, float rotationForeverSpeed = 1f, bool clockwise = true)
+        {
+            return new StuxnetCutsceneInstruction()
+            {
+                instructionType = forever ? InstructionTypes.RotateForever : InstructionTypes.Rotate,
+                type = "Image",
+                typeID = id,
+                RotationAngle = targetAngle,
+                RotationTime = rotationTime,
+                RotationSpeed = rotationForeverSpeed,
+                rotateClockwise = clockwise
+            };
+        }
+
+        public static StuxnetCutsceneInstruction CreateStopRotation(string id)
+        {
+            return new StuxnetCutsceneInstruction()
+            {
+                instructionType = InstructionTypes.StopRotation,
+                type = "Image",
+                typeID = id
             };
         }
 
@@ -493,6 +591,29 @@ namespace Stuxnet_HN.Cutscenes
                     response.Append("delay ending of cutscene by ");
                     response.Append(Delay);
                     response.Append(" seconds");
+                    return response.ToString();
+                case InstructionTypes.Rotate:
+                    response.Append("rotate image with id of ");
+                    response.Append(typeID);
+                    response.Append(" to a target angle of ");
+                    response.Append(rotationAngle);
+                    response.Append(" degrees in ");
+                    response.Append(rotationTime);
+                    response.Append(" seconds. delay: ");
+                    response.Append($"{Delay}s");
+                    return response.ToString();
+                case InstructionTypes.RotateForever:
+                    response.Append("rotate image with id of ");
+                    response.Append(typeID);
+                    response.Append(" forever with a speed of ");
+                    response.Append(rotationSpeed);
+                    response.Append(". delay: ");
+                    response.Append($"{Delay}s");
+                    return response.ToString();
+                case InstructionTypes.StopRotation:
+                    response.Append("stop rotation of image with id of ");
+                    response.Append(typeID);
+                    response.Append($" delay: {Delay}s");
                     return response.ToString();
             }
 

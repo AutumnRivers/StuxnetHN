@@ -17,6 +17,8 @@ using Pathfinder.Util;
 
 using Stuxnet_HN.Cutscenes.Actions;
 
+using ObjectTypes = Stuxnet_HN.Cutscenes.StuxnetCutsceneInstruction.StuxnetCutsceneObjectTypes;
+
 namespace Stuxnet_HN.Cutscenes.Patches
 {
     [HarmonyPatch]
@@ -54,7 +56,19 @@ namespace Stuxnet_HN.Cutscenes.Patches
                     Width = (int)img.size.X,
                     Height = (int)img.size.Y
                 };
-                GuiData.spriteBatch.Draw(img.image, dest, Color.White);
+                Rectangle source = new Rectangle()
+                {
+                    X = 0, Y = 0,
+                    Width = (int)img.image.Width,
+                    Height = (int)img.image.Height
+                };
+                Vector2 origin = new Vector2()
+                {
+                    X = img.image.Width / 2,
+                    Y = img.image.Height / 2
+                };
+                GuiData.spriteBatch.Draw(img.image, dest, source, Color.White, img.currentRotation,
+                    origin, SpriteEffects.None, 0.1f);
             }
 
             if(!hasSetDelays)
@@ -86,11 +100,16 @@ namespace Stuxnet_HN.Cutscenes.Patches
         internal static List<Tuple<string, StuxnetCutsceneImage, Vector2, float, float, Vector2>> targetVectorImgs =
             new List<Tuple<string, StuxnetCutsceneImage, Vector2, float, float, Vector2>>();
 
+        // Tuple: (string id, float originalRotation, float targetRotation, float rotationDuration/Speed, float tweenAmount, bool clockwise)
+        internal static List<Tuple<string, float, float, float, float, bool>> targetRotations =
+            new List<Tuple<string, float, float, float, float, bool>>();
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(PostProcessor), nameof(PostProcessor.end))]
         static void LerpObjects()
         {
-            if(!targetVectorRects.Any() && !targetVectorImgs.Any())
+            if(OS.currentInstance == null || OS.currentInstance?.lastGameTime == null
+                || !StuxnetCore.cutsceneIsActive || StuxnetCore.activeCutsceneID == "NONE")
             {
                 return;
             }
@@ -99,24 +118,28 @@ namespace Stuxnet_HN.Cutscenes.Patches
 
             StuxnetCutscene cs = StuxnetCore.cutscenes[StuxnetCore.activeCutsceneID];
 
-            for(int i = 0; i < targetVectorRects.Count; i++)
+            if(targetVectorRects.Any())
             {
-                if(!targetVectorRects.Any())
+                for (int i = 0; i < targetVectorRects.Count; i++)
                 {
-                    break;
+                    TweenRectangle(cs, gt, i);
                 }
-
-                TweenRectangle(cs, gt, i);
             }
 
-            for(int i = 0; i < targetVectorImgs.Count; i++)
+            if(targetVectorImgs.Any())
             {
-                if(!targetVectorImgs.Any())
+                for (int i = 0; i < targetVectorImgs.Count; i++)
                 {
-                    break;
+                    TweenImage(cs, gt, i);
                 }
+            }
 
-                TweenImage(cs, gt, i);
+            if(targetRotations.Any())
+            {
+                for (int i = 0; i < targetRotations.Count; i++)
+                {
+                    RotateImage(cs, gt, i);
+                }
             }
         }
 
@@ -154,8 +177,6 @@ namespace Stuxnet_HN.Cutscenes.Patches
             float lerpAmount = gt / target.Item4;
             float tweenAmount = lerpAmount + target.Item5;
 
-            Console.WriteLine(tweenAmount);
-
             StuxnetCutsceneImage refImg = cs.images[id];
             Vector2 currentPos = target.Item6;
 
@@ -166,14 +187,66 @@ namespace Stuxnet_HN.Cutscenes.Patches
 
             if(tweenAmount >= 1.0f)
             {
-                Console.WriteLine(target.Item3);
-                Console.WriteLine(refImg.GetCalculatedPosition());
                 targetVectorImgs.RemoveAt(i);
                 return;
             }
 
             var replaceTuple = Tuple.Create(id, refImg, target.Item3, target.Item4, tweenAmount, target.Item6);
             targetVectorImgs[i] = replaceTuple;
+        }
+
+        private static void RotateImage(StuxnetCutscene cutscene, float gameSeconds, int index)
+        {
+            var target = targetRotations[index];
+
+            bool infinite = false;
+
+            string id = target.Item1;
+            float originAngle = target.Item2;
+            float targetAngle = target.Item3;
+
+            if(targetAngle == -1f)
+            {
+                targetAngle = 359.9f;
+                infinite = true;
+            }
+
+            targetAngle = MathHelper.ToRadians(targetAngle);
+
+            float lerpAmount;
+            float tweenAmount;
+
+            if (target.Item4 > 0.01f)
+            {
+                lerpAmount = gameSeconds / target.Item4;
+                tweenAmount = lerpAmount + target.Item5;
+                Console.WriteLine(tweenAmount);
+            } else
+            {
+                tweenAmount = 1.0f;
+            }
+
+            if(infinite)
+            {
+                lerpAmount = gameSeconds * target.Item4;
+                tweenAmount = lerpAmount + target.Item5;
+                originAngle = 0f;
+            }
+
+            float newAngle = MathHelper.Lerp(originAngle, targetAngle, tweenAmount);
+            cutscene.images[id].currentRotation = newAngle;
+
+            if(tweenAmount >= 1.0f && !infinite)
+            {
+                targetRotations.RemoveAt(index);
+                return;
+            } else if(tweenAmount >= 1.0f && infinite)
+            {
+                tweenAmount = 0f;
+            }
+
+            var replaceTuple = Tuple.Create(target.Item1, originAngle, target.Item3, target.Item4, tweenAmount, target.Item6);
+            targetRotations[index] = replaceTuple;
         }
 
         internal static void AddTweenedRectangle(string id, Rectangle rect, Vector2 targetVec, float tweenDuration)
@@ -188,6 +261,21 @@ namespace Stuxnet_HN.Cutscenes.Patches
             Vector2 origin = new Vector2(img.position.X, img.position.Y);
             var tuple = Tuple.Create(id, img, targetVec, tweenDuration, 0f, origin);
             targetVectorImgs.Add(tuple);
+        }
+
+        // Tuple: (string id, float originalRotation, float targetRotation, float rotationDuration/Speed, float tweenAmount)
+        internal static void AddTimedRotation(string id, float targetAngle, float duration, bool clockwise)
+        {
+            StuxnetCutsceneImage img = StuxnetCore.cutscenes[StuxnetCore.activeCutsceneID].images[id];
+            var tuple = Tuple.Create(id, img.currentRotation, targetAngle, duration, 0f, clockwise);
+            targetRotations.Add(tuple);
+        }
+
+        internal static void AddInfiniteRotation(string id, float rotationSpeed, bool clockwise)
+        {
+            StuxnetCutsceneImage img = StuxnetCore.cutscenes[StuxnetCore.activeCutsceneID].images[id];
+            var tuple = Tuple.Create(id, img.currentRotation, -1f, rotationSpeed, 0f, clockwise);
+            targetRotations.Add(tuple);
         }
     }
 }
