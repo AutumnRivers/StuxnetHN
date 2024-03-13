@@ -49,8 +49,8 @@ namespace Stuxnet_HN.Cutscenes.Patches
                 StuxnetCutsceneImage img = cs.images[id];
                 Rectangle dest = new Rectangle()
                 {
-                    X = (int)img.position.X,
-                    Y = (int)img.position.Y,
+                    X = (int)img.GetCalculatedPosition().X,
+                    Y = (int)img.GetCalculatedPosition().Y,
                     Width = (int)img.size.X,
                     Height = (int)img.size.Y
                 };
@@ -154,6 +154,8 @@ namespace Stuxnet_HN.Cutscenes.Patches
             float lerpAmount = gt / target.Item4;
             float tweenAmount = lerpAmount + target.Item5;
 
+            Console.WriteLine(tweenAmount);
+
             StuxnetCutsceneImage refImg = cs.images[id];
             Vector2 currentPos = target.Item6;
 
@@ -164,6 +166,8 @@ namespace Stuxnet_HN.Cutscenes.Patches
 
             if(tweenAmount >= 1.0f)
             {
+                Console.WriteLine(target.Item3);
+                Console.WriteLine(refImg.GetCalculatedPosition());
                 targetVectorImgs.RemoveAt(i);
                 return;
             }

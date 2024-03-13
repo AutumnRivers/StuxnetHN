@@ -130,6 +130,16 @@ namespace Stuxnet_HN.Cutscenes
         public Texture2D image;
         public Vector2 position;
         public Vector2 size;
+
+        public Vector2 GetCalculatedPosition()
+        {
+            Vector2 calcedPos = new Vector2
+            {
+                X = (float)Math.Floor(position.X - (size.X / 2)),
+                Y = (float)Math.Floor(position.Y - (size.Y / 2))
+            };
+            return calcedPos;
+        }
     }
 
     public class StuxnetCutsceneInstruction
@@ -189,14 +199,6 @@ namespace Stuxnet_HN.Cutscenes
 
         // Movement Instructions
         public Vector2 newPosition;
-        public Vector2 TargetPosition
-        {
-            get { return newPosition; }
-            internal set
-            {
-                newPosition = value;
-            }
-        }
 
         public bool tweenMovement = false;
         private float tweenDuration;
@@ -325,10 +327,19 @@ namespace Stuxnet_HN.Cutscenes
 
         public void ExecuteMovement(string objectType, string id)
         {
-            Vector2 targetPos = newPosition;
             StuxnetCutsceneObjectTypes type = StuxnetCutsceneObjectTypes.Rectangle;
 
-            if(objectType == "Rectangle")
+            GraphicsDevice userGraphics = GuiData.spriteBatch.GraphicsDevice;
+
+            Vector2 targetPos = new Vector2()
+            {
+                X = newPosition.X * userGraphics.Viewport.Width,
+                Y = newPosition.Y * userGraphics.Viewport.Height
+            };
+
+            Console.WriteLine(targetPos);
+
+            if (objectType == "Rectangle")
             {
                 type = StuxnetCutsceneObjectTypes.Rectangle;
             } else if(objectType == "Image")
