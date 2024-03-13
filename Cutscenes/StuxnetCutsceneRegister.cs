@@ -79,8 +79,9 @@ namespace Stuxnet_HN.Cutscenes
                 {
                     string id = xml.ReadRequiredAttribute("id");
                     string path = xml.ReadRequiredAttribute("path");
+                    Vector2 size = new Vector2().FromString(xml.ReadRequiredAttribute("size"));
 
-                    cutscene.RegisterImage(id, path);
+                    cutscene.RegisterImage(id, path, size);
                 }
 
                 // Instructions
@@ -139,6 +140,63 @@ namespace Stuxnet_HN.Cutscenes
 
                     inst = StuxnetCutsceneInstruction.CreateMovementInstruction(StuxnetCutsceneInstruction.StuxnetCutsceneObjectTypes.Rectangle,
                         id, newPos, tween, tweenDuration);
+
+                    inst.Delay = delay;
+                    inst.Cutscene = cutscene;
+
+                    cutscene.RegisterInstruction(inst);
+                }
+
+                if(xml.Name == "ShowImage" && isReadingInstructions)
+                {
+                    StuxnetCutsceneInstruction inst;
+
+                    string id = xml.ReadRequiredAttribute("id");
+                    float delay = xml.GetDelay();
+
+                    inst = StuxnetCutsceneInstruction.CreateInstantTransition(StuxnetCutsceneInstruction.StuxnetCutsceneObjectTypes.Image,
+                        id, true);
+
+                    inst.Delay = delay;
+                    inst.Cutscene = cutscene;
+
+                    cutscene.RegisterInstruction(inst);
+                }
+
+                if(xml.Name == "HideImage" && isReadingInstructions)
+                {
+                    StuxnetCutsceneInstruction inst;
+
+                    string id = xml.ReadRequiredAttribute("id");
+                    float delay = xml.GetDelay();
+
+                    inst = StuxnetCutsceneInstruction.CreateInstantTransition(StuxnetCutsceneInstruction.StuxnetCutsceneObjectTypes.Image,
+                        id, false);
+
+                    inst.Delay = delay;
+                    inst.Cutscene = cutscene;
+
+                    cutscene.RegisterInstruction(inst);
+                }
+
+                if(xml.Name == "MoveImage" && isReadingInstructions)
+                {
+                    StuxnetCutsceneInstruction inst;
+                    float tweenDuration = 0f;
+
+                    string id = xml.ReadRequiredAttribute("id");
+                    Vector2 targetPos = new Vector2().FromString(xml.ReadRequiredAttribute("pos"));
+                    bool tween = bool.Parse(xml.ReadRequiredAttribute("tween"));
+
+                    if (tween)
+                    {
+                        tweenDuration = float.Parse(xml.ReadRequiredAttribute("tweenDuration"));
+                    }
+
+                    float delay = xml.GetDelay();
+
+                    inst = StuxnetCutsceneInstruction.CreateMovementInstruction(StuxnetCutsceneInstruction.StuxnetCutsceneObjectTypes.Image,
+                        id, targetPos, tween, tweenDuration);
 
                     inst.Delay = delay;
                     inst.Cutscene = cutscene;

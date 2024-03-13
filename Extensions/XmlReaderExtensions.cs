@@ -20,5 +20,10 @@ namespace Stuxnet_HN.Extensions
                 throw new FormatException($"{xml.Name} is missing '{attributeName}' attribute!");
             }
         }
+
+        public static float GetDelay(this XmlReader xml)
+        {
+            return float.Parse(xml.ReadRequiredAttribute("delay"));
+        }
     }
 }

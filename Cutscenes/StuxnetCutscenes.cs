@@ -21,7 +21,8 @@ namespace Stuxnet_HN.Cutscenes
         public string delayHostID = "delay";
 
         public Dictionary<string, Rectangle> rectangles = new Dictionary<string, Rectangle>();
-        public Dictionary<string, Texture2D> images = new Dictionary<string, Texture2D>();
+        //public Dictionary<string, Texture2D> images = new Dictionary<string, Texture2D>();
+        public Dictionary<string, StuxnetCutsceneImage> images = new Dictionary<string, StuxnetCutsceneImage>();
 
         public List<StuxnetCutsceneInstruction> instructions = new List<StuxnetCutsceneInstruction>();
 
@@ -71,18 +72,25 @@ namespace Stuxnet_HN.Cutscenes
             }
         }
 
-        public void RegisterImage(string id, string imagePath)
+        public void RegisterImage(string id, string imagePath, Vector2 size)
         {
             string extFolderPath = ExtensionLoader.ActiveExtensionInfo.FolderPath;
             FileStream imageStream = File.OpenRead(extFolderPath + "/" + imagePath);
             Texture2D image = Texture2D.FromStream(GuiData.spriteBatch.GraphicsDevice, imageStream);
 
+            StuxnetCutsceneImage sImage = new StuxnetCutsceneImage()
+            {
+                image = image,
+                position = new Vector2(0, 0),
+                size = size
+            };
+
             if(images.ContainsKey(id))
             {
-                images[id] = image;
+                images[id] = sImage;
             } else
             {
-                images.Add(id, image);
+                images.Add(id, sImage);
             }
 
             imageStream.Dispose();
@@ -181,6 +189,15 @@ namespace Stuxnet_HN.Cutscenes
 
         // Movement Instructions
         public Vector2 newPosition;
+        public Vector2 TargetPosition
+        {
+            get { return newPosition; }
+            internal set
+            {
+                newPosition = value;
+            }
+        }
+
         public bool tweenMovement = false;
         private float tweenDuration;
         public float TweenDuration
@@ -327,6 +344,12 @@ namespace Stuxnet_HN.Cutscenes
                     rect.X = (int)targetPos.X;
                     rect.Y = (int)targetPos.Y;
                     cutscene.rectangles[id] = rect;
+                } else if(type == StuxnetCutsceneObjectTypes.Image)
+                {
+                    StuxnetCutsceneImage image = cutscene.images[id];
+                    image.position.X = targetPos.X;
+                    image.position.Y = targetPos.Y;
+                    cutscene.images[id] = image;
                 }
             } else
             {
@@ -334,6 +357,10 @@ namespace Stuxnet_HN.Cutscenes
                 {
                     Rectangle rect = cutscene.rectangles[id];
                     CutsceneExecutor.AddTweenedRectangle(id, rect, targetPos, TweenDuration);
+                } else if(type == StuxnetCutsceneObjectTypes.Image)
+                {
+                    StuxnetCutsceneImage image = cutscene.images[id];
+                    CutsceneExecutor.AddTweenedImage(id, image, targetPos, TweenDuration);
                 }
             }
         }
