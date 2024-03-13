@@ -66,9 +66,9 @@ namespace Stuxnet_HN.Cutscenes.Patches
             StuxnetCore.cutscenes[StuxnetCore.activeCutsceneID] = cs;
         }
 
-        // Tuple: (string id, Rectangle rect, Vector2 targetVec, float tweenDuration, float tweenAmount
-        internal static List<Tuple<string, Rectangle, Vector2, float, float>> targetVectorRects =
-            new List<Tuple<string, Rectangle, Vector2, float, float>>();
+        // Tuple: (string id, Rectangle rect, Vector2 targetVec, float tweenDuration, float tweenAmount, Vector2 originPos)
+        internal static List<Tuple<string, Rectangle, Vector2, float, float, Vector2>> targetVectorRects =
+            new List<Tuple<string, Rectangle, Vector2, float, float, Vector2>>();
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(PostProcessor), nameof(PostProcessor.end))]
@@ -93,27 +93,28 @@ namespace Stuxnet_HN.Cutscenes.Patches
                 Console.WriteLine(tweenAmount);
 
                 Rectangle refRect = cs.rectangles[id];
-                Vector2 currentPos = new Vector2(target.Item2.X, target.Item2.Y);
+                Vector2 currentPos = target.Item6;
 
                 Vector2 newVec = Vector2.Lerp(currentPos, target.Item3, tweenAmount);
                 refRect.X = (int)newVec.X;
                 refRect.Y = (int)newVec.Y;
                 cs.rectangles[id] = refRect;
 
-                if(currentPos == target.Item3)
+                if(tweenAmount >= 1.0f)
                 {
                     targetVectorRects.RemoveAt(i);
                     continue;
                 }
 
-                var replaceTuple = Tuple.Create(id, refRect, target.Item3, target.Item4, tweenAmount);
+                var replaceTuple = Tuple.Create(id, refRect, target.Item3, target.Item4, tweenAmount, target.Item6);
                 targetVectorRects[i] = replaceTuple;
             }
         }
 
         internal static void AddTweenedRectangle(string id, Rectangle rect, Vector2 targetVec, float tweenDuration)
         {
-            var tuple = Tuple.Create(id, rect, targetVec, tweenDuration, 0f);
+            Vector2 origin = new Vector2(rect.X, rect.Y);
+            var tuple = Tuple.Create(id, rect, targetVec, tweenDuration, 0f, origin);
             targetVectorRects.Add(tuple);
         }
     }
