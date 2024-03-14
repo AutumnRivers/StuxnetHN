@@ -33,9 +33,9 @@ namespace Stuxnet_HN.Cutscenes
 
         public StuxnetCutscene() { }
 
-        public StuxnetCutscene(string delayHostID)
+        public StuxnetCutscene(string filepath)
         {
-            this.delayHostID = delayHostID;
+            this.filepath = filepath;
         }
 
         public void ResetPositions()

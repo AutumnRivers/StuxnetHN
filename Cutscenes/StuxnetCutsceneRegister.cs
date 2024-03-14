@@ -18,14 +18,14 @@ namespace Stuxnet_HN.Cutscenes
         {
             FileStream file = File.OpenRead(filePath);
             XmlReader xmlReader = XmlReader.Create(file);
-            var cutscene = ReadFromXml(xmlReader);
+            var cutscene = ReadFromXml(xmlReader, filePath);
 
             return cutscene;
         }
 
-        public static StuxnetCutscene ReadFromXml(XmlReader xml)
+        public static StuxnetCutscene ReadFromXml(XmlReader xml, string filepath = null)
         {
-            StuxnetCutscene cutscene = new StuxnetCutscene();
+            StuxnetCutscene cutscene = new StuxnetCutscene(filepath);
             bool isRegistering = false;
             bool isReadingInstructions = false;
 

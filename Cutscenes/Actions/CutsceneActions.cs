@@ -48,6 +48,13 @@ namespace Stuxnet_HN.Cutscenes.Actions
                 throw new KeyNotFoundException($"Cutscene ID '{CutsceneID}' could not be found - did you register it?");
             }
 
+            if(StuxnetCore.cutsceneIsActive == true || StuxnetCore.activeCutsceneID != "NONE")
+            {
+                Console.Error.WriteLine(StuxnetCore.logPrefix + " There's already an active cutscene. " +
+                    "Please refrain from triggering another cutscene until the current one finishes. Skipping...");
+                return;
+            }
+
             StuxnetCore.activeCutsceneID = cutscene.id;
             StuxnetCore.cutsceneIsActive = true;
         }
@@ -55,7 +62,7 @@ namespace Stuxnet_HN.Cutscenes.Actions
 
     public class TriggerInstruction : PathfinderAction
     {
-        StuxnetCutsceneInstruction inst;
+        readonly StuxnetCutsceneInstruction inst;
 
         public TriggerInstruction(StuxnetCutsceneInstruction instruction)
         {

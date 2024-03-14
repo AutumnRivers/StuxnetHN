@@ -211,6 +211,11 @@ namespace Stuxnet_HN.Cutscenes.Patches
                 infinite = true;
             }
 
+            if(target.Item6 == true)
+            {
+                targetAngle *= -1;
+            }
+
             targetAngle = MathHelper.ToRadians(targetAngle);
 
             float lerpAmount;
