@@ -17,7 +17,7 @@ namespace Stuxnet_HN.Extensions
             }
             else
             {
-                throw new FormatException($"{xml.Name} is missing '{attributeName}' attribute!");
+                throw new FormatException($"An element is missing the required attribute; '{attributeName}'");
             }
         }
 

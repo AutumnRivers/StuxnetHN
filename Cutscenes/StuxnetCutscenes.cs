@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 using Hacknet;
 using Hacknet.Extensions;
@@ -12,6 +11,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using Stuxnet_HN.Cutscenes.Patches;
+
 using Stuxnet_HN.Extensions;
 
 namespace Stuxnet_HN.Cutscenes
@@ -23,7 +23,6 @@ namespace Stuxnet_HN.Cutscenes
         public string delayHostID = "delay";
 
         public Dictionary<string, Rectangle> rectangles = new Dictionary<string, Rectangle>();
-        //public Dictionary<string, Texture2D> images = new Dictionary<string, Texture2D>();
         public Dictionary<string, StuxnetCutsceneImage> images = new Dictionary<string, StuxnetCutsceneImage>();
 
         public List<StuxnetCutsceneInstruction> instructions = new List<StuxnetCutsceneInstruction>();
@@ -145,18 +144,10 @@ namespace Stuxnet_HN.Cutscenes
 
     public class StuxnetCutsceneImage
     {
-        public enum AspectFocus
-        {
-            Width, Height, None
-        }
-
         public Texture2D image;
         public Vector2 position;
         public Vector2 size;
         public float currentRotation = 0f;
-
-        public bool lockWidth = false;
-        public bool lockHeight = false;
 
         public Vector2 GetCalculatedPosition()
         {
@@ -176,6 +167,11 @@ namespace Stuxnet_HN.Cutscenes
 
             return newSize;
         }
+
+        public void Resize(Vector2 newSize)
+        {
+            size = newSize;
+        }
     }
 
     public class StuxnetCutsceneInstruction
@@ -188,6 +184,9 @@ namespace Stuxnet_HN.Cutscenes
             StopRotation,
             Tint,
             Resize,
+            LockWidth,
+            LockHeight,
+            UnlockAspect,
             FadeIn,
             FadeOut,
             InstantIn,
@@ -236,6 +235,7 @@ namespace Stuxnet_HN.Cutscenes
         // Movement Instructions
         public Vector2 newPosition;
 
+        // Also applies to resizing
         public bool tweenMovement = false;
         private float tweenDuration;
         public float TweenDuration
@@ -352,6 +352,7 @@ namespace Stuxnet_HN.Cutscenes
                 newSize = vec;
             }
         }
+        public bool maintainAspectRatio = true;
 
         // Tint Instructions
         private float tintOpacity;
@@ -388,32 +389,38 @@ namespace Stuxnet_HN.Cutscenes
             switch(instructionType)
             {
                 case InstructionTypes.InstantIn:
-                    ExecuteInstantTrans(type, typeID, true);
+                    ExecuteInstantTrans(true);
                     break;
                 case InstructionTypes.InstantOut:
-                    ExecuteInstantTrans(type, typeID, false);
+                    ExecuteInstantTrans(false);
                     break;
                 case InstructionTypes.Move:
-                    ExecuteMovement(type, typeID);
+                    ExecuteMovement();
                     break;
                 case InstructionTypes.ResetCutscene:
                     ExecuteReset();
                     break;
                 case InstructionTypes.Rotate:
-                    ExecuteTimedRotation(typeID);
+                    ExecuteTimedRotation();
                     break;
                 case InstructionTypes.RotateForever:
-                    ExecuteInfiniteRotation(typeID);
+                    ExecuteInfiniteRotation();
                     break;
                 case InstructionTypes.StopRotation:
-                    ExecuteStopRotation(typeID);
+                    ExecuteStopRotation();
+                    break;
+                case InstructionTypes.Resize:
+                    ExecuteResize();
                     break;
             }
         }
 
-        public void ExecuteMovement(string objectType, string id)
+        public void ExecuteMovement()
         {
             StuxnetCutsceneObjectTypes type = StuxnetCutsceneObjectTypes.Rectangle;
+
+            string objectType = this.type;
+            string id = typeID;
 
             GraphicsDevice userGraphics = GuiData.spriteBatch.GraphicsDevice;
 
@@ -460,8 +467,11 @@ namespace Stuxnet_HN.Cutscenes
             }
         }
 
-        public void ExecuteInstantTrans(string objectType, string id, bool activate = true)
+        public void ExecuteInstantTrans(bool activate = true)
         {
+            string objectType = this.type;
+            string id = typeID;
+
             if(activate)
             {
                 if(objectType == "Rectangle")
@@ -488,27 +498,43 @@ namespace Stuxnet_HN.Cutscenes
             }
         }
 
-        public void ExecuteTimedRotation(string id)
+        public void ExecuteTimedRotation()
         {
+            string id = typeID;
+
             CutsceneExecutor.AddTimedRotation(id, rotationAngle, rotationTime, rotateClockwise);
         }
 
-        public void ExecuteInfiniteRotation(string id)
+        public void ExecuteInfiniteRotation()
         {
+            string id = typeID;
+
             CutsceneExecutor.AddInfiniteRotation(id, rotationSpeed, rotateClockwise);
         }
 
-        public void ExecuteStopRotation(string id)
+        public void ExecuteStopRotation()
         {
-            if(CutsceneExecutor.targetRotations.FirstOrDefault(tp => tp.Item1 == id)
+            string id = typeID;
+
+            if (CutsceneExecutor.targetRotations.FirstOrDefault(tp => tp.Item1 == id)
                 == null)
             {
-                Console.WriteLine(StuxnetCore.logPrefix + " WARN - Couldn't find image ID in targetRotations. Skipping...");
+                Console.WriteLine(StuxnetCore.logPrefix + "WARN - Couldn't find image ID in targetRotations. Skipping...");
                 return;
             }
 
             int index = CutsceneExecutor.targetRotations.FindIndex(tp => tp.Item1 == id);
             CutsceneExecutor.targetRotations.RemoveAt(index);
+        }
+
+        public void ExecuteResize()
+        {
+            string id = typeID;
+
+            if(type == "Rectangle")
+            {
+                CutsceneExecutor.AddResizeRectangle(id, ResizeTo, maintainAspectRatio, tweenMovement, TweenDuration);
+            }
         }
 
         public void ExecuteReset()
@@ -560,6 +586,21 @@ namespace Stuxnet_HN.Cutscenes
                 instructionType = InstructionTypes.StopRotation,
                 type = "Image",
                 typeID = id
+            };
+        }
+
+        public static StuxnetCutsceneInstruction CreateResizeInstruction(StuxnetCutsceneObjectTypes objectType,
+            string id, Vector2 newSize, bool maintainAspectRatio, float duration = 0)
+        {
+            return new StuxnetCutsceneInstruction()
+            {
+                instructionType = InstructionTypes.Resize,
+                ResizeTo = newSize,
+                type = objectType.ToString(),
+                typeID = id,
+                maintainAspectRatio = maintainAspectRatio,
+                TweenDuration = duration,
+                tweenMovement = duration > 0.01
             };
         }
 

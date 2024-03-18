@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Xml;
 
 using Microsoft.Xna.Framework;
 
 using Stuxnet_HN.Extensions;
+using Stuxnet_HN.Cutscenes.Patches;
 
 namespace Stuxnet_HN.Cutscenes
 {
@@ -67,10 +64,12 @@ namespace Stuxnet_HN.Cutscenes
                     string size = xml.ReadRequiredAttribute("size");
                     Vector2 actualSize = new Vector2().FromString(size);
 
+                    Vector2 relativeSize = CutsceneExecutor.GetRelativeSize(actualSize.X, actualSize.Y);
+
                     rect.X = 0;
                     rect.Y = 0;
-                    rect.Width = (int)actualSize.X;
-                    rect.Height = (int)actualSize.Y;
+                    rect.Width = (int)relativeSize.X;
+                    rect.Height = (int)relativeSize.Y;
 
                     cutscene.RegisterRectangle(id, rect);
                 }
@@ -261,7 +260,61 @@ namespace Stuxnet_HN.Cutscenes
                     cutscene.RegisterInstruction(inst);
                 }
 
-                if(xml.Name == "DelayEnding" && isReadingInstructions)
+                if (xml.Name == "ResizeImage" && isReadingInstructions)
+                {
+                    StuxnetCutsceneInstruction inst;
+                    float tweenDuration = 0f;
+
+                    string id = xml.ReadRequiredAttribute("id");
+
+                    Vector2 newSize = new Vector2().FromString(xml.ReadRequiredAttribute("resizeTo"));
+                    bool aspectRatio = bool.Parse(xml.ReadRequiredAttribute("maintainAspect"));
+                    bool tween = bool.Parse(xml.ReadRequiredAttribute("tween"));
+
+                    if (tween)
+                    {
+                        tweenDuration = float.Parse(xml.ReadRequiredAttribute("tweenDuration"));
+                    }
+
+                    float delay = xml.GetDelay();
+
+                    inst = StuxnetCutsceneInstruction.CreateResizeInstruction(StuxnetCutsceneInstruction.StuxnetCutsceneObjectTypes.Image,
+                        id, newSize, aspectRatio, tweenDuration);
+
+                    inst.Delay = delay;
+                    inst.Cutscene = cutscene;
+
+                    cutscene.RegisterInstruction(inst);
+                }
+
+                if (xml.Name == "ResizeRectangle" && isReadingInstructions)
+                {
+                    StuxnetCutsceneInstruction inst;
+                    float tweenDuration = 0f;
+
+                    string id = xml.ReadRequiredAttribute("id");
+
+                    Vector2 newSize = new Vector2().FromString(xml.ReadRequiredAttribute("resizeTo"));
+                    bool aspectRatio = bool.Parse(xml.ReadRequiredAttribute("maintainAspect"));
+                    bool tween = bool.Parse(xml.ReadRequiredAttribute("tween"));
+
+                    if (tween)
+                    {
+                        tweenDuration = float.Parse(xml.ReadRequiredAttribute("tweenDuration"));
+                    }
+
+                    float delay = xml.GetDelay();
+
+                    inst = StuxnetCutsceneInstruction.CreateResizeInstruction(StuxnetCutsceneInstruction.StuxnetCutsceneObjectTypes.Rectangle,
+                        id, newSize, aspectRatio, tweenDuration);
+
+                    inst.Delay = delay;
+                    inst.Cutscene = cutscene;
+
+                    cutscene.RegisterInstruction(inst);
+                }
+
+                if (xml.Name == "DelayEnding" && isReadingInstructions)
                 {
                     StuxnetCutsceneInstruction inst;
 
