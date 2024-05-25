@@ -178,7 +178,41 @@ namespace Stuxnet_HN.Cutscenes
                     cutscene.RegisterInstruction(inst);
                 }
 
-                if(xml.Name == "MoveImage" && isReadingInstructions)
+                if(xml.Name == "FadeInImage" && isReadingInstructions)
+                {
+                    StuxnetCutsceneInstruction inst;
+
+                    string id = xml.ReadRequiredAttribute("id");
+                    float delay = xml.GetDelay();
+                    float duration = float.Parse(xml.ReadRequiredAttribute("duration"));
+
+                    inst = StuxnetCutsceneInstruction.CreateFadeInstruction(StuxnetCutsceneInstruction.StuxnetCutsceneObjectTypes.Image,
+                        id, true, duration);
+
+                    inst.Delay = delay;
+                    inst.Cutscene = cutscene;
+
+                    cutscene.RegisterInstruction(inst);
+                }
+
+                if (xml.Name == "FadeOutImage" && isReadingInstructions)
+                {
+                    StuxnetCutsceneInstruction inst;
+
+                    string id = xml.ReadRequiredAttribute("id");
+                    float delay = xml.GetDelay();
+                    float duration = float.Parse(xml.ReadRequiredAttribute("duration"));
+
+                    inst = StuxnetCutsceneInstruction.CreateFadeInstruction(StuxnetCutsceneInstruction.StuxnetCutsceneObjectTypes.Image,
+                        id, false, duration);
+
+                    inst.Delay = delay;
+                    inst.Cutscene = cutscene;
+
+                    cutscene.RegisterInstruction(inst);
+                }
+
+                if (xml.Name == "MoveImage" && isReadingInstructions)
                 {
                     StuxnetCutsceneInstruction inst;
                     float tweenDuration = 0f;

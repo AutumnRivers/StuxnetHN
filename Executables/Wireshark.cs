@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using BepInEx;
+
 using Hacknet;
 using Hacknet.Gui;
 using Hacknet.UIUtils;
@@ -38,8 +40,6 @@ namespace Stuxnet_HN.Executables
 
         public bool DisplayOverrideIsActive { get; set; }
 
-        private Vector2 lastScroll = Vector2.Zero;
-
         private float loadingProgress = 0f;
         private float visibleProgress = 0f;
         private float loadingProgressWhole = 0f;
@@ -52,6 +52,13 @@ namespace Stuxnet_HN.Executables
 
         private WiresharkContents currentContents;
         private WiresharkContents capturedContents;
+
+        // Button IDs
+        private int exeExitButtonID = PFButton.GetNextID();
+        private int entryExitButtonID = PFButton.GetNextID();
+        private int spareButtonID = PFButton.GetNextID();
+
+        private List<int> entryButtonIDs = new List<int>();
 
         public TrailLoadingSpinnerEffect spinner;
         public float timeActive = 0f;
@@ -142,6 +149,11 @@ namespace Stuxnet_HN.Executables
 
                 currentContents = captureContents;
                 entries = captureContents.entries;
+
+                foreach(var _ in entries)
+                {
+                    entryButtonIDs.Add(PFButton.GetNextID());
+                }
             }
         }
 
@@ -245,9 +257,7 @@ namespace Stuxnet_HN.Executables
 
             if(currentState == WiresharkState.Capturing) { return; }
 
-            int buttonID = 10394832;
-
-            bool exitButton = Button.doButton(buttonID, bounds.X + 5, bounds.Y + bounds.Height - 30, bounds.Width / 3,
+            bool exitButton = Button.doButton(exeExitButtonID, bounds.X + 5, bounds.Y + bounds.Height - 30, bounds.Width / 3,
                 25, "Exit...", Color.Red);
 
             if(exitButton)
@@ -391,18 +401,15 @@ namespace Stuxnet_HN.Executables
             RenderedRectangle.doRectangle(bounds.X, (int)(headerPosition.Y + textVec.Y + 3), bounds.Width, 2,
                 Color.White);
 
-            int entryNumber = 0;
-
             Action<int, Rectangle, SpriteBatch> drawEntries = delegate (int index, Rectangle drawbounds, SpriteBatch sb)
             {
                 if(index + 1 < entries.Count)
                 {
-                    DrawEntryLine(entries[index], drawbounds, entryPosition, textColor, 3718347 + entryNumber);
+                    DrawEntryLine(entries[index], drawbounds, entryPosition, textColor, entryButtonIDs[index]);
                     entryPosition.Y += textVec.Y + 3;
-                    entryNumber++;
                 } else
                 {
-                    DrawEntryLine(entries[entries.Count - 1], drawbounds, entryPosition, textColor, 3718347 + entryNumber);
+                    DrawEntryLine(entries[entries.Count - 1], drawbounds, entryPosition, textColor, spareButtonID);
                     return;
                 }
             };
@@ -450,7 +457,7 @@ namespace Stuxnet_HN.Executables
 
             TextItem.doLabel(new Vector2(bounds.X + 10, bounds.Center.Y + 20), displayContent, textColor);
 
-            bool exitButton = Button.doButton(49120473, bounds.X + 10, bounds.Height + bounds.Y - 60,
+            bool exitButton = Button.doButton(entryExitButtonID, bounds.X + 10, bounds.Height + bounds.Y - 60,
                 150, 50, "Go Back...", Color.Red);
 
             if(exitButton)

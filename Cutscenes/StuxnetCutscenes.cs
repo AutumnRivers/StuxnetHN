@@ -148,6 +148,7 @@ namespace Stuxnet_HN.Cutscenes
         public Vector2 position;
         public Vector2 size;
         public float currentRotation = 0f;
+        public float opacity = 1.0f;
 
         public Vector2 GetCalculatedPosition()
         {
@@ -231,6 +232,9 @@ namespace Stuxnet_HN.Cutscenes
                 }
             }
         }
+
+        // Fade
+        public float FadeDuration = 1.0f;
 
         // Movement Instructions
         public Vector2 newPosition;
@@ -412,7 +416,18 @@ namespace Stuxnet_HN.Cutscenes
                 case InstructionTypes.Resize:
                     ExecuteResize();
                     break;
+                case InstructionTypes.FadeIn:
+                    ExecuteFade(true);
+                    break;
+                case InstructionTypes.FadeOut:
+                    ExecuteFade(false);
+                    break;
             }
+        }
+
+        public void ExecuteFade(bool fadeIn)
+        {
+            CutsceneExecutor.AddFadeImage(typeID, fadeIn, FadeDuration);
         }
 
         public void ExecuteMovement()
@@ -612,6 +627,18 @@ namespace Stuxnet_HN.Cutscenes
                 instructionType = transIn ? InstructionTypes.InstantIn : InstructionTypes.InstantOut,
                 type = objectType.ToString(),
                 typeID = id
+            };
+        }
+
+        public static StuxnetCutsceneInstruction CreateFadeInstruction(StuxnetCutsceneObjectTypes objectType,
+            string id, bool fadeIn, float duration = 1.0f)
+        {
+            return new StuxnetCutsceneInstruction()
+            {
+                instructionType = fadeIn ? InstructionTypes.FadeIn : InstructionTypes.FadeOut,
+                type = objectType.ToString(),
+                typeID = id,
+                FadeDuration = duration
             };
         }
 

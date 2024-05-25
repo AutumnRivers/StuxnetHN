@@ -69,7 +69,7 @@ namespace Stuxnet_HN.Cutscenes.Patches
                     X = img.image.Width / 2,
                     Y = img.image.Height / 2
                 };
-                GuiData.spriteBatch.Draw(img.image, dest, source, Color.White, img.currentRotation,
+                GuiData.spriteBatch.Draw(img.image, dest, source, Color.White * img.opacity, img.currentRotation,
                     origin, SpriteEffects.None, 0.1f);
             }
 
@@ -114,6 +114,11 @@ namespace Stuxnet_HN.Cutscenes.Patches
         internal static List<Tuple<string, Vector2, bool, float, float, Vector2>> targetResizeRects =
             new List<Tuple<string, Vector2, bool, float, float, Vector2>>();
 
+        // Fade Images
+        // Tuple: (string id, float originalOpacity, bool fadeIn, float duration, float progress)
+        internal static List<Tuple<string, float, bool, float, float>> targetFadeImages =
+            new List<Tuple<string, float, bool, float, float>>();
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(PostProcessor), nameof(PostProcessor.end))]
         static void LerpObjects()
@@ -124,34 +129,11 @@ namespace Stuxnet_HN.Cutscenes.Patches
                 return;
             }
 
-            /*if(targetVectorRects.Any())
-            {
-                for (int i = 0; i < targetVectorRects.Count; i++)
-                {
-                    TweenRectangle(cs, gt, i);
-                }
-            }
-
-            if(targetVectorImgs.Any())
-            {
-                for (int i = 0; i < targetVectorImgs.Count; i++)
-                {
-                    TweenImage(cs, gt, i);
-                }
-            }
-
-            if(targetRotations.Any())
-            {
-                for (int i = 0; i < targetRotations.Count; i++)
-                {
-                    RotateImage(cs, gt, i);
-                }
-            }*/
-
             DoActionIfListIsNotEmpty(targetVectorRects, TweenRectangle);
             DoActionIfListIsNotEmpty(targetVectorImgs, TweenImage);
             DoActionIfListIsNotEmpty(targetRotations, RotateImage);
             DoActionIfListIsNotEmpty(targetResizeRects, ResizeRectangle);
+            DoActionIfListIsNotEmpty(targetFadeImages, FadeImage);
         }
 
         private static void DoActionIfListIsNotEmpty<T>(List<T> list, Action<StuxnetCutscene, float, int> actionToRun)
@@ -165,6 +147,32 @@ namespace Stuxnet_HN.Cutscenes.Patches
                     actionToRun.Invoke(ActiveCutscene, gt, i);
                 }
             }
+        }
+
+        private static void FadeImage(StuxnetCutscene cs, float gameTime, int index)
+        {
+            var target = targetFadeImages[index];
+
+            string id = target.Item1;
+            float targetOpacity = target.Item3 ? 1.0f : 0.0f;
+            StuxnetCutsceneImage refImage = cs.images[id];
+            float currentOpacity = refImage.opacity;
+
+            float duration = gameTime / target.Item4;
+            float currentProgress = duration + target.Item5;
+
+            float newOpacity = MathHelper.Lerp(currentOpacity, targetOpacity, currentProgress);
+            refImage.opacity = newOpacity;
+            cs.images[id] = refImage;
+
+            if(currentProgress >= 1.0f)
+            {
+                targetFadeImages.RemoveAt(index);
+                return;
+            }
+
+            var replaceTuple = Tuple.Create(id, target.Item2, target.Item3, target.Item4, currentProgress);
+            targetFadeImages[index] = replaceTuple;
         }
 
         private static void TweenRectangle(StuxnetCutscene cs, float gt, int i)
@@ -379,6 +387,12 @@ namespace Stuxnet_HN.Cutscenes.Patches
 
             var tuple = Tuple.Create(id, targetSize, maintainAspectRatio, tweenDuration, 0f, origin);
             targetResizeRects.Add(tuple);
+        }
+
+        internal static void AddFadeImage(string id, bool fadeIn, float duration)
+        {
+            var tuple = Tuple.Create(id, 1.0f, fadeIn, duration, 0.0f);
+            targetFadeImages.Add(tuple);
         }
 
         public static Vector2 GetRelativeSize(float width, float height)
