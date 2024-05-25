@@ -148,7 +148,7 @@ namespace Stuxnet_HN.Cutscenes
         public Vector2 position;
         public Vector2 size;
         public float currentRotation = 0f;
-        public float opacity = 1.0f;
+        public float opacity = 0.0f;
 
         public Vector2 GetCalculatedPosition()
         {
@@ -390,6 +390,8 @@ namespace Stuxnet_HN.Cutscenes
 
         public void Execute()
         {
+            Console.WriteLine($"Executing {instructionType}...");
+
             switch(instructionType)
             {
                 case InstructionTypes.InstantIn:
@@ -427,6 +429,10 @@ namespace Stuxnet_HN.Cutscenes
 
         public void ExecuteFade(bool fadeIn)
         {
+            if(!cutscene.activeImages.Exists(id => id == typeID) && fadeIn)
+            {
+                cutscene.activeImages.Add(typeID);
+            }
             CutsceneExecutor.AddFadeImage(typeID, fadeIn, FadeDuration);
         }
 
@@ -496,6 +502,7 @@ namespace Stuxnet_HN.Cutscenes
                 } else if(objectType == "Image")
                 {
                     if (cutscene.activeImages.Contains(id)) { return; }
+                    cutscene.images[id].opacity = 1.0f;
                     cutscene.activeImages.Add(id);
                 }
             } else
@@ -508,6 +515,7 @@ namespace Stuxnet_HN.Cutscenes
                 else if (objectType == "Image")
                 {
                     if (!cutscene.activeImages.Contains(id)) { return; }
+                    cutscene.images[id].opacity = 0.0f;
                     cutscene.activeImages.Remove(id);
                 }
             }

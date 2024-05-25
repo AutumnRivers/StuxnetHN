@@ -155,13 +155,15 @@ namespace Stuxnet_HN.Cutscenes.Patches
 
             string id = target.Item1;
             float targetOpacity = target.Item3 ? 1.0f : 0.0f;
+            float startingOpacity = target.Item3 ? 0.0f : 1.0f;
             StuxnetCutsceneImage refImage = cs.images[id];
-            float currentOpacity = refImage.opacity;
 
-            float duration = gameTime / target.Item4;
-            float currentProgress = duration + target.Item5;
+            float lerpAmount = gameTime / target.Item4;
+            float currentProgress = lerpAmount + target.Item5;
 
-            float newOpacity = MathHelper.Lerp(currentOpacity, targetOpacity, currentProgress);
+            Console.WriteLine($"D: {lerpAmount} / P: {currentProgress} / O: {refImage.opacity}");
+
+            float newOpacity = MathHelper.Lerp(startingOpacity, targetOpacity, currentProgress);
             refImage.opacity = newOpacity;
             cs.images[id] = refImage;
 
