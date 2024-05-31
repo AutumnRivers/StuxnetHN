@@ -37,6 +37,10 @@ Let's lay some ground rules:
 <!-- Show Image -->
 <ShowImage id="string" delay="float"/>
 <HideImage id="string" delay="float"/>
+
+<!-- Images can also be faded in and out -->
+<FadeInImage id="string" duration="float" delay="float"/>
+<FadeOutImage id="string" duration="float" delay="float"/>
 ```
 Shows/hides the given object, respectively.
 
@@ -80,3 +84,16 @@ When `forever` is set to `true`, then the image will continue to be rotated at a
 ```
 Stops the current rotation for the image with the id of `id`.
 
+## Resizing
+### Resize Rectangle
+```xml
+<ResizeRectangle id="string" resizeTo="float,float" maintainAspect="bool" tween="bool" tweenDuration="float" delay="float" />
+```
+Resizes a rectangle to `resizeTo`.
+
+* `resizeTo` - The target size for the rectangle, formatted as [Vector2](https://learn.microsoft.com/en-us/previous-versions/windows/silverlight/dotnet-windows-silverlight/bb199660(v=xnagamestudio.35)).
+* `maintainAspect` - Whether or not to maintain the aspect ratio of the rectangle when resizing.
+* `tween` - Whether or not to tween between the current size and the new size.
+* `tweenDuration` - How long it should take for the tweening animation to complete, in seconds. This is only required if `tween` is set to true.
+
+More cutscene features will be added in the future.

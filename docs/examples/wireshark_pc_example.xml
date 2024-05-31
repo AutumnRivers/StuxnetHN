@@ -1,0 +1,30 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<Computer id="wiresharkExample" name="Bitwise Test PC" type="4" icon="laptop" security="2" allowsDefaultBootModule="true">
+    
+    <file path="bin" name="Wireshark.exe">#WIRESHARK_EXE#</file>
+
+    <!-- Pre-Defined file - player can view this right away so long as they have admin permissions on the node -->
+    <wiresharkCapture path="home" name="testcapture.pcap">
+        <pcap id="12" from="127.0.0.1" to="192.168.1.1" method="GET" protocol="TCP" secure="false">el horso</pcap>
+        <pcap id="392" from="127.0.0.1" to="192.168.1.1" method="POST" protocol="TCP" secure="false">god damn you half-japanese girls
+do it to me every time
+oh the redhead said you shred the cello
+and i'm jell-o, baby</pcap>
+        <pcap id="183" from="127.0.0.1" to="192.168.1.1" method="GET" protocol="TCP" secure="false">you just lost the game</pcap>
+        <pcap id="420" from="127.0.0.1" to="192.168.1.1" method="GET" protocol="DNS" secure="false"></pcap>
+        <pcap id="123" from="127.0.0.1" to="192.168.1.1" method="POST" protocol="SSL" secure="true">This is a secure file!</pcap>
+    </wiresharkCapture>
+
+    <!--
+        Secure packets are a bit funky. The player must have admin permissions on the computer that the file came from, and the file must be on the same computer.
+        If the player does not have admin permissions or is on another computer then, the packet will state it is encrypted and cannot be viewed.
+        It's a bit confusing, but it can add some new challenge.
+    -->
+
+    <!-- These are captured by passing the capture launch argument to the executable. -->
+    <WiresharkEntries>
+        <pcap id="1" from="127.0.0.1" to="1.1.1.1" method="PUT" protocol="TCP" secure="false">This node has been wiresharked!</pcap>
+        <pcap id="45" from="127.0.0.1" to="2.2.2.2" method="POST" protocol="UDP" secure="true">This is a secure packet... hush!</pcap>
+    </WiresharkEntries>
+
+</Computer>

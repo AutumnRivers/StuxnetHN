@@ -37,9 +37,11 @@ Gone are the days of listening to the same song on repeat during a long mission,
 Get your golden funky groove on and grab yourself a copy of **RadioV3**!
 
 ### `Wireshark` / `#WIRESHARK_EXE#`
+![Wireshark Example](./docs/images/wireshark_example.jpg)
 
+Based off of the [real-life program of the same name](https://www.wireshark.org/), Wireshark allows you to capture network traffic on certain nodes. It works similarly to `MemForensics`. Wireshark can also be used to "capture" packets on certain nodes by passing `--capture` to the executable. Admin access is required to capture traffic.
 
-Based off of the [real-life program of the same name](https://www.wireshark.org/), Wireshark allows you to capture network traffic on certain nodes. It works similarly to `MemForensics`.
+Please refer to [this example file](./docs/examples/wireshark_pc_example.xml) for more information.
 
 ---
 
