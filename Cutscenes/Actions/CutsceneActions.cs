@@ -71,6 +71,12 @@ namespace Stuxnet_HN.Cutscenes.Actions
 
         public override void Trigger(object os_obj)
         {
+            if (!StuxnetCore.cutsceneIsActive || StuxnetCore.activeCutsceneID == "NONE")
+            {
+                Console.WriteLine(StuxnetCore.logPrefix + "WARN:Tried to run a cutscene action, but there isn't an active cutscene.");
+                return;
+            }
+
             inst.Execute();
         }
     }

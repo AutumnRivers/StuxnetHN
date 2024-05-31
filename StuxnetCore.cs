@@ -52,7 +52,7 @@ namespace Stuxnet_HN
     {
         public const string ModGUID = "autumnrivers.stuxnet";
         public const string ModName = "Stuxnet";
-        public const string ModVer = "1.3.0";
+        public const string ModVer = "1.3.1";
 
         private readonly bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
 
@@ -197,6 +197,7 @@ namespace Stuxnet_HN
             // Cutscene Actions
             ActionManager.RegisterAction<Cutscenes.Actions.RegisterCutscene>("RegisterStuxnetCutscene");
             ActionManager.RegisterAction<Cutscenes.Actions.TriggerCutscene>("TriggerStuxnetCutscene");
+            ActionManager.RegisterAction<Cutscenes.Actions.StopCutscene>("StopActiveCutscene");
 
             // Misc. Actions
             ActionManager.RegisterAction<ForceConnect>("ForceConnectPlayer");

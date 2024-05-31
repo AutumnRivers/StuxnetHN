@@ -40,6 +40,11 @@ namespace Stuxnet_HN.Cutscenes
                 if(xml.Name == "StuxnetCutscene" && xml.IsStartElement())
                 {
                     cutscene.id = xml.ReadRequiredAttribute("id");
+
+                    if(xml.MoveToAttribute("delayHost"))
+                    {
+                        cutscene.delayHostID = xml.ReadContentAsString();
+                    }
                 }
 
                 xml.Read();

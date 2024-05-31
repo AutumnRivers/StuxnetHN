@@ -27,7 +27,7 @@ namespace Stuxnet_HN.Cutscenes.Patches
         internal static bool hasSetDelays = false;
         internal static float totalDelay = 0f;
 
-        private static StuxnetCutscene ActiveCutscene => StuxnetCore.cutscenes[StuxnetCore.activeCutsceneID];
+        internal static StuxnetCutscene ActiveCutscene => StuxnetCore.cutscenes[StuxnetCore.activeCutsceneID];
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(PostProcessor),nameof(PostProcessor.end))]
