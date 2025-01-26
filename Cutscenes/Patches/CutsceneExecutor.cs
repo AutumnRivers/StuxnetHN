@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Hacknet;
 using Hacknet.Gui;
@@ -94,20 +92,19 @@ namespace Stuxnet_HN.Cutscenes.Patches
             StuxnetCore.cutscenes[StuxnetCore.activeCutsceneID] = cs;
         }
 
-        // Tweened Rectangles (Movement)
-        // Tuple: (string id, Rectangle rect, Vector2 targetVec, float tweenDuration, float tweenAmount, Vector2 originPos)
-        internal static List<Tuple<string, Rectangle, Vector2, float, float, Vector2>> targetVectorRects =
-            new List<Tuple<string, Rectangle, Vector2, float, float, Vector2>>();
+        // Tweeners (Rewrite)
+        internal static List<CutsceneTweener> tweeners = new();
 
-        // Tweened Images (Movement)
-        // Tuple: (string id, StuxnetCutsceneImage img, Vector2 targetVec, float tweenDuration, float tweenAmount, Vector2 originPos)
-        internal static List<Tuple<string, StuxnetCutsceneImage, Vector2, float, float, Vector2>> targetVectorImgs =
-            new List<Tuple<string, StuxnetCutsceneImage, Vector2, float, float, Vector2>>();
+        // Rotaters (Rewrite)
+        internal static List<CutsceneRotater> rotaters = new();
 
         // Rotating Images
         // Tuple: (string id, float originalRotation, float targetRotation, float rotationDuration/Speed, float tweenAmount, bool clockwise)
         internal static List<Tuple<string, float, float, float, float, bool>> targetRotations =
             new List<Tuple<string, float, float, float, float, bool>>();
+
+        // Resizers (Rewrite)
+        internal static List<CutsceneResizer> resizers = new();
 
         // Tweened Rectangles (Resize)
         // Tuple: (string id, Vector2 targetSize, bool aspectRatio, float tweenDuration, float tweenAmount, Vector2 originSize)
@@ -129,8 +126,7 @@ namespace Stuxnet_HN.Cutscenes.Patches
                 return;
             }
 
-            DoActionIfListIsNotEmpty(targetVectorRects, TweenRectangle);
-            DoActionIfListIsNotEmpty(targetVectorImgs, TweenImage);
+            DoActionIfListIsNotEmpty(tweeners, ActivateTweener);
             DoActionIfListIsNotEmpty(targetRotations, RotateImage);
             DoActionIfListIsNotEmpty(targetResizeRects, ResizeRectangle);
             DoActionIfListIsNotEmpty(targetFadeImages, FadeImage);
@@ -177,56 +173,44 @@ namespace Stuxnet_HN.Cutscenes.Patches
             targetFadeImages[index] = replaceTuple;
         }
 
-        private static void TweenRectangle(StuxnetCutscene cs, float gt, int i)
+        // Rewrite
+        private static void ActivateTweener(StuxnetCutscene cs, float gt, int i)
         {
-            var target = targetVectorRects[i];
+            CutsceneTweener tweener = tweeners[i];
 
-            string id = target.Item1;
-            float lerpAmount = gt / target.Item4;
-            float tweenAmount = lerpAmount + target.Item5;
+            float lerpAmount = gt / tweener.Duration;
+            float newAmount = lerpAmount + tweener.Amount;
+            tweener.Amount = newAmount;
 
-            Rectangle refRect = cs.rectangles[id];
-            Vector2 currentPos = target.Item6;
-
-            Vector2 newVec = Vector2.Lerp(currentPos, target.Item3, tweenAmount);
-            refRect.X = (int)newVec.X;
-            refRect.Y = (int)newVec.Y;
-            cs.rectangles[id] = refRect;
-
-            if (tweenAmount >= 1.0f)
+            if(tweener.Rect != null)
             {
-                targetVectorRects.RemoveAt(i);
+                Rectangle refRect = cs.rectangles[tweener.ID];
+
+                Vector2 currentPos = new(refRect.X, refRect.Y);
+                Vector2 newVector = Vector2.Lerp(currentPos, tweener.Target, tweener.Amount);
+                refRect.X = (int)newVector.X;
+                refRect.Y = (int)newVector.Y;
+
+                cs.rectangles[tweener.ID] = refRect;
+            } else if(tweener.Image != null)
+            {
+                StuxnetCutsceneImage image = cs.images[tweener.ID];
+
+                Vector2 currentPos = new(image.position.X, image.position.Y);
+                Vector2 newVector = Vector2.Lerp(currentPos, tweener.Target, tweener.Amount);
+                image.position.X = newVector.X;
+                image.position.Y = newVector.Y;
+
+                cs.images[tweener.ID] = image;
+            }
+
+            if(tweener.Amount >= 1.0f)
+            {
+                tweeners.RemoveAt(i);
                 return;
             }
 
-            var replaceTuple = Tuple.Create(id, refRect, target.Item3, target.Item4, tweenAmount, target.Item6);
-            targetVectorRects[i] = replaceTuple;
-        }
-
-        private static void TweenImage(StuxnetCutscene cs, float gt, int i)
-        {
-            var target = targetVectorImgs[i];
-
-            string id = target.Item1;
-            float lerpAmount = gt / target.Item4;
-            float tweenAmount = lerpAmount + target.Item5;
-
-            StuxnetCutsceneImage refImg = cs.images[id];
-            Vector2 currentPos = target.Item6;
-
-            Vector2 newVec = Vector2.Lerp(currentPos, target.Item3, tweenAmount);
-            refImg.position.X = newVec.X;
-            refImg.position.Y = newVec.Y;
-            cs.images[id] = refImg;
-
-            if(tweenAmount >= 1.0f)
-            {
-                targetVectorImgs.RemoveAt(i);
-                return;
-            }
-
-            var replaceTuple = Tuple.Create(id, refImg, target.Item3, target.Item4, tweenAmount, target.Item6);
-            targetVectorImgs[i] = replaceTuple;
+            tweeners[i] = tweener;
         }
 
         private static void RotateImage(StuxnetCutscene cutscene, float gameSeconds, int index)
@@ -341,16 +325,12 @@ namespace Stuxnet_HN.Cutscenes.Patches
 
         internal static void AddTweenedRectangle(string id, Rectangle rect, Vector2 targetVec, float tweenDuration)
         {
-            Vector2 origin = new Vector2(rect.X, rect.Y);
-            var tuple = Tuple.Create(id, rect, targetVec, tweenDuration, 0f, origin);
-            targetVectorRects.Add(tuple);
+            tweeners.Add(new CutsceneTweener(id, rect, targetVec, tweenDuration)); // rewrite
         }
 
         internal static void AddTweenedImage(string id, StuxnetCutsceneImage img, Vector2 targetVec, float tweenDuration)
         {
-            Vector2 origin = new Vector2(img.position.X, img.position.Y);
-            var tuple = Tuple.Create(id, img, targetVec, tweenDuration, 0f, origin);
-            targetVectorImgs.Add(tuple);
+            tweeners.Add(new CutsceneTweener(id, img, targetVec, tweenDuration)); // rewrite
         }
 
         // Tuple: (string id, float originalRotation, float targetRotation, float rotationDuration/Speed, float tweenAmount)
@@ -417,6 +397,83 @@ namespace Stuxnet_HN.Cutscenes.Patches
             relativeVec.Y = y * viewport.Height;
 
             return relativeVec;
+        }
+    }
+
+    internal class CutsceneTweener
+    {
+        public string ID;
+        public Rectangle Rect;
+        public StuxnetCutsceneImage Image;
+        public Vector2 Target;
+        public float Duration;
+        public float Amount = 0f;
+        public Vector2 Origin = Vector2.Zero;
+
+        public CutsceneTweener() { }
+
+        public CutsceneTweener(string id, Rectangle rect, Vector2 target, float duration)
+        {
+            ID = id;
+            Rect = rect;
+            Target = target;
+            Duration = duration;
+            Origin = new Vector2(rect.X, rect.Y);
+        }
+
+        public CutsceneTweener(string id, StuxnetCutsceneImage img, Vector2 target, float duration)
+        {
+            ID = id;
+            Image = img;
+            Target = target;
+            Duration = duration;
+            Origin = new Vector2(img.position.X, img.position.Y);
+        }
+    }
+
+    internal class CutsceneRotater
+    {
+        public string ID;
+        public float Target;
+        public float Duration;
+        public float Speed = 1f;
+        public float Amount = 0f;
+
+        public CutsceneRotater() { }
+
+        public CutsceneRotater(string id, float targetAngle, float duration)
+        {
+            ID = id;
+            Target = targetAngle;
+            Duration = duration;
+        }
+
+        public CutsceneRotater(string id, float speed = 1f)
+        {
+            ID = id;
+            Speed = speed;
+        }
+    }
+
+    internal class CutsceneResizer
+    {
+        public string ID;
+        public Vector2 Target;
+        public bool MaintainAspectRatio;
+        public float Duration;
+        public float Amount = 0f;
+        public Vector2 Origin;
+        public bool IsImage = false;
+
+        public CutsceneResizer() { }
+
+        public CutsceneResizer(string id, Vector2 targetSize, bool aspectRatio, float tweenDuration, bool image = false)
+        {
+            ID = id;
+            Target = targetSize;
+            MaintainAspectRatio = aspectRatio;
+            Duration = tweenDuration;
+            IsImage = image;
         }
     }
 }
