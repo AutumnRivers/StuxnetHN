@@ -127,7 +127,8 @@ namespace Stuxnet_HN.Cutscenes.Patches
             }
 
             DoActionIfListIsNotEmpty(tweeners, ActivateTweener);
-            DoActionIfListIsNotEmpty(targetRotations, RotateImage);
+            //DoActionIfListIsNotEmpty(targetRotations, RotateImage);
+            DoActionIfListIsNotEmpty(rotaters, ActivateRotater);
             DoActionIfListIsNotEmpty(targetResizeRects, ResizeRectangle);
             DoActionIfListIsNotEmpty(targetFadeImages, FadeImage);
         }
@@ -178,11 +179,13 @@ namespace Stuxnet_HN.Cutscenes.Patches
         {
             CutsceneTweener tweener = tweeners[i];
 
+            gt /= 60; // Fixes speed
+
             float lerpAmount = gt / tweener.Duration;
             float newAmount = lerpAmount + tweener.Amount;
             tweener.Amount = newAmount;
 
-            if(tweener.Rect != null)
+            if(tweener.Rect != default)
             {
                 Rectangle refRect = cs.rectangles[tweener.ID];
 
@@ -211,6 +214,60 @@ namespace Stuxnet_HN.Cutscenes.Patches
             }
 
             tweeners[i] = tweener;
+        }
+
+        // Rewrite
+        private static void ActivateRotater(StuxnetCutscene cs, float gt, int i)
+        {
+            CutsceneRotater rotater = rotaters[i];
+
+            bool infinite = rotater.Speed > -0.5f;
+
+            StuxnetCutsceneImage image = cs.images[rotater.ID];
+
+            float origin = image.currentRotation;
+            float target = rotater.Target;
+
+            if(infinite)
+            {
+                target = 359.9f;
+            } else { gt /= 60; }
+            if(!rotater.Clockwise)
+            {
+                target *= -1f;
+            }
+
+            target = MathHelper.ToRadians(target);
+            float lerpAmount;
+            float tweenAmount;
+
+            if(rotater.Duration > 0.01f)
+            {
+                lerpAmount = gt / rotater.Duration;
+                tweenAmount = lerpAmount + rotater.Amount;
+            } else { tweenAmount = 1.0f; }
+
+            if(infinite)
+            {
+                lerpAmount = gt * rotater.Speed;
+                tweenAmount = lerpAmount + rotater.Amount;
+                origin = 0f;
+            }
+            rotater.Amount = tweenAmount;
+
+            float newAngle = MathHelper.Lerp(origin, target, rotater.Amount);
+            cs.images[rotater.ID].currentRotation = newAngle;
+
+            if(rotater.Amount >= 1.0f && !infinite)
+            {
+                rotaters.RemoveAt(i);
+                return;
+            } else if(rotater.Amount >= 1.0f && infinite)
+            {
+                rotater.Amount = 0f;
+            }
+
+            rotaters[i] = rotater;
         }
 
         private static void RotateImage(StuxnetCutscene cutscene, float gameSeconds, int index)
@@ -336,16 +393,18 @@ namespace Stuxnet_HN.Cutscenes.Patches
         // Tuple: (string id, float originalRotation, float targetRotation, float rotationDuration/Speed, float tweenAmount)
         internal static void AddTimedRotation(string id, float targetAngle, float duration, bool clockwise)
         {
-            StuxnetCutsceneImage img = ActiveCutscene.images[id];
+            /*StuxnetCutsceneImage img = ActiveCutscene.images[id];
             var tuple = Tuple.Create(id, img.currentRotation, targetAngle, duration, 0f, clockwise);
-            targetRotations.Add(tuple);
+            targetRotations.Add(tuple);*/
+            rotaters.Add(new CutsceneRotater(id, targetAngle, duration, clockwise));
         }
 
         internal static void AddInfiniteRotation(string id, float rotationSpeed, bool clockwise)
         {
-            StuxnetCutsceneImage img = ActiveCutscene.images[id];
+            /*StuxnetCutsceneImage img = ActiveCutscene.images[id];
             var tuple = Tuple.Create(id, img.currentRotation, -1f, rotationSpeed, 0f, clockwise);
-            targetRotations.Add(tuple);
+            targetRotations.Add(tuple);*/
+            rotaters.Add(new CutsceneRotater(id, rotationSpeed, clockwise));
         }
 
         // Tuple: (string id, Vector2 targetSize, bool aspectRatio, float tweenDuration, float tweenAmount, Vector2 originSize)
@@ -403,10 +462,10 @@ namespace Stuxnet_HN.Cutscenes.Patches
     internal class CutsceneTweener
     {
         public string ID;
-        public Rectangle Rect;
+        public Rectangle Rect = default;
         public StuxnetCutsceneImage Image;
         public Vector2 Target;
-        public float Duration;
+        public float Duration = 0f;
         public float Amount = 0f;
         public Vector2 Origin = Vector2.Zero;
 
@@ -435,23 +494,26 @@ namespace Stuxnet_HN.Cutscenes.Patches
     {
         public string ID;
         public float Target;
-        public float Duration;
-        public float Speed = 1f;
+        public float Duration = 0f;
+        public float Speed = -1f;
         public float Amount = 0f;
+        public bool Clockwise = true;
 
         public CutsceneRotater() { }
 
-        public CutsceneRotater(string id, float targetAngle, float duration)
+        public CutsceneRotater(string id, float targetAngle, float duration, bool clockwise = true)
         {
             ID = id;
             Target = targetAngle;
             Duration = duration;
+            Clockwise = clockwise;
         }
 
-        public CutsceneRotater(string id, float speed = 1f)
+        public CutsceneRotater(string id, float speed = 1f, bool clockwise = true)
         {
             ID = id;
             Speed = speed;
+            Clockwise = clockwise;
         }
     }
 

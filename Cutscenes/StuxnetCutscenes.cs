@@ -539,15 +539,14 @@ namespace Stuxnet_HN.Cutscenes
         {
             string id = typeID;
 
-            if (CutsceneExecutor.targetRotations.FirstOrDefault(tp => tp.Item1 == id)
-                == null)
+            if(CutsceneExecutor.rotaters.FirstOrDefault(r => r.ID == id) == null)
             {
-                Console.WriteLine(StuxnetCore.logPrefix + "WARN - Couldn't find image ID in targetRotations. Skipping...");
+                Console.WriteLine(StuxnetCore.logPrefix + "WARN - Couldn't find image ID in rotaters. Skipping...");
                 return;
             }
 
-            int index = CutsceneExecutor.targetRotations.FindIndex(tp => tp.Item1 == id);
-            CutsceneExecutor.targetRotations.RemoveAt(index);
+            int index = CutsceneExecutor.rotaters.FindIndex(r => r.ID == id);
+            CutsceneExecutor.rotaters.RemoveAt(index);
         }
 
         public void ExecuteResize()
@@ -569,8 +568,9 @@ namespace Stuxnet_HN.Cutscenes
             StuxnetCore.activeCutsceneID = "NONE";
 
             CutsceneExecutor.hasSetDelays = false;
-            CutsceneExecutor.targetVectorRects.Clear();
-            CutsceneExecutor.targetVectorImgs.Clear();
+            CutsceneExecutor.tweeners.Clear();
+            CutsceneExecutor.rotaters.Clear();
+            CutsceneExecutor.resizers.Clear();
         }
 
         public static StuxnetCutsceneInstruction CreateMovementInstruction(StuxnetCutsceneObjectTypes objectType,

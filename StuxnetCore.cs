@@ -52,7 +52,8 @@ namespace Stuxnet_HN
     {
         public const string ModGUID = "autumnrivers.stuxnet";
         public const string ModName = "Stuxnet";
-        public const string ModVer = "1.3.1";
+        public const string ModVer = "1.3.2";
+        public const string VersionName = "Absolute Cinema";
 
         private readonly bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
 
@@ -222,20 +223,20 @@ namespace Stuxnet_HN
             EventManager<SaveComputerEvent>.AddHandler(wiresharkSaveDelegate);
             EventManager<SaveComputerLoadedEvent>.AddHandler(wiresharkLoadDelegate);
 
-            LogDebug("Reticulating more splines...");
+            LogDebug("Adding the finishing touches...");
             InitializeRadio();
 
-            LogDebug("--- Finished Loading! \\o/");
+            LogDebug("--- Finished Loading! :D");
 
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("----------------------------------------------------");
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("                       STUXNET                      ");
-            Console.WriteLine("              AUTUMN RIVERS  (C) 2024               ");
+            Console.WriteLine("              AUTUMN RIVERS  (C) 2025               ");
             Console.WriteLine("     This one won't destroy your PC.  Probably.     ");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("----------------------------------------------------");
-            LogDebug("--> v" + ModVer);
+            LogDebug("--> v" + ModVer + $" ({VersionName})");
             Console.ResetColor();
 
             LogDebug(postMsg[random.Next(0, postMsg.Length)]);
@@ -246,6 +247,12 @@ namespace Stuxnet_HN
         public void InitializeStuxnet(OSLoadedEvent os_event)
         {
             if(disableAlerts) { os_event.Os.DisableEmailIcon = true; }
+
+            if(OS.DEBUG_COMMANDS)
+            {
+                os_event.Os.terminal.writeLine($"[DEBUG] Stuxnet Initialized -- StuxnetHN v{ModVer} \"{VersionName}\" (GUID:{ModGUID})");
+                os_event.Os.terminal.writeLine("[DEBUG] ( You're seeing this because debug commands are enabled. )");
+            }
         }
 
         public void CheckIfUserCanSave(OSUpdateEvent os_update)
