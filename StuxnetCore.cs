@@ -52,8 +52,8 @@ namespace Stuxnet_HN
     {
         public const string ModGUID = "autumnrivers.stuxnet";
         public const string ModName = "Stuxnet";
-        public const string ModVer = "1.3.2";
-        public const string VersionName = "Absolute Cinema";
+        public const string ModVer = "1.4.0";
+        public const string VersionName = "Rewriting The Subsystems Update";
 
         private readonly bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
 

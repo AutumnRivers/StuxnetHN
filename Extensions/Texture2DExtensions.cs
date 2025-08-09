@@ -24,18 +24,18 @@ namespace Stuxnet_HN.Extensions
             return new Vector2(scaledWidth, scaledHeight);
         }
 
-        public static Vector2 GetSizeAspect(this Rectangle originalTexture, float newWidth, float newHeight)
+        public static Vector2 GetSizeAspect(this Rectangle originalRectangle, float newWidth, float newHeight)
         {
             // Calculate scaling factors
-            float scaleX = (float)newWidth / originalTexture.Width;
-            float scaleY = (float)newHeight / originalTexture.Height;
+            float scaleX = (float)newWidth / originalRectangle.Width;
+            float scaleY = (float)newHeight / originalRectangle.Height;
 
             // Choose the smaller scale factor to maintain aspect ratio
             float scale = Math.Min(scaleX, scaleY);
 
             // Calculate new dimensions
-            float scaledWidth = originalTexture.Width * scale;
-            float scaledHeight = originalTexture.Height * scale;
+            float scaledWidth = originalRectangle.Width * scale;
+            float scaledHeight = originalRectangle.Height * scale;
 
             return new Vector2(scaledWidth, scaledHeight);
         }

@@ -433,7 +433,7 @@ namespace Stuxnet_HN.Cutscenes
             {
                 cutscene.activeImages.Add(typeID);
             }
-            CutsceneExecutor.AddFadeImage(typeID, fadeIn, FadeDuration);
+            CutsceneExecutor.AddFadeImage(typeID, cutscene.images[typeID], fadeIn, FadeDuration);
         }
 
         public void ExecuteMovement()
@@ -555,7 +555,10 @@ namespace Stuxnet_HN.Cutscenes
 
             if(type == "Rectangle")
             {
-                CutsceneExecutor.AddResizeRectangle(id, ResizeTo, maintainAspectRatio, tweenMovement, TweenDuration);
+                if (!tweenMovement) TweenDuration = 0;
+                Rectangle rect = cutscene.rectangles[id];
+                Vector2 originalSize = new(rect.Width, rect.Height);
+                CutsceneExecutor.AddResizeRectangle(id, ResizeTo, originalSize, maintainAspectRatio, TweenDuration);
             }
         }
 

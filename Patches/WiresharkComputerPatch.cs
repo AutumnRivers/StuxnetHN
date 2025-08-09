@@ -19,7 +19,7 @@ namespace Stuxnet_HN.Patches
     {
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ComputerLoader), "loadComputer")]
-        static void Postfix_WiresharkFiles(ref string filename, ref object __result)
+        public static void Postfix_WiresharkFiles(ref string filename, ref object __result)
         {
             Computer c = (Computer)__result;
             Stream fileStream = File.OpenRead(filename);
@@ -65,7 +65,7 @@ namespace Stuxnet_HN.Patches
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(ComputerLoader), "loadComputer")]
-        static void Postfix_WiresharkedPC(ref string filename, ref object __result)
+        public static void Postfix_WiresharkedPC(ref string filename, ref object __result)
         {
             Computer c = (Computer)__result;
             Stream fileStream = File.OpenRead(filename);
@@ -84,7 +84,8 @@ namespace Stuxnet_HN.Patches
             {
                 WiresharkContents contents = WiresharkContents.Deserialize(xml, c.idName);
 
-                if(!contents.IsValid) { return; }
+                if(!contents.IsValid ||
+                    StuxnetCore.wiresharkComps.ContainsKey(c.idName)) { return; }
 
                 StuxnetCore.wiresharkComps.Add(c.idName, contents);
             }
