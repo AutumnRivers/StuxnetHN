@@ -44,6 +44,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using SongEntry = Stuxnet_HN.Executables.SongEntry;
+using BepInEx.Logging;
 
 namespace Stuxnet_HN
 {
@@ -56,6 +57,8 @@ namespace Stuxnet_HN
         public const string VersionName = "Rewriting The Subsystems Update";
 
         private readonly bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
+
+        public static ManualLogSource Logger;
 
         public static List<string> redeemedCodes = new List<string>();
         public static List<string> unlockedRadio = new List<string>();
@@ -135,15 +138,12 @@ namespace Stuxnet_HN
         {
             Random random = new Random();
 
+            Logger = Log;
+
             LogDebug("Initializing...");
             HarmonyInstance.PatchAll(typeof(StuxnetCore).Assembly);
 
             string extFolderPath = ExtensionLoader.ActiveExtensionInfo.FolderPath;
-
-            LogDebug("Preloading images...");
-            FileStream scanLinesStream = File.OpenRead(extFolderPath + "/Plugins/assets/ScanLinesFix.png");
-            texCache["ScanLinesFix"] = Texture2D.FromStream(GuiData.spriteBatch.GraphicsDevice ,scanLinesStream);
-            scanLinesStream.Dispose();
 
             LogDebug("Loading Daemons...");
             DaemonManager.RegisterDaemon<CodeRedemptionDaemon>();
@@ -155,7 +155,6 @@ namespace Stuxnet_HN
             ExecutableManager.RegisterExecutable<WiresharkExecutable>("#WIRESHARK_EXE#");
 
             LogDebug("Registering Commands...");
-            CommandManager.RegisterCommand("slfix", ToggleScanLinesFix.ToggleFix, true, false);
             CommandManager.RegisterCommand("logcutscenedata", CutsceneDebugCommands.LogCutsceneData, true, false);
 
             #region register actions
@@ -236,7 +235,7 @@ namespace Stuxnet_HN
             Console.WriteLine("     This one won't destroy your PC.  Probably.     ");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("----------------------------------------------------");
-            LogDebug("--> v" + ModVer + $" ({VersionName})");
+            LogDebug(string.Format("--> v{0} ({1})", ModVer, VersionName));
             Console.ResetColor();
 
             LogDebug(postMsg[random.Next(0, postMsg.Length)]);
