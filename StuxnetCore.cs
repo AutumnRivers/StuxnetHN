@@ -45,6 +45,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 using SongEntry = Stuxnet_HN.Executables.SongEntry;
 using BepInEx.Logging;
+using System.Runtime.CompilerServices;
 
 namespace Stuxnet_HN
 {
@@ -78,7 +79,7 @@ namespace Stuxnet_HN
 
         public static bool disableAlerts = false;
 
-        public static Dictionary<string, WiresharkContents> wiresharkComps = new Dictionary<string, WiresharkContents>();
+        public static Dictionary<string, WiresharkContents> wiresharkComps = new();
 
         // Custom Replacements
         public static Dictionary<string, string> customReplacements = new Dictionary<string, string>();

@@ -15,7 +15,6 @@ using Pathfinder.Util;
 
 using Stuxnet_HN.Cutscenes.Actions;
 using Stuxnet_HN.Extensions;
-using ObjectTypes = Stuxnet_HN.Cutscenes.StuxnetCutsceneInstruction.StuxnetCutsceneObjectTypes;
 
 namespace Stuxnet_HN.Cutscenes.Patches
 {
@@ -167,21 +166,18 @@ namespace Stuxnet_HN.Cutscenes.Patches
         private static void ActivateTweener(StuxnetCutscene cs, float gt, int i)
         {
             CutsceneTweener tweener = tweeners[i];
+            float gameTime = (float)OS.currentInstance.lastGameTime.ElapsedGameTime.TotalSeconds;
 
-            gt /= 60; // Fixes speed
-
-            float lerpAmount = gt / tweener.Duration;
-            float newAmount = lerpAmount + tweener.Amount;
-            tweener.Amount = newAmount;
+            tweener.Amount += gameTime / tweener.Duration;
 
             if(tweener.Rect != default)
             {
                 Rectangle refRect = cs.rectangles[tweener.ID];
 
                 Vector2 currentPos = new(refRect.X, refRect.Y);
-                Vector2 newVector = Vector2.Lerp(currentPos, tweener.Target, tweener.Amount);
-                refRect.X = (int)newVector.X;
-                refRect.Y = (int)newVector.Y;
+                Vector2 lerpedPos = Vector2.Lerp(tweener.Origin, tweener.Target, tweener.Amount);
+                refRect.X = (int)Math.Round(lerpedPos.X);
+                refRect.Y = (int)Math.Round(lerpedPos.Y);
 
                 cs.rectangles[tweener.ID] = refRect;
             } else if(tweener.Image != null)
@@ -189,7 +185,7 @@ namespace Stuxnet_HN.Cutscenes.Patches
                 StuxnetCutsceneImage image = cs.images[tweener.ID];
 
                 Vector2 currentPos = new(image.position.X, image.position.Y);
-                Vector2 newVector = Vector2.Lerp(currentPos, tweener.Target, tweener.Amount);
+                Vector2 newVector = Vector2.Lerp(tweener.Origin, tweener.Target, tweener.Amount);
                 image.position.X = newVector.X;
                 image.position.Y = newVector.Y;
 
@@ -262,8 +258,6 @@ namespace Stuxnet_HN.Cutscenes.Patches
         private static void ActivateResizer(StuxnetCutscene cs, float gt, int i)
         {
             CutsceneResizer resizer = resizers[i];
-
-            gt /= 60; // Fixes speed
             bool tween = resizer.Tween;
 
             if (!tween)
@@ -288,14 +282,23 @@ namespace Stuxnet_HN.Cutscenes.Patches
             float lerpAmount = tween ? gt / resizer.Duration : 0;
             float newAmount = lerpAmount + resizer.Amount;
             resizer.Amount = newAmount;
+            Vector2 targetRelativeSize = GetRelativeSize(resizer.Target.X, resizer.Target.Y);
 
             if(resizer.IsImage)
             {
                 StuxnetCutsceneImage image = cs.images[resizer.ID];
+                if (resizer.Origin == Vector2.Zero)
+                {
+                    resizer.Origin = image.size;
+                }
                 resizeImage(image);
             } else
             {
                 Rectangle rectangle = cs.rectangles[resizer.ID];
+                if (resizer.Origin == Vector2.Zero)
+                {
+                    resizer.Origin = new Vector2(rectangle.Width, rectangle.Height);
+                }
                 resizeRectangle(rectangle);
             }
 
@@ -306,12 +309,12 @@ namespace Stuxnet_HN.Cutscenes.Patches
 
                 if(resizer.MaintainAspectRatio)
                 {
-                    newSize = rect.LerpSizeAspect(resizer.Target, resizer.Origin, resizer.Amount);
+                    newSize = rect.LerpSizeAspect(targetRelativeSize, resizer.Origin, resizer.Amount);
                 } else
                 {
                     GraphicsDevice userGraphics = GuiData.spriteBatch.GraphicsDevice;
                     Viewport viewport = userGraphics.Viewport;
-                    Vector2 targetCalculatedSize = Vector2.Lerp(resizer.Origin, resizer.Target, resizer.Amount);
+                    Vector2 targetCalculatedSize = Vector2.Lerp(resizer.Origin, targetRelativeSize, resizer.Amount);
 
                     Vector2 calculatedNewSize = new(
                         targetCalculatedSize.X * viewport.Width,
@@ -378,7 +381,7 @@ namespace Stuxnet_HN.Cutscenes.Patches
 
         public static Vector2 GetRelativeSize(float width, float height)
         {
-            Vector2 relativeVec = new Vector2();
+            Vector2 relativeVec = new();
             Viewport viewport = GuiData.spriteBatch.GraphicsDevice.Viewport;
 
             relativeVec.X = width * viewport.Width;
@@ -456,7 +459,7 @@ namespace Stuxnet_HN.Cutscenes.Patches
         public Vector2 Target;
         public bool MaintainAspectRatio;
         public bool Tween = false;
-        public Vector2 Origin;
+        public Vector2 Origin = Vector2.Zero;
         public bool IsImage = false;
 
         public CutsceneResizer() { }

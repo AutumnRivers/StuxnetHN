@@ -51,6 +51,7 @@ namespace Stuxnet_HN.Cutscenes
 
                 if(xml.Name == "StuxnetCutscene" && !xml.IsStartElement())
                 {
+                    StuxnetCore.Logger.LogInfo("Successfully registered cutscene with ID of " + cutscene.id);
                     return cutscene;
                 }
 
