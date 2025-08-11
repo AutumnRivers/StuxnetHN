@@ -46,6 +46,7 @@ using Microsoft.Xna.Framework.Graphics;
 using SongEntry = Stuxnet_HN.Executables.SongEntry;
 using BepInEx.Logging;
 using System.Runtime.CompilerServices;
+using Microsoft.Xna.Framework.Audio;
 
 namespace Stuxnet_HN
 {
@@ -54,15 +55,15 @@ namespace Stuxnet_HN
     {
         public const string ModGUID = "autumnrivers.stuxnet";
         public const string ModName = "Stuxnet";
-        public const string ModVer = "1.4.0";
-        public const string VersionName = "Rewriting The Subsystems Update";
+        public const string ModVer = "2.0.0";
+        public const string VersionName = "WannaCry";
 
         private readonly bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
 
         public static ManualLogSource Logger;
 
-        public static List<string> redeemedCodes = new List<string>();
-        public static List<string> unlockedRadio = new List<string>();
+        public static List<string> redeemedCodes = new();
+        public static List<string> unlockedRadio = new();
 
         public static Dictionary<string, int> receivedKeys = new Dictionary<string, int>();
 
@@ -132,7 +133,15 @@ namespace Stuxnet_HN
             "I'd just like to interject for moment.",
             "All hail Mott!",
             "Splines: Reticulated.",
-            "All roads lead to Rome!"
+            "All roads lead to Rome!",
+            "Goddamnit, Kris, where the HELL are we!?",
+            "Preem. Let's delta outta here, choom.",
+            "Oissu! Nice-a Neicha desu!",
+            "KAGUYA, LOOK, A PLANE! BAHAHAHAHAHA",
+            "What is small child doing with a 'hacked net'?",
+            "[ GONE FISHIN' ]",
+            "* But nobody came.",
+            "They fly now? They fly now."
         };
 
         public override bool Load()
@@ -231,8 +240,10 @@ namespace Stuxnet_HN
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("----------------------------------------------------");
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("                       STUXNET                      ");
-            Console.WriteLine("              AUTUMN RIVERS  (C) 2025               ");
+            Console.WriteLine("              < << <<< STUXNET >>> >> >             ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("              AUTUMN RIVERS   (C)  2025             ");
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("     This one won't destroy your PC.  Probably.     ");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("----------------------------------------------------");
@@ -246,7 +257,7 @@ namespace Stuxnet_HN
 
         public void InitializeStuxnet(OSLoadedEvent os_event)
         {
-            if(disableAlerts) { os_event.Os.DisableEmailIcon = true; }
+            if (disableAlerts) { os_event.Os.DisableEmailIcon = true; }
 
             if(OS.DEBUG_COMMANDS)
             {
