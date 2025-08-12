@@ -15,6 +15,11 @@ namespace StuxnetHN.Audio
             Console.WriteLine(string.Format("SASS.OGG: Attempting to load OGG at path: {0}", filePath));
 #endif
 
+            if(!File.Exists(filePath))
+            {
+                throw new FileNotFoundException("Could not find ogg file");
+            }
+
             if(!IsOggVorbis(filePath))
             {
                 throw new FileLoadException(string.Format("The OGG file at {0} could not be loaded, as it does not " +
@@ -55,23 +60,27 @@ namespace StuxnetHN.Audio
             {
                 var header = new byte[30];
                 if (fs.Read(header, 0, header.Length) != header.Length)
+                {
+                    StuxnetAudioCore.Logger.LogError("OGG file has incorrect header length");
                     return false;
+                }
 
                 // Check for 'OggS' capture pattern at start
                 if (!(header[0] == 'O' && header[1] == 'g' && header[2] == 'g' && header[3] == 'S'))
+                {
+                    StuxnetAudioCore.Logger.LogError("OGG file does not start with OggS");
                     return false;
-
-                // Vorbis packets start with 0x01 + "vorbis" ASCII
-                // This is usually at offset 29 (start of first packet payload)
-                const string vorbisSignature = "\x01vorbis";
+                }
 
                 fs.Seek(29, SeekOrigin.Begin);
                 var vorbisHeader = new byte[7];
                 if (fs.Read(vorbisHeader, 0, vorbisHeader.Length) != vorbisHeader.Length)
+                {
+                    StuxnetAudioCore.Logger.LogError("OGG file is missing vorbis header");
                     return false;
+                }
 
-                string vorbisStr = Encoding.ASCII.GetString(vorbisHeader);
-                return vorbisStr == vorbisSignature;
+                return true;
             }
         }
     }
