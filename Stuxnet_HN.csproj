@@ -102,6 +102,8 @@
     <Compile Include="Cutscenes\Patches\CutsceneExecutor.cs" />
     <Compile Include="Cutscenes\StuxnetCutsceneRegister.cs" />
     <Compile Include="Cutscenes\StuxnetCutscenes.cs" />
+    <Compile Include="Daemons\BYOD\BYODCore.cs" />
+    <Compile Include="Daemons\BYOD\BYODDaemon.cs" />
     <Compile Include="Daemons\CodeRedemptionDaemon.cs" />
     <Compile Include="Daemons\DebugDaemon.cs" />
     <Compile Include="Daemons\VaultDaemon.cs" />
