@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace StuxnetHN.Audio.Actions
 {
     [Pathfinder.Meta.Load.Action("PlaySound")]
-    public class PlaySFX : PathfinderAction
+    public class PlaySFX : DelayablePathfinderAction
     {
         [XMLStorage]
         public string SoundID;
@@ -16,7 +16,7 @@ namespace StuxnetHN.Audio.Actions
         internal static SoundEffect BipSound;
         internal static SoundEffect StingerSFX;
 
-        public override void Trigger(object os_obj)
+        public override void Trigger(OS os)
         {
             if(SoundID.ToLower() == "random")
             {
@@ -73,12 +73,12 @@ namespace StuxnetHN.Audio.Actions
     }
 
     [Pathfinder.Meta.Load.Action("PlayCustomSound")]
-    public class PlayCustomSoundAction : PathfinderAction
+    public class PlayCustomSoundAction : DelayablePathfinderAction
     {
         [XMLStorage]
         public string SoundFile;
 
-        public override void Trigger(object os_obj)
+        public override void Trigger(OS os)
         {
             string filepath = Utils.GetFileLoadPrefix() + SoundFile;
 
