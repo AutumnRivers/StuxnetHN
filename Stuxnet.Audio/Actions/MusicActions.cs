@@ -11,7 +11,7 @@ using Pathfinder.Util;
 namespace StuxnetHN.Audio.Actions
 {
     [Pathfinder.Meta.Load.Action("PlayCustomSong")]
-    public class PlaySongAction : PathfinderAction
+    public class PlaySongAction : DelayablePathfinderAction
     {
         [XMLStorage]
         public string SongFile;
@@ -19,7 +19,7 @@ namespace StuxnetHN.Audio.Actions
         [XMLStorage]
         public bool Immediately = false;
 
-        public override void Trigger(object os_obj)
+        public override void Trigger(OS os)
         {
             string command = "playCustomSong";
             if (Immediately) command += "Immediatley";
@@ -30,12 +30,12 @@ namespace StuxnetHN.Audio.Actions
     }
 
     [Pathfinder.Meta.Load.Action("StopMusic")]
-    public class StopMusicAction : PathfinderAction
+    public class StopMusicAction : DelayablePathfinderAction
     {
         [XMLStorage]
         public bool FadeOut = true;
 
-        public override void Trigger(object os_obj)
+        public override void Trigger(OS os)
         {
             if(FadeOut)
             {
