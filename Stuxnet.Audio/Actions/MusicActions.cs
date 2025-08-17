@@ -1,4 +1,4 @@
-﻿using Pathfinder.Action;
+using Pathfinder.Action;
 using Hacknet;
 using Pathfinder.Util;
 
