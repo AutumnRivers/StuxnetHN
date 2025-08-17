@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using States = Stuxnet_HN.Static.States.IllustratorStates;
 using Stuxnet_HN.Actions.Dialogue;
+using Stuxnet_HN.Localization;
 
 namespace Stuxnet_HN.Patches
 {
@@ -94,12 +95,11 @@ namespace Stuxnet_HN.Patches
         private static float totalLineHeight = 0f;
         private static readonly List<TextLine> textLines = new();
 
-        private const string ctcText = "Click to continue...";
-
         private static readonly SpriteFont ctcFont = GuiData.detailfont;
 
         public static void DrawCtcDialogue(OS os, string textToWrite, string endActionsPath)
         {
+            string ctcText = string.Format("{0}...", Localizer.GetLocalized("Click anywhere to continue"));
             ParseText(textToWrite);
 
             TextLine currentTextLine = textLines[currentLine];

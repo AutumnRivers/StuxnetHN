@@ -1,23 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-
 using BepInEx;
-
 using Hacknet;
 using Hacknet.Gui;
 using Hacknet.UIUtils;
-
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
 using Pathfinder.Executable;
 using Pathfinder.GUI;
 using Pathfinder.Util;
-
 using Stuxnet_HN.Patches;
+using Stuxnet_HN.Localization;
 
 namespace Stuxnet_HN.Executables
 {
@@ -67,13 +61,19 @@ namespace Stuxnet_HN.Executables
 
         public WiresharkExecutable() : base()
         {
-            this.baseRamCost = 250;
-            this.ramCost = 250;
-            this.IdentifierName = "Wireshark";
-            this.name = "Wireshark";
-            this.needsProxyAccess = false;
+            baseRamCost = 250;
+            ramCost = 250;
+            IdentifierName = "Wireshark";
+            name = "Wireshark";
+            needsProxyAccess = false;
 
             spinner = new TrailLoadingSpinnerEffect(os);
+        }
+
+        private void Notify(string notif)
+        {
+            string notifTemplate = "[WSHRK] {0}";
+            os.terminal.writeLine(string.Format(notifTemplate, Localizer.GetLocalized(notif)));
         }
 
         public override void OnInitialize()
@@ -81,20 +81,21 @@ namespace Stuxnet_HN.Executables
             base.OnInitialize();
 
             Computer targetComp = ComputerLookup.FindByIp(targetIP);
+            
 
             foreach (var exe in os.exes)
             {
                 if (exe is WiresharkExecutable)
                 {
-                    this.needsRemoval = true;
-                    os.terminal.writeLine("[WSHRK] Only one instance of Wireshark can be ran at a time!");
+                    needsRemoval = true;
+                    Notify("Only one instance of Wireshark can be ran at a time!");
                 }
             }
 
             if(Args.Length < 2)
             {
-                this.needsRemoval = true;
-                os.terminal.writeLine("[WSHRK] No Arguments Found - Please refer to the user manual");
+                needsRemoval = true;
+                Notify("No Arguments Found - Please refer to the user manual");
                 return;
             }
 
@@ -105,18 +106,18 @@ namespace Stuxnet_HN.Executables
             {
                 if(!targetComp.PlayerHasAdminPermissions())
                 {
-                    this.needsRemoval = true;
-                    os.terminal.writeLine("[WSHRK] You must have administrator access to capture a node's traffic.");
+                    needsRemoval = true;
+                    Notify("You must have administrator access to capture a node's traffic.");
                 } else if(os.ramAvaliable < 350)
                 {
-                    this.needsRemoval = true;
-                    os.terminal.writeLine("[WSHRK] Capturing traffic requires 350mb of RAM or more.");
+                    needsRemoval = true;
+                    Notify("Capturing traffic requires 350mb of RAM or more.");
                 }
 
-                this.ramCost = 350;
-                this.CanBeKilled = false;
+                ramCost = 350;
+                CanBeKilled = false;
 
-                os.terminal.writeLine("[WSHRK] Capturing network traffic...");
+                Notify("Capturing network traffic...");
 
                 currentState = WiresharkState.Capturing;
 
@@ -134,7 +135,7 @@ namespace Stuxnet_HN.Executables
                 if(!captureFile.data.StartsWith("WIRESHARK_NETWORK_CAPTURE(PCAP) :: 1.37.2 -----------"))
                 {
                     currentState = WiresharkState.Error;
-                    os.terminal.writeLine("[WHSRK] Invalid File");
+                    Notify("Invalid File");
                     return;
                 }
 
@@ -143,7 +144,7 @@ namespace Stuxnet_HN.Executables
                 if(captureContents == null || !captureContents.IsValid)
                 {
                     currentState = WiresharkState.Error;
-                    os.terminal.writeLine("[WHSRK] Invalid File");
+                    Notify("Invalid File");
                     return;
                 }
 
@@ -203,7 +204,8 @@ namespace Stuxnet_HN.Executables
             FileEntry pcapFile = new FileEntry(contents.GetEncodedFileString(), $"{targetIP}.pcap");
             userWiresharkFolder.files.Add(pcapFile);
 
-            os.terminal.writeLine($"[WSHRK] Capture file written to /home/wireshark/{filename}! <3");
+            string localizedTemplate = Localizer.GetLocalized("Capture file written to /home/wireshark/{0}!");
+            os.terminal.writeLine(string.Format(localizedTemplate + " <3", filename));
 
             target.log("WIRESHARK_CAPTURE_CREATED");
         }
@@ -225,28 +227,28 @@ namespace Stuxnet_HN.Executables
             switch(currentState)
             {
                 case WiresharkState.Loading:
-                    currentStateString = "LOADING...";
+                    currentStateString = Localizer.GetLocalized("LOADING...");
                     DisplayOverrideIsActive = true;
                     break;
                 case WiresharkState.ShowEntry:
                 case WiresharkState.ShowEntries:
                 case WiresharkState.CaptureSuccess:
-                    currentStateString = "ACTIVE";
+                    currentStateString = Localizer.GetLocalized("ACTIVE");
                     DisplayOverrideIsActive = true;
                     break;
                 case WiresharkState.Capturing:
-                    currentStateString = "CAPTURING";
+                    currentStateString = Localizer.GetLocalized("CAPTURING");
                     RenderCaptureProgress(bounds, t);
                     DisplayOverrideIsActive = false;
                     break;
                 case WiresharkState.CaptureFailure:
                 case WiresharkState.Error:
-                    currentStateString = "!! ERROR !!";
+                    currentStateString = Localizer.GetLocalized("!! ERROR !!");
                     DisplayOverrideIsActive = false;
                     break;
             }
 
-            if(isExiting) { currentStateString = "Shutting down..."; }
+            if(isExiting) { currentStateString = Localizer.GetLocalized("Shutting down..."); }
 
             Vector2 smallVec = GuiData.tinyfont.MeasureString("test");
 
@@ -262,8 +264,8 @@ namespace Stuxnet_HN.Executables
 
             if(exitButton)
             {
-                this.DisplayOverrideIsActive = false;
-                this.isExiting = true;
+                DisplayOverrideIsActive = false;
+                isExiting = true;
             }
         }
 
@@ -278,7 +280,7 @@ namespace Stuxnet_HN.Executables
                 if(!StuxnetCore.wiresharkComps.ContainsKey(targetComp.idName))
                 {
                     currentState = WiresharkState.Error;
-                    os.terminal.writeLine("[WSHRK] No Relevant Network Traffic Found");
+                    Notify("No Relevant Network Traffic Found");
                     return;
                 }
 
@@ -296,7 +298,7 @@ namespace Stuxnet_HN.Executables
             string startBar = "[";
             string endBar = "]";
 
-            StringBuilder loadingBar = new StringBuilder("");
+            StringBuilder loadingBar = new("");
 
             Vector2 smallVec = GuiData.smallfont.MeasureString("[");
 
@@ -345,7 +347,8 @@ namespace Stuxnet_HN.Executables
 
         public void RenderErrorScreen(Rectangle dest)
         {
-            DrawCenteredText(dest, "ERROR :: Check Terminal for More Information", GuiData.font);
+            string localizedError = Localizer.GetLocalized("Check Terminal for More Information");
+            DrawCenteredText(dest, string.Format("ERROR :: {0}", localizedError), GuiData.font);
         }
 
         private void RenderLoadingScreen(Rectangle bounds)
@@ -376,7 +379,8 @@ namespace Stuxnet_HN.Executables
 
             if (entries.Count <= 0)
             {
-                DrawCenteredText(bounds, "No Entries Found :(", GuiData.font);
+                string noEntries = Localizer.GetLocalized("No Entries Found");
+                DrawCenteredText(bounds, string.Format("{0} :(", noEntries), GuiData.font);
                 return;
             }
 
@@ -451,14 +455,16 @@ namespace Stuxnet_HN.Executables
                 targetComp.idName != currentContents.originID)
                 )
             {
-                displayContent = "-- UNABLE TO VIEW ENCRYPTED PACKET --\n\n" +
-                    "Please refer to the user manual.";
+                string encryptedText = Localizer.GetLocalized("UNABLE TO VIEW ENCRYPTED PACKET");
+                string manualText = Localizer.GetLocalized("Please refer to the user manual.");
+                displayContent = string.Format("{0}\n\n{1}", encryptedText, manualText);
             }
 
             TextItem.doLabel(new Vector2(bounds.X + 10, bounds.Center.Y + 20), displayContent, textColor);
 
+            string backText = Localizer.GetLocalized("Go Back");
             bool exitButton = Button.doButton(entryExitButtonID, bounds.X + 10, bounds.Height + bounds.Y - 60,
-                150, 50, "Go Back...", Color.Red);
+                150, 50, string.Format("{0}...", backText), Color.Red);
 
             if(exitButton)
             {
@@ -537,8 +543,9 @@ namespace Stuxnet_HN.Executables
             xPositions[6] = xPositions[5] + (bounds.Width * 0.1f);  // method
 
             entryPosition.X = xPositions[0];
+            string viewText = Localizer.GetLocalized("View");
             bool viewButton = Button.doButton(buttonID, (int)entryPosition.X, (int)entryPosition.Y, (int)(bounds.Width * 0.15f),
-                (int)fontVector.Y, "View...", Color.CornflowerBlue);
+                (int)fontVector.Y, string.Format("{0}...", viewText), Color.CornflowerBlue);
 
             if(viewButton)
             {
@@ -590,6 +597,15 @@ namespace Stuxnet_HN.Executables
 
         public string Content { get; private set; }
 
+        public string EmptyContent
+        {
+            get
+            {
+                string emptyText = Localizer.GetLocalized("Empty Packet Data");
+                return string.Format("-- {0} --", emptyText);
+            }
+        }
+
         public WiresharkEntry(uint id, string ipTo, bool isSecure = false, string method = "GET", string protocol = "TCP")
         {
             this.id = id;
@@ -600,7 +616,7 @@ namespace Stuxnet_HN.Executables
             this.length = 0;
             this.secure = isSecure;
 
-            Content = "-- Empty Packet Data --";
+            Content = EmptyContent;
         }
 
         public WiresharkEntry(uint id, string ipFrom, string ipTo,
@@ -614,7 +630,7 @@ namespace Stuxnet_HN.Executables
             this.length = 0;
             this.secure = isSecure;
 
-            Content = "-- Empty Packet Data --";
+            Content = EmptyContent;
         }
 
         public WiresharkEntry(uint id, string ipFrom, string ipTo, string content,
@@ -629,7 +645,7 @@ namespace Stuxnet_HN.Executables
 
             if (content.IsNullOrWhiteSpace())
             {
-                Content = "-- Empty Packet Data --";
+                Content = EmptyContent;
                 this.length = 0;
             } else
             {

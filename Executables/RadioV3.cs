@@ -1,18 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-
 using Hacknet;
 using Hacknet.Effects;
 using Hacknet.Extensions;
-
 using Pathfinder.Executable;
-
 using Newtonsoft.Json;
-
 using Microsoft.Xna.Framework;
-
 using Hacknet.Gui;
+using Stuxnet_HN.Localization;
 
 namespace Stuxnet_HN.Executables
 {
@@ -76,9 +72,11 @@ namespace Stuxnet_HN.Executables
 
             if(StuxnetCore.allowRadio == false)
             {
-                Vector2 blockVector = GuiData.smallfont.MeasureString(LocaleTerms.Loc("-- Radio access is denied --"));
-                Vector2 blockPosition = new Vector2((float)(bounds.X + bounds.Width / 2) - blockVector.X / 2f, (float)(bounds.Y + bounds.Height / 2 - 10) - 20f);
-                GuiData.spriteBatch.DrawString(GuiData.smallfont, LocaleTerms.Loc("-- Radio access is denied --"), blockPosition, Color.White);
+                string disabledText = string.Format("-- {0} --", Localizer.GetLocalized("Radio access is denied"));
+                Vector2 blockVector = GuiData.smallfont.MeasureString(disabledText);
+                Vector2 blockPosition = new((bounds.X + bounds.Width / 2) - blockVector.X / 2f,
+                    (bounds.Y + bounds.Height / 2 - 10) - 20f);
+                GuiData.spriteBatch.DrawString(GuiData.smallfont, disabledText, blockPosition, Color.White);
 
                 bool exitButton1 = Button.doButton(192017, bounds.X + 10, (int)blockPosition.Y + 25,
                 bounds.Width - 20, 20, "Exit", Color.Red);

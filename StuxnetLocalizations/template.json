@@ -1,0 +1,91 @@
+{
+    "//1": "Wireshark Terms",
+    
+    "Only one instance of Wireshark can be ran at a time!": "",
+    "No Arguments Found - Please refer to the user manual": "",
+    "You must have administrator access to capture a node's traffic.": "",
+    "Capturing traffic requires 350mb of RAM or more.": "",
+    "Capturing network traffic...": "",
+    "Invalid File": "",
+    "Capture file written to /home/wireshark/{0}!": "",
+
+    "LOADING...": "",
+    "ACTIVE": "",
+    "CAPTURING": "",
+    "!! ERROR !!": "",
+    "Shutting down...": "",
+
+    "No Relevant Network Traffic Found": "",
+    "Check Terminal for More Information": "",
+
+    "No Entries Found": "",
+    "UNABLE TO VIEW ENCRYPTED PACKET": "",
+    "Please refer to the user manual.": "",
+    "Empty Packet Data": "",
+
+    "//2": "Radio Terms",
+
+    "Radio access is denied": "",
+
+    "//3": "Visual Novel Terms",
+
+    "Click anywhere to continue": "",
+
+    "//4": "Revolution Terms",
+
+    "THIS TARGET HAS NO SUCH WEAKNESS! RETREAT!": "",
+    "The Target Must Not Have an Active Firewall": "",
+    "WE APPRECIATE THE ENERGY, BUT IT IS NOT REQUIRED HERE!": "",
+    "The target PC does not have Inviolability.": "",
+    "ONE AT A TIME! ONE AT A TIME!": "",
+    "hnOS fork maintained by anon": "",
+
+    "SEARCHING FOR WEAKNESS...": "",
+    "WE'LL HOLD THE DOOR OPEN! GO GO GO!": "",
+    "REST, COMRADE! WE WILL FIGHT ANOTHER DAY": "",
+
+    "INITIALIZING": "",
+    "EXPLOITING": "",
+    "TAKING ARMS": "",
+    "RETREATING": "",
+
+    "//5": "Code Redemption Daemon Terms",
+
+    "Code Successful!": "",
+    "Code Failed...": "",
+
+    "//6": "Vault Daemon Terms",
+
+    "Access to the vault is denied.": "",
+    "All {0} keys are required.": "",
+    "LOCKED": "",
+    "UNLOCKED": "",
+    "ACCESS GRANTED": "",
+    "ACCESS DENIED": "",
+
+    "//7": "Stuxnet.Quest Terms",
+
+    "Active Missions": "",
+    "Abandon Mission": "",
+    "Complete Mission": "",
+
+    "//8": "SNS Terms",
+
+    "Send": "",
+    "You have {0} unread messages": "",
+    "You're all caught up!": "",
+    "{0} is offline...": "",
+    "You said \"{0}\"": "",
+    "{0} added you": "",
+    "{0} added {1} to the group.": "",
+    "You are blocked by this user.": "",
+    "You have blocked this user.": "",
+    "Message Failed To Send": "",
+
+    "//9": "Gamemode Terms",
+
+    "Select Your Starting Path": "",
+    "You have selected {0}.": "",
+    "Are you sure?": "",
+    "Saves are disabled in this mode.": ""
+}

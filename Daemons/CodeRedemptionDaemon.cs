@@ -15,6 +15,7 @@ using Microsoft.Xna.Framework.Graphics;
 using BepInEx;
 
 using Newtonsoft.Json;
+using Stuxnet_HN.Localization;
 
 namespace Stuxnet_HN.Daemons
 {
@@ -135,11 +136,11 @@ namespace Stuxnet_HN.Daemons
 
                 if(CheckCode(cachedUserInput))
                 {
-                    resultText = "Code Success!";
+                    resultText = Localizer.GetLocalized("Code Successful!");
                     resultColor = Color.Green;
                 } else
                 {
-                    resultText = "Code Failed...";
+                    resultText = Localizer.GetLocalized("Code Failed...");
                     resultColor = Color.Red;
                 }
 

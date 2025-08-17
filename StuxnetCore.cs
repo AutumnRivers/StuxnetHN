@@ -259,6 +259,8 @@ namespace Stuxnet_HN
         {
             if (disableAlerts) { os_event.Os.DisableEmailIcon = true; }
 
+            Localization.Localizer.Initialize();
+
             if(OS.DEBUG_COMMANDS)
             {
                 os_event.Os.terminal.writeLine($"[DEBUG] Stuxnet Initialized -- StuxnetHN v{ModVer} \"{VersionName}\" (GUID:{ModGUID})");

@@ -111,17 +111,16 @@
     <Compile Include="Executables\RadioV3.cs" />
     <Compile Include="Executables\RevolutionExe.cs" />
     <Compile Include="Executables\Wireshark.cs" />
-    <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\Texture2DExtensions.cs" />
     <Compile Include="Extensions\Vector2Extensions.cs" />
     <Compile Include="Extensions\XmlReaderExtensions.cs" />
+    <Compile Include="Localization\Localizer.cs" />
     <Compile Include="Patches\ApplyCustomReplacements.cs" />
     <Compile Include="Patches\ExtSequencerPatch.cs" />
     <Compile Include="Patches\Illustrator.cs" />
     <Compile Include="Patches\MissionDisplayLogo.cs" />
     <Compile Include="Patches\Wireshark\WiresharkContents.cs" />
     <Compile Include="Patches\Wireshark\WiresharkCompExecutors.cs" />
-    <Compile Include="Replacements\DrawScanlines.cs" />
     <Compile Include="Static\States.cs" />
     <Compile Include="StuxnetCore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -134,9 +133,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="docs\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="assets\ScanLinesFix.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

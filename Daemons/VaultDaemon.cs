@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Pathfinder.Daemon;
 using Pathfinder.Util;
@@ -13,6 +10,7 @@ using Hacknet.Gui;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using BepInEx;
+using Stuxnet_HN.Localization;
 
 namespace Stuxnet_HN.Daemons
 {
@@ -74,7 +72,8 @@ namespace Stuxnet_HN.Daemons
             int maxKeys = int.Parse(MaximumKeys);
 
             // Title of vault
-            GuiData.spriteBatch.DrawString(GuiData.font, Name, new Vector2(boundaryX + 30, boundaryY + 30), Color.WhiteSmoke, 0.0f, Vector2.Zero, 2.1f, SpriteEffects.None, 0.1f);
+            GuiData.spriteBatch.DrawString(GuiData.font, Name, new Vector2(boundaryX + 30, boundaryY + 30),
+                Color.WhiteSmoke, 0.0f, Vector2.Zero, 2.1f, SpriteEffects.None, 0.1f);
 
             // Fancy divider
             RenderedRectangle.doRectangle(boundaryX, boundaryY + 125, bounds.Width, 30, os.defaultHighlightColor);
@@ -95,16 +94,20 @@ namespace Stuxnet_HN.Daemons
             {
                 if(i < maxKeys && currentKeys > i)
                 {
-                    Button.doButton(11 * (i + 1), boundaryX + 20, boundaryY + (baseOffset + (offsetInterval * i)), 400, 40, "UNLOCKED", os.brightUnlockedColor);
+                    Button.doButton(11 * (i + 1), boundaryX + 20, boundaryY + (baseOffset + (offsetInterval * i)), 400, 40, 
+                        Localizer.GetLocalized("UNLOCKED"), os.brightUnlockedColor);
                 } else if(i < maxKeys)
                 {
-                    Button.doButton(11 * (i + 1), boundaryX + 20, boundaryY + (baseOffset + (offsetInterval * i)), 400, 40, "LOCKED", os.brightLockedColor);
+                    Button.doButton(11 * (i + 1), boundaryX + 20, boundaryY + (baseOffset + (offsetInterval * i)), 400, 40, 
+                        Localizer.GetLocalized("LOCKED"), os.brightLockedColor);
                 } else if(i == maxKeys && currentKeys >= maxKeys)
                 {
-                    grantedButton = Button.doButton(211, boundaryX + 20, boundaryY + (baseOffset + (offsetInterval * i)), 400, 30, "ACCESS GRANTED :: " + SecretCode, Color.Green);
+                    grantedButton = Button.doButton(211, boundaryX + 20, boundaryY + (baseOffset + (offsetInterval * i)),
+                        400, 30, string.Format("{0} :: {1}", Localizer.GetLocalized("ACCESS GRANTED"), SecretCode), Color.Green);
                 } else if(i == maxKeys && currentKeys < maxKeys)
                 {
-                    deniedButton = Button.doButton(211, boundaryX + 20, boundaryY + (baseOffset + (offsetInterval * i)), 400, 30, "ACCESS DENIED", os.lockedColor);
+                    deniedButton = Button.doButton(211, boundaryX + 20, boundaryY + (baseOffset + (offsetInterval * i)),
+                        400, 30, Localizer.GetLocalized("ACCESS DENIED"), os.lockedColor);
                 }
             }
 
@@ -117,11 +120,14 @@ namespace Stuxnet_HN.Daemons
             if (deniedButton)
             { // Warn the user they still need all the keys
                 os.warningFlash();
-                os.write("\nAccess to the vault is denied. All " + MaximumKeys + " keys are required.\n");
+                string accessDenied = Localizer.GetLocalized("Access to the vault is denied.");
+                string allKeys = Localizer.GetLocalized("All {0} keys are required.");
+                os.write(string.Format("\n{0}\n{1}\n", accessDenied, string.Format(allKeys, MaximumKeys)));
             };
 
             // *notices your code comment* owo
-            TextItem.doFontLabel(new Vector2(boundaryX + 20, (bounds.Height + bounds.Y) - 35), Message, GuiData.smallfont, os.terminalTextColor);
+            TextItem.doFontLabel(new Vector2(boundaryX + 20, (bounds.Height + bounds.Y) - 35),
+                Message, GuiData.smallfont, os.terminalTextColor);
         }
 
         public static string RandomString(int length)
