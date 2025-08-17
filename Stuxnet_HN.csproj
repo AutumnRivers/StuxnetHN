@@ -109,6 +109,7 @@
     <Compile Include="Daemons\DebugDaemon.cs" />
     <Compile Include="Daemons\VaultDaemon.cs" />
     <Compile Include="Executables\RadioV3.cs" />
+    <Compile Include="Executables\RevolutionExe.cs" />
     <Compile Include="Executables\Wireshark.cs" />
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\Texture2DExtensions.cs" />
