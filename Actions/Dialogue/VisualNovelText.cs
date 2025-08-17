@@ -68,7 +68,7 @@ namespace Stuxnet_HN.Actions.Dialogue
                 StuxnetCore.dialogueText = Text;
                 StuxnetCore.dialogueSpeed = dialogueSpeed;
                 StuxnetCore.dialogueEndActions = EndDialogueActions;
-                StuxnetCore.dialogueColor = new Color().FromString(TextColor);
+                StuxnetCore.dialogueColor = Utils.convertStringToColor(TextColor);
 
                 StuxnetCore.dialogueIsCtc = true;
                 StuxnetCore.dialogueIsActive = true;
@@ -141,7 +141,7 @@ namespace Stuxnet_HN.Actions.Dialogue
                 StuxnetCore.dialogueText = Text;
                 StuxnetCore.dialogueSpeed = dialogueSpeed;
                 StuxnetCore.dialogueEndActions = EndDialogueActions;
-                StuxnetCore.dialogueColor = new Color().FromString(TextColor);
+                StuxnetCore.dialogueColor = Utils.convertStringToColor(TextColor);
 
                 StuxnetCore.illustState = Static.States.IllustratorStates.AutoDialogue;
 

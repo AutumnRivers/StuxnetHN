@@ -1,20 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using BepInEx;
-
+﻿using BepInEx;
 using Hacknet;
 using Hacknet.Gui;
-
 using HarmonyLib;
-
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml;
 using States = Stuxnet_HN.Static.States.IllustratorStates;
+using Stuxnet_HN.Actions.Dialogue;
 
 namespace Stuxnet_HN.Patches
 {
@@ -93,7 +92,7 @@ namespace Stuxnet_HN.Patches
 
         private static int currentLine = 0;
         private static float totalLineHeight = 0f;
-        private static readonly List<TextLine> textLines = new List<TextLine>();
+        private static readonly List<TextLine> textLines = new();
 
         private const string ctcText = "Click to continue...";
 
@@ -177,7 +176,7 @@ namespace Stuxnet_HN.Patches
                 }
 
                 Vector2 ctcVec = ctcFont.MeasureString(ctcText);
-                Vector2 ctcPos = new Vector2(
+                Vector2 ctcPos = new(
                     (gameScreen.X + gameScreen.Width / 2) - ctcVec.X / 2f,
                     gameScreen.Height - 25);
 
@@ -223,6 +222,42 @@ namespace Stuxnet_HN.Patches
                 os.terminal.visible = true;
 
                 return;
+            }
+
+            bool nextActionIsDialogue = false;
+            using (FileStream input = File.OpenRead(LocalizedFileLoader.GetLocalizedFilepath(Utils.GetFileLoadPrefix() + endActionsPath)))
+            {
+                XmlReader rdr = XmlReader.Create(input);
+                RunnableConditionalActions runnableConditionalActions = RunnableConditionalActions.Deserialize(rdr);
+                foreach(var actionSet in runnableConditionalActions.Actions)
+                {
+                    if(actionSet.Actions.Any(a => a is VisualNovelText.CTCDialogueAction ||
+                    a is VisualNovelText.AutoDialogueAction ||
+                    a is ChapterTitleActions.ShowChapterTitle))
+                    {
+                        nextActionIsDialogue = true;
+                        break;
+                    }
+                }
+                input.Close();
+            }
+
+            if(!nextActionIsDialogue)
+            {
+                StuxnetCore.illustState = States.None;
+
+                os.DisableTopBarButtons = false;
+
+                if (StuxnetCore.colorsCache.ContainsKey("topBarTextColor"))
+                {
+                    os.topBarTextColor = StuxnetCore.colorsCache["topBarTextColor"];
+                    os.topBarColor = StuxnetCore.colorsCache["topBarColor"];
+                }
+
+                os.display.visible = true;
+                os.netMap.visible = true;
+                os.ram.visible = true;
+                os.terminal.visible = true;
             }
 
             RunnableConditionalActions.LoadIntoOS(endActionsPath, os);
