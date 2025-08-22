@@ -69,10 +69,10 @@
     "Abandon Mission": "",
     "Complete Mission": "",
 
-    "//8": "SNS Terms",
+    "//8": "SMS/Messenger Terms",
 
     "Send": "",
-    "You have {0} unread messages": "",
+    "You have {0} unread messages.": "",
     "You're all caught up!": "",
     "{0} is offline...": "",
     "You said \"{0}\"": "",
@@ -81,6 +81,8 @@
     "You are blocked by this user.": "",
     "You have blocked this user.": "",
     "Message Failed To Send": "",
+    "You received a message from {0}": "",
+    "Messenger is disabled": "",
 
     "//9": "Gamemode Terms",
 

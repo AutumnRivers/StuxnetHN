@@ -47,6 +47,7 @@ using SongEntry = Stuxnet_HN.Executables.SongEntry;
 using BepInEx.Logging;
 using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework.Audio;
+using Stuxnet_HN.SMS;
 
 namespace Stuxnet_HN
 {
@@ -258,6 +259,21 @@ namespace Stuxnet_HN
         public void InitializeStuxnet(OSLoadedEvent os_event)
         {
             if (disableAlerts) { os_event.Os.DisableEmailIcon = true; }
+
+            NodeAttachment.BipSound = os_event.Os.content.Load<SoundEffect>("SFX/Bip");
+
+            RamModule ramModule = os_event.Os.ram;
+            int screenHeight = Math.Max(os_event.Os.terminal.Bounds.Height,
+                os_event.Os.display.Bounds.Height);
+            Rectangle smsBounds = new()
+            {
+                X = ramModule.Bounds.X + ramModule.Bounds.Width + 1,
+                Y = ramModule.Bounds.Y,
+                Height = screenHeight,
+                Width = os_event.Os.display.Bounds.Width + os_event.Os.terminal.Bounds.Width + 2
+            };
+            SMSModule smsModule = new(smsBounds, os_event.Os);
+            os_event.Os.modules.Add(smsModule);
 
             Localization.Localizer.Initialize();
 

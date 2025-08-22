@@ -96,6 +96,7 @@
     <Compile Include="Actions\VaultKeyActions.cs" />
     <Compile Include="Actions\WriteToTerminal.cs" />
     <Compile Include="Commands\CutsceneDebugCommands.cs" />
+    <Compile Include="Commands\SMSCommands.cs" />
     <Compile Include="Conditions\OnCutsceneEnd.cs" />
     <Compile Include="Conditions\OnSequencerKill.cs" />
     <Compile Include="Cutscenes\Actions\CutsceneActions.cs" />
@@ -121,6 +122,9 @@
     <Compile Include="Patches\MissionDisplayLogo.cs" />
     <Compile Include="Patches\Wireshark\WiresharkContents.cs" />
     <Compile Include="Patches\Wireshark\WiresharkCompExecutors.cs" />
+    <Compile Include="SMS\SMSIllustrator.cs" />
+    <Compile Include="SMS\SMSMessage.cs" />
+    <Compile Include="SMS\SMSSystem.cs" />
     <Compile Include="Static\States.cs" />
     <Compile Include="StuxnetCore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
