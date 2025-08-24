@@ -168,6 +168,9 @@ namespace Stuxnet_HN
             LogDebug("Registering Commands...");
             CommandManager.RegisterCommand("logcutscenedata", CutsceneDebugCommands.LogCutsceneData, true, false);
 
+            CommandManager.RegisterCommand("messenger", SMSCommands.ActivateSMS);
+            CommandManager.RegisterCommand("unread", SMSCommands.CheckUnread);
+
             #region register actions
             LogDebug("Registering Actions...");
             // Radio Actions
@@ -550,10 +553,13 @@ namespace Stuxnet_HN
 
     public static class StringExt
     {
-        public static string Truncate(this string value, int maxLength)
+#nullable enable
+        public static string? Truncate(this string? value, int maxLength, string truncationSuffix = "...")
         {
-            if (string.IsNullOrEmpty(value)) return value;
-            return value.Length <= maxLength ? value : value.Substring(0, maxLength);
+            return value?.Length > maxLength
+                ? value.Substring(0, maxLength) + truncationSuffix
+                : value;
         }
+#nullable disable
     }
 }

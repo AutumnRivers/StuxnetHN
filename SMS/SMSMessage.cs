@@ -11,11 +11,13 @@ namespace Stuxnet_HN.SMS
     public class SMSMessage
     {
         public string Author { get; set; }
+        public string ChannelName { get; set; }
         public string Content { get; set; }
         public List<SMSAttachment> Attachments { get; set; } = new();
         public bool HasBeenRead { get; set; } = false;
+        public string OnReadActionsFilepath { get; set; } = null;
 
-        public bool IsPlayer => Author == OS.currentInstance.SaveGameUserName;
+        public bool IsPlayer => Author == ComputerLoader.filter("#PLAYERNAME#");
 
         public void AddAttachment(SMSAttachment attachment)
         {
@@ -25,6 +27,10 @@ namespace Stuxnet_HN.SMS
 
         public void ReadMessage()
         {
+            if(!OnReadActionsFilepath.IsNullOrWhiteSpace() && !HasBeenRead)
+            {
+                RunnableConditionalActions.LoadIntoOS(OnReadActionsFilepath, OS.currentInstance);
+            }
             HasBeenRead = true;
         }
     }
@@ -32,11 +38,13 @@ namespace Stuxnet_HN.SMS
     public class QueuedSMSMessage
     {
         public SMSMessage Message { get; set; }
+        public string ID { get; set; }
         public bool Cancelled { get; set; } = false;
 
-        public QueuedSMSMessage(SMSMessage message)
+        public QueuedSMSMessage(SMSMessage message, string id)
         {
             Message = message;
+            ID = id;
         }
     }
 

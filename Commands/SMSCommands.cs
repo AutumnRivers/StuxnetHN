@@ -8,7 +8,6 @@ namespace Stuxnet_HN.Commands
 {
     public class SMSCommands
     {
-        [Command("messenger")]
         public static void ActivateSMS(OS os, string[] args)
         {
             if(ThemeManager.currentTheme is OSTheme.TerminalOnlyBlack)
@@ -26,7 +25,6 @@ namespace Stuxnet_HN.Commands
             SMSModule.Activate();
         }
 
-        [Command("unread")]
         public static void CheckUnread(OS os, string[] args)
         {
             string notification = Localizer.GetLocalized("You're all caught up!") + " :)";

@@ -122,6 +122,7 @@
     <Compile Include="Patches\MissionDisplayLogo.cs" />
     <Compile Include="Patches\Wireshark\WiresharkContents.cs" />
     <Compile Include="Patches\Wireshark\WiresharkCompExecutors.cs" />
+    <Compile Include="SMS\SMSActions.cs" />
     <Compile Include="SMS\SMSIllustrator.cs" />
     <Compile Include="SMS\SMSMessage.cs" />
     <Compile Include="SMS\SMSSystem.cs" />
