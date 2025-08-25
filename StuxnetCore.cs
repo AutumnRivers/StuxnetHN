@@ -554,8 +554,16 @@ namespace Stuxnet_HN
     public static class StringExt
     {
 #nullable enable
-        public static string? Truncate(this string? value, int maxLength, string truncationSuffix = "...")
+        public static string? Truncate(this string? value, int maxLength, string truncationSuffix = "...",
+            bool splitNewlines = false)
         {
+            if(splitNewlines && value.Contains("\n"))
+            {
+                value = value.Split('\n')[0];
+                return value?.Length > maxLength
+                ? value.Substring(0, maxLength) + truncationSuffix
+                : value + truncationSuffix;
+            }
             return value?.Length > maxLength
                 ? value.Substring(0, maxLength) + truncationSuffix
                 : value;

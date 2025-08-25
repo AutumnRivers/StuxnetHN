@@ -243,7 +243,7 @@ namespace Stuxnet_HN.SMS
             SMSMessage lastMessage = SMSSystem.ActiveMessages.Last(msg => msg.ChannelName == channel);
             string lastMessageContent = lastMessage.Content;
 
-            lastMessageContent = lastMessageContent.Truncate(27);
+            lastMessageContent = lastMessageContent.Truncate(27, splitNewlines: true);
             lastMessageContent = lastMessage.Author + ": " + lastMessageContent;
 
             if (!lastMessage.HasBeenRead)
@@ -336,8 +336,8 @@ namespace Stuxnet_HN.SMS
 
             bool needsScroll = finalHeight >= MessageHistoryBounds.Height;
 
-            Rectangle panelDest = Bounds;
-            panelDest.Height = finalHeight + 50;
+            Rectangle panelDest = MessageHistoryBounds;
+            panelDest.Height = finalHeight + MESSAGE_PADDING;
             if (needsScroll)
             {
                 ScrollablePanel.beginPanel(PanelID, panelDest, MessageHistoryScrollPosition);
@@ -346,13 +346,14 @@ namespace Stuxnet_HN.SMS
             lastMessageOffset = 0;
             foreach(var msg in messages)
             {
-                DrawMessage(msg);
+                DrawMessage(msg, needsScroll);
             }
 
             if(needsScroll)
             {
                 var maxScroll = Math.Max(MessageHistoryBounds.Height, finalHeight - MessageHistoryBounds.Height);
-                ScrollablePanel.endPanel(PanelID, MessageHistoryScrollPosition, panelDest, maxScroll);
+                MessageHistoryScrollPosition = ScrollablePanel.endPanel(PanelID, MessageHistoryScrollPosition,
+                    MessageHistoryBounds, maxScroll);
             }
 
             DrawBottomPanel();
@@ -375,21 +376,29 @@ namespace Stuxnet_HN.SMS
                 Color.Lerp(os.moduleColorBacking, Color.Black, 0.1f));
         }
 
-        private void DrawMessage(SMSMessage message)
+        private void DrawMessage(SMSMessage message, bool needsScroll)
         {
             bool isLast = SMSSystem.GetActiveMessagesForChannel(message.ChannelName).Last() == message;
             int messageHeight = (int)MeasureMessage(message).Y;
 
+            int xOffset = MessageHistoryBounds.X;
+            int baseYOffset = MessageHistoryBounds.Y;
+            if(needsScroll)
+            {
+                xOffset = 0;
+                baseYOffset = 0;
+            }
+
             Rectangle bottomBorder = new()
             {
-                X = MessageHistoryBounds.X,
-                Y = MessageHistoryBounds.Y + lastMessageOffset + messageHeight + MESSAGE_PADDING - 1,
+                X = xOffset,
+                Y = baseYOffset + lastMessageOffset + messageHeight + MESSAGE_PADDING - 1,
                 Width = MessageHistoryBounds.Width,
                 Height = 1
             };
             if(!isLast)
             {
-                spriteBatch.Draw(Utils.white, bottomBorder, os.lightGray);
+                GuiData.spriteBatch.Draw(Utils.white, bottomBorder, os.lightGray);
             }
 
             string content = ComputerLoader.filter(message.Content);
@@ -397,6 +406,7 @@ namespace Stuxnet_HN.SMS
                 GuiData.smallfont);
 
             int authorHeight = (int)(GuiData.font.MeasureString(message.Author).Y * 0.65f);
+            int contentHeight = (int)GuiData.smallfont.MeasureString(content).Y;
 
             Color authorColor = Color.White;
             if(SMSSystem.AuthorColors.ContainsKey(message.Author))
@@ -404,21 +414,64 @@ namespace Stuxnet_HN.SMS
                 authorColor = SMSSystem.AuthorColors[message.Author];
             }
 
-            spriteBatch.DrawString(GuiData.font, message.Author,
-                new Vector2(MessageHistoryBounds.X + MESSAGE_PADDING,
-                MessageHistoryBounds.Y + lastMessageOffset + (MESSAGE_PADDING * 2)),
+            GuiData.spriteBatch.DrawString(GuiData.font, message.Author,
+                new Vector2(xOffset + MESSAGE_PADDING,
+                baseYOffset + lastMessageOffset + (MESSAGE_PADDING * 2)),
                 authorColor, 0f, Vector2.Zero, 0.65f,
                 Microsoft.Xna.Framework.Graphics.SpriteEffects.None, 1f);
-            spriteBatch.DrawString(GuiData.smallfont, content,
-                new(MessageHistoryBounds.X + MESSAGE_PADDING,
-                MessageHistoryBounds.Y + lastMessageOffset + (MESSAGE_PADDING * 2) + authorHeight + 3),
+            GuiData.spriteBatch.DrawString(GuiData.smallfont, content,
+                new(xOffset + MESSAGE_PADDING,
+                baseYOffset + lastMessageOffset + (MESSAGE_PADDING * 2) + authorHeight + 3),
                 Color.White);
-            /*TextItem.doSmallLabel(new Vector2(MessageHistoryBounds.X + MESSAGE_PADDING,
-                MessageHistoryBounds.Y + lastMessageOffset + (MESSAGE_PADDING * 2) + authorHeight + 3),
-                content, Color.White);*/
             message.ReadMessage();
 
+            var baseAttachmentYOffset = baseYOffset + lastMessageOffset + contentHeight +
+                (MESSAGE_PADDING * 2) + authorHeight + 3;
+            foreach(var attachment in message.Attachments)
+            {
+                RenderAttachment(attachment,
+                    new Vector2(xOffset + (MESSAGE_PADDING * 2), baseAttachmentYOffset));
+                baseAttachmentYOffset +=
+                    (int)GuiData.smallfont.MeasureString(attachment.DisplayName).Y + MESSAGE_PADDING;
+            }
+
             lastMessageOffset += messageHeight;
+        }
+
+        private void RenderAttachment(SMSAttachment attachment, Vector2 position)
+        {
+            var mousePosition = GuiData.getMousePos();
+            var attachmentTextSize = GuiData.smallfont.MeasureString(attachment.DisplayName);
+
+            int xOffset = (int)position.X;
+            GuiData.spriteBatch.DrawString(GuiData.smallfont, "* ",
+                new Vector2(xOffset, position.Y), os.lightGray);
+            xOffset += (int)GuiData.smallfont.MeasureString("* ").X;
+
+            if (mouseHovering(xOffset))
+            {
+                RenderedRectangle.doRectangle(
+                    xOffset, (int)position.Y,
+                    (int)attachmentTextSize.X, (int)attachmentTextSize.Y,
+                    Color.White * 0.1f);
+            }
+
+            GuiData.spriteBatch.DrawString(GuiData.smallfont, attachment.DisplayName,
+                new Vector2(xOffset, position.Y), Color.White);
+
+            if(mouseHovering(xOffset) && GuiData.mouseLeftUp())
+            {
+                attachment.OnButtonClicked();
+            }
+
+            bool mouseHovering(int xOffset)
+            {
+                return
+                    (mousePosition.X >= xOffset &&
+                    mousePosition.X <= xOffset + attachmentTextSize.X) &&
+                    (mousePosition.Y >= position.Y &&
+                    mousePosition.Y <= position.Y + attachmentTextSize.Y);
+            }
         }
 
         private int MeasureMessagesHeight(List<SMSMessage> messages)
@@ -449,6 +502,11 @@ namespace Stuxnet_HN.SMS
 
             var messageMeasurement = GuiData.smallfont.MeasureString(content);
             measurement.Y += messageMeasurement.Y;
+
+            foreach(var atch in message.Attachments)
+            {
+                measurement.Y += (int)GuiData.smallfont.MeasureString(atch.DisplayName).Y + MESSAGE_PADDING;
+            }
 
             return measurement;
         }
