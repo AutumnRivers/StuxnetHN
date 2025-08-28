@@ -125,6 +125,8 @@
     <Compile Include="SMS\SMSActions.cs" />
     <Compile Include="SMS\SMSIllustrator.cs" />
     <Compile Include="SMS\SMSMessage.cs" />
+    <Compile Include="SMS\SMSPatches.cs" />
+    <Compile Include="SMS\SMSSaveLoad.cs" />
     <Compile Include="SMS\SMSSystem.cs" />
     <Compile Include="Static\States.cs" />
     <Compile Include="StuxnetCore.cs" />

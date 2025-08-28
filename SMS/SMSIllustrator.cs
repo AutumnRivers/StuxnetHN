@@ -60,6 +60,8 @@ namespace Stuxnet_HN.SMS
     {
         public const int BOTTOM_PANEL_HEIGHT = 85;
 
+        public bool InputLocked { get; set; } = false;
+
         private static bool[] ModuleVisibleCache { get; set; } = new bool[4];
         private static bool _hasCached = false;
 
@@ -110,6 +112,17 @@ namespace Stuxnet_HN.SMS
             };
             MessageHistoryBounds = MessageListBounds;
             MessageHistoryBounds.Height -= BOTTOM_PANEL_HEIGHT;
+        }
+
+        public override void Update(float t)
+        {
+            if(InputLocked && name != "Messenger (INPUT LOCKED)")
+            {
+                name = "Messenger (INPUT LOCKED)";
+            } else if(name != "Messenger")
+            {
+                name = "Messenger";
+            }
         }
 
         public static void Activate()
@@ -164,8 +177,21 @@ namespace Stuxnet_HN.SMS
 
         private int lastMessageOffset = 0;
 
+        private bool MouseInRectangle(Rectangle dest)
+        {
+            var mousePos = GuiData.getMousePos();
+
+            return
+                (mousePos.X >= dest.X &&
+                mousePos.X <= dest.X + dest.Width) &&
+                (mousePos.Y >= dest.Y &&
+                mousePos.Y <= dest.Y + dest.Height);
+        }
+
         public override void Draw(float t)
         {
+            if (!visible) return;
+
             base.Draw(t);
             spriteBatch.Draw(Utils.white, bounds, os.displayModuleExtraLayerBackingColor);
             TextItem.doLabel(new Vector2(bounds.X + 10, bounds.Y + 10),
@@ -184,12 +210,20 @@ namespace Stuxnet_HN.SMS
             lastMessageOffset = 0;
 
             DrawDisplay();
-            if(State != SMSModuleState.ViewMessageHistory)
+            if(State != SMSModuleState.ViewMessageHistory && !InputLocked)
             {
                 bool exit = Button.doButton(ExitButtonID,
                     bounds.X + 10, bounds.Y + bounds.Height - 35,
                     100, 25, "Exit...", os.brightLockedColor);
                 if (exit) Deactivate();
+            }
+
+            if(InputLocked && MouseInRectangle(Bounds))
+            {
+                RenderedRectangle.doRectangle(Bounds.X + 1, Bounds.Y + 1,
+                    Bounds.Width - 2, Bounds.Height - 2, Color.Black * 0.1f);
+                TextItem.doCenteredFontLabel(Bounds, "-- INPUT LOCKED --",
+                    GuiData.smallfont, os.lightGray * 0.4f);
             }
         }
 
@@ -200,9 +234,14 @@ namespace Stuxnet_HN.SMS
             {
                 case SMSModuleState.PreviewMessages:
                 default:
+                    if(channels.Count == 0)
+                    {
+                        TextItem.doCenteredFontLabel(MessageListBounds,
+                            "No Messages :(", GuiData.font, Color.White);
+                    }
                     for(int i = 0; i < channels.Count; i++)
                     {
-                        DrawChannelEntry(channels[i], i);
+                        DrawChannelEntry(channels[i]);
                     }
                     break;
                 case SMSModuleState.ViewMessageHistory:
@@ -228,17 +267,14 @@ namespace Stuxnet_HN.SMS
         {
             get { return GetUsers(); }
         }
-        public List<int> ChannelButtonIDs = new();
 
         private const float USER_TITLE_SCALE = 0.7f;
 
-        private void DrawChannelEntry(string channel, int index)
+        private void DrawChannelEntry(string channel)
         {
+            int startingOffset = lastMessageOffset;
+
             var activeChannels = SMSSystem.ActiveChannels;
-            if(ChannelButtonIDs.Count <= index)
-            {
-                ChannelButtonIDs.Add(PFButton.GetNextID());
-            }
 
             SMSMessage lastMessage = SMSSystem.ActiveMessages.Last(msg => msg.ChannelName == channel);
             string lastMessageContent = lastMessage.Content;
@@ -249,16 +285,6 @@ namespace Stuxnet_HN.SMS
             if (!lastMessage.HasBeenRead)
             {
                 channel += " (!)";
-            }
-
-            bool viewChannel = Button.doButton(ChannelButtonIDs[index],
-                MessageListBounds.X + MessageListBounds.Width - 50,
-                MessageListBounds.Y + lastMessageOffset + 10,
-                40, 40, "->", Color.Transparent);
-            if (viewChannel)
-            {
-                ActiveChannel = lastMessage.ChannelName;
-                State = SMSModuleState.ViewMessageHistory;
             }
 
             if(activeChannels.First() == channel)
@@ -273,15 +299,33 @@ namespace Stuxnet_HN.SMS
                 spriteBatch.Draw(Utils.white, borderTop, os.lightGray);
             }
 
-            spriteBatch.DrawString(GuiData.font, channel,
-                new Vector2(MessageListBounds.X + 13, MessageListBounds.Y + 10 + lastMessageOffset), Color.White,
-                0f, Vector2.Zero, USER_TITLE_SCALE, Microsoft.Xna.Framework.Graphics.SpriteEffects.None, 1f);
             var userVector = GuiData.font.MeasureString(channel) * USER_TITLE_SCALE;
-            TextItem.doSmallLabel(new Vector2(MessageListBounds.X + 13,
-                MessageListBounds.Y + userVector.Y + 5 + lastMessageOffset), lastMessageContent,
-                os.lightGray);
             var previewVector = GuiData.smallfont.MeasureString(lastMessageContent);
             lastMessageOffset += (int)(userVector.Y + previewVector.Y + 15);
+
+            Rectangle activeBox = new()
+            {
+                X = MessageListBounds.X,
+                Y = MessageListBounds.Y + startingOffset,
+                Width = MessageListBounds.Width,
+                Height = lastMessageOffset - startingOffset
+            };
+            if (mouseIsHovering() && !InputLocked)
+            {
+                GuiData.spriteBatch.Draw(Utils.white, activeBox, Color.White * 0.12f);
+                if(GuiData.mouseLeftUp())
+                {
+                    ActiveChannel = lastMessage.ChannelName;
+                    State = SMSModuleState.ViewMessageHistory;
+                }
+            }
+
+            spriteBatch.DrawString(GuiData.font, channel,
+                new Vector2(MessageListBounds.X + 13, MessageListBounds.Y + 10 + startingOffset), Color.White,
+                0f, Vector2.Zero, USER_TITLE_SCALE, Microsoft.Xna.Framework.Graphics.SpriteEffects.None, 1f);
+            TextItem.doSmallLabel(new Vector2(MessageListBounds.X + 13,
+                MessageListBounds.Y + userVector.Y + 5 + startingOffset), lastMessageContent,
+                os.lightGray);
 
             Rectangle borderBottom = new()
             {
@@ -291,6 +335,17 @@ namespace Stuxnet_HN.SMS
                 Height = 1
             };
             spriteBatch.Draw(Utils.white, borderBottom, os.lightGray);
+
+            bool mouseIsHovering()
+            {
+                var mousePos = GuiData.getMousePos();
+
+                return
+                    (mousePos.X >= activeBox.X &&
+                    mousePos.X <= activeBox.X + activeBox.Width) &&
+                    (mousePos.Y >= activeBox.Y &&
+                    mousePos.Y <= activeBox.Y + activeBox.Height);
+            }
         }
 
         private Vector2 MessageHistoryScrollPosition = new(-1,-1);
@@ -317,7 +372,7 @@ namespace Stuxnet_HN.SMS
             bool goBackToMessages = Button.doButton(MessagesReturnID,
                 Bounds.X + Bounds.Width - 110, Bounds.Y + 10,
                 100, 35, "Messages", os.defaultHighlightColor);
-            if(goBackToMessages)
+            if(goBackToMessages && !InputLocked)
             {
                 State = SMSModuleState.PreviewMessages;
                 ActiveChannel = null;
@@ -352,8 +407,14 @@ namespace Stuxnet_HN.SMS
             if(needsScroll)
             {
                 var maxScroll = Math.Max(MessageHistoryBounds.Height, finalHeight - MessageHistoryBounds.Height);
-                MessageHistoryScrollPosition = ScrollablePanel.endPanel(PanelID, MessageHistoryScrollPosition,
-                    MessageHistoryBounds, maxScroll);
+                if(!InputLocked)
+                {
+                    MessageHistoryScrollPosition = ScrollablePanel.endPanel(PanelID, MessageHistoryScrollPosition,
+                        MessageHistoryBounds, maxScroll);
+                } else
+                {
+                    ScrollablePanel.endPanel(PanelID, MessageHistoryScrollPosition, MessageHistoryBounds, maxScroll);
+                }
             }
 
             DrawBottomPanel();
@@ -374,10 +435,61 @@ namespace Stuxnet_HN.SMS
                 Bounds.X, Bounds.Y + Bounds.Height - BOTTOM_PANEL_HEIGHT + 1,
                 Bounds.Width, BOTTOM_PANEL_HEIGHT - 1,
                 Color.Lerp(os.moduleColorBacking, Color.Black, 0.1f));
+
+            DrawChoicesIfAny();
+        }
+
+        private static readonly int[] ChoiceButtonIDs = new int[]
+        {
+            PFButton.GetNextID(),
+            PFButton.GetNextID(),
+            PFButton.GetNextID()
+        };
+
+        private void DrawChoicesIfAny()
+        {
+            if (SMSSystem.ActiveChoices.Count <= 0) return;
+
+            string choiceChannel = SMSSystem.ActiveChoices[0].ChannelName;
+            if (ActiveChannel != choiceChannel) return;
+
+            for(int choiceIndex = 0; choiceIndex < SMSSystem.ActiveChoices.Count; choiceIndex++)
+            {
+                DrawChoiceButton(choiceIndex);
+            }
+        }
+
+        private void DrawChoiceButton(int index)
+        {
+            int buttonID = ChoiceButtonIDs[index];
+            int amountOfChoices = SMSSystem.ActiveChoices.Count;
+            var choice = SMSSystem.ActiveChoices[index];
+
+            int width = Bounds.Width / amountOfChoices;
+            width -= 4;
+            int height = BOTTOM_PANEL_HEIGHT - 4;
+
+            int xPos = (MessageListBounds.X + 2) + (width * index) +
+                (index > 0 ? 2 : 0);
+            int yPos = MessageHistoryBounds.Y + MessageHistoryBounds.Height + 2;
+
+            bool chosen = Button.doButton(buttonID, xPos, yPos, width, height,
+                choice.Content, Color.Transparent);
+            if(chosen)
+            {
+                choice.Chosen();
+                SMSSystem.ActiveChoices.Clear();
+            }
         }
 
         private void DrawMessage(SMSMessage message, bool needsScroll)
         {
+            if(message is SMSSystemMessage systemMessage)
+            {
+                DrawSystemMessage(systemMessage);
+                return;
+            }
+
             bool isLast = SMSSystem.GetActiveMessagesForChannel(message.ChannelName).Last() == message;
             int messageHeight = (int)MeasureMessage(message).Y;
 
@@ -438,6 +550,24 @@ namespace Stuxnet_HN.SMS
             lastMessageOffset += messageHeight;
         }
 
+        private void DrawSystemMessage(SMSSystemMessage systemMessage)
+        {
+            string content = string.Format("- {0} -", systemMessage.Content);
+            Vector2 contentSize = GuiData.smallfont.MeasureString(content);
+
+            Rectangle textDest = new()
+            {
+                X = MessageHistoryBounds.X,
+                Y = MessageHistoryBounds.Y + lastMessageOffset,
+                Width = MessageHistoryBounds.Width,
+                Height = (int)contentSize.Y * 5
+            };
+            TextItem.doCenteredFontLabel(textDest, content, GuiData.smallfont,
+                Utils.SlightlyDarkGray);
+
+            lastMessageOffset += (int)contentSize.Y * 5;
+        }
+
         private void RenderAttachment(SMSAttachment attachment, Vector2 position)
         {
             var mousePosition = GuiData.getMousePos();
@@ -448,7 +578,7 @@ namespace Stuxnet_HN.SMS
                 new Vector2(xOffset, position.Y), os.lightGray);
             xOffset += (int)GuiData.smallfont.MeasureString("* ").X;
 
-            if (mouseHovering(xOffset))
+            if (mouseHovering(xOffset) && !InputLocked)
             {
                 RenderedRectangle.doRectangle(
                     xOffset, (int)position.Y,

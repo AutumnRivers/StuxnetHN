@@ -22,6 +22,13 @@ namespace Stuxnet_HN.Commands
                 return;
             }
 
+            if(SMSSystem.Disabled)
+            {
+                os.beepSound.Play();
+                os.terminal.writeLine(Localizer.GetLocalized("Messenger is disabled"));
+                return;
+            }
+
             SMSModule.Activate();
         }
 

@@ -165,4 +165,249 @@ namespace Stuxnet_HN.SMS
             SMSSystem.CancelQueuedMessage(MessageID);
         }
     }
+
+    [Action("SMSShowChoices")]
+    public class SASMSShowChoices : DelayablePathfinderAction
+    {
+        [XMLStorage]
+        public string ChannelName;
+
+        public List<ElementInfo> ChildElements;
+
+        public override void Trigger(OS os)
+        {
+            if(ChildElements.Count <= 0)
+            {
+                throw new FormatException("SMSShowChoices needs at least one valid choice element!");
+            }
+
+            if(SMSSystem.ActiveChoices.Count > 0)
+            {
+                throw new Exception("You cannot show SMS choices when there are already active choices!");
+            }
+
+            List<SMSChoice> choices = new();
+
+            foreach(var child in ChildElements)
+            {
+                if(child.Name != "Choice")
+                {
+                    StuxnetCore.Logger.LogWarning(string.Format(
+                        "Unrecognized child element '{0}' in SMSShowChoice action. Skipping...",
+                        child.Name));
+                }
+
+                string content = child.Content;
+                if(content.IsNullOrWhiteSpace())
+                {
+                    throw new FormatException("SMSShowChoice child elements must have non-empty content!");
+                }
+
+                string actions = child.ReadRequiredAttribute("OnChosenActions");
+
+                if (choices.Count >= 3) break;
+                choices.Add(new SMSChoice(content, actions, ChannelName));
+            }
+            SMSSystem.ActiveChoices = choices;
+        }
+
+        public override void LoadFromXml(ElementInfo info)
+        {
+            base.LoadFromXml(info);
+            ChildElements = info.Children;
+        }
+
+        public override XElement GetSaveElement()
+        {
+            var elem = base.GetSaveElement();
+            foreach(var child in ChildElements)
+            {
+                elem.Add(child.ConvertToXElement());
+            }
+            return elem;
+        }
+    }
+
+    [Action("SMSHideChoices")]
+    public class SAHideChoices : DelayablePathfinderAction
+    {
+        [XMLStorage]
+        public string OnSuccessActions;
+
+        public override void Trigger(OS os)
+        {
+            if(SMSSystem.ActiveChoices.Any())
+            {
+                RunnableConditionalActions.LoadIntoOS(OnSuccessActions, os);
+                SMSSystem.ActiveChoices.Clear();
+            }
+        }
+    }
+
+    [Action("ForceOpenSMSChannel")]
+    public class SAForceOpenSMSChannel : DelayablePathfinderAction
+    {
+        [XMLStorage]
+        public string ChannelName;
+
+        public override void Trigger(OS os)
+        {
+            SMSModule.GlobalInstance.ActiveChannel = ChannelName;
+            SMSModule.GlobalInstance.State = SMSModule.SMSModuleState.ViewMessageHistory;
+            SMSModule.Activate();
+        }
+    }
+
+    [Action("SMSBlockUser")]
+    public class SABlockUser : DelayablePathfinderAction
+    {
+        [XMLStorage]
+        public string UserBeingBlocked;
+
+        [XMLStorage]
+        public string BlockingUser = "#PLAYERNAME#";
+
+        public override void Trigger(OS os)
+        {
+            if(UserBeingBlocked == BlockingUser)
+            {
+                throw new FormatException("SMSBlockUser : Users cannot block themselves!");
+            }
+
+            if (BlockingUser != "#PLAYERNAME#" && UserBeingBlocked != "#PLAYERNAME#")
+            {
+                StuxnetCore.Logger.LogWarning("SMSBlockUser : The player not being involved in the " +
+                    "blocking won't do anything. Skipping...");
+                return;
+            }
+
+            SMSSystemMessage blockedMessage;
+
+            if(UserBeingBlocked == "#PLAYERNAME#")
+            {
+                blockedMessage = new()
+                {
+                    Author = "System",
+                    Content = SMSSystemMessage.GetSystemMessage("blockplayer"),
+                    ChannelName = BlockingUser
+                };
+            } else
+            {
+                blockedMessage = new()
+                {
+                    Author = "System",
+                    Content = SMSSystemMessage.GetSystemMessage("blockedbyplayer"),
+                    ChannelName = BlockingUser
+                };
+            }
+
+            SMSSystem.SendMessage(blockedMessage);
+        }
+    }
+
+    [Action("SMSAddUser")]
+    public class AddUser : DelayablePathfinderAction
+    {
+        [XMLStorage]
+        public string UserBeingAdded;
+
+        [XMLStorage]
+        public string UserAdding;
+
+        [XMLStorage]
+        public string ChannelName;
+
+        public override void Trigger(OS os)
+        {
+            if (UserBeingAdded == UserAdding) return;
+
+            SMSSystemMessage systemMessage;
+            if(UserBeingAdded == "#PLAYERNAME#" && UserAdding == ChannelName)
+            {
+                systemMessage = new()
+                {
+                    Author = SMSSystemMessage.SYSTEM_AUTHOR,
+                    Content = SMSSystemMessage.GetSystemMessage("addfriend", UserAdding),
+                    ChannelName = ChannelName
+                };
+            } else
+            {
+                systemMessage = new()
+                {
+                    Author = SMSSystemMessage.SYSTEM_AUTHOR,
+                    Content = SMSSystemMessage.GetSystemMessage("addtogc", UserAdding, UserBeingAdded),
+                    ChannelName = ChannelName
+                };
+            }
+
+            SMSSystem.SendMessage(systemMessage);
+        }
+    }
+
+    [Action("SMSGoOffline")]
+    public class SAGoOffline : DelayablePathfinderAction
+    {
+        [XMLStorage]
+        public string User;
+
+        [XMLStorage]
+        public string ChannelName = string.Empty;
+
+        public override void Trigger(OS os)
+        {
+            if(ChannelName.IsNullOrWhiteSpace())
+            {
+                ChannelName = User;
+            }
+
+            SMSSystemMessage systemMessage = new()
+            {
+                Author = SMSSystemMessage.SYSTEM_AUTHOR,
+                Content = SMSSystemMessage.GetSystemMessage("gooffline", User),
+                ChannelName = ChannelName
+            };
+
+            SMSSystem.SendMessage(systemMessage);
+        }
+    }
+
+    [Action("SMSFailSendMessage")]
+    public class SAFailMessage : DelayablePathfinderAction
+    {
+        [XMLStorage]
+        public string ChannelName;
+
+        public override void Trigger(OS os)
+        {
+            SMSSystemMessage systemMessage = new()
+            {
+                Author = SMSSystemMessage.SYSTEM_AUTHOR,
+                Content = SMSSystemMessage.GetSystemMessage("failsend"),
+                ChannelName = ChannelName
+            };
+
+            SMSSystem.SendMessage(systemMessage);
+        }
+    }
+
+    [Action("ForceCloseSMS")]
+    public class SAForceCloseSMS : DelayablePathfinderAction
+    {
+        public override void Trigger(OS os)
+        {
+            SMSModule.GlobalInstance.visible = false;
+        }
+    }
+
+    [Action("ForbidSMS")]
+    public class SAForbidSMS : DelayablePathfinderAction
+    {
+        [XMLStorage]
+        public bool AllowSMS = false;
+
+        public override void Trigger(OS os)
+        {
+            
+        }
+    }
 }

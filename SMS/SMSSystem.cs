@@ -12,10 +12,13 @@ namespace Stuxnet_HN.SMS
 {
     public static class SMSSystem
     {
+        public static bool Disabled { get; set; } = false;
+
         public static event Action<string> NewMessageReceived;
 
         public static List<SMSMessage> ActiveMessages = new();
         public static List<QueuedSMSMessage> QueuedMessages = new();
+        public static List<SMSChoice> ActiveChoices = new();
         public static Dictionary<string, Color> AuthorColors = new()
         {
             { "player", Color.Transparent } // Transparent = Theme Highlight Color
@@ -23,6 +26,12 @@ namespace Stuxnet_HN.SMS
 
         public static void QueueMessage(SMSMessage message, float delay, string messageID = null)
         {
+            if(delay <= 0.0f)
+            {
+                SendMessage(message);
+                return;
+            }
+
             QueuedSMSMessage queuedMessage = new(message, messageID);
             bool exists = false;
             if(messageID != null)
@@ -91,15 +100,19 @@ namespace Stuxnet_HN.SMS
         {
             OS os = OS.currentInstance;
 
-            if(!message.IsPlayer)
+            if(!message.IsPlayer || !(message.ChannelName == SMSModule.GlobalInstance.ActiveChannel &&
+                SMSModule.GlobalInstance.State == SMSModule.SMSModuleState.ViewMessageHistory))
             {
-                string notif = "SMS ALERT: ";
-                notif += string.Format(Localizer.GetLocalized("You received a message from {0}"),
-                    message.Author);
-                os.beepSound.Play();
+                if(!SMSModule.GlobalInstance.visible)
+                {
+                    string notif = "SMS ALERT: ";
+                    notif += string.Format(Localizer.GetLocalized("You received a message from {0}"),
+                        message.Author);
+                    os.write("--- !");
+                    os.write(notif);
+                }
 
-                os.write("--- ! ");
-                os.write(notif);
+                os.beepSound.Play();
             }
 
             ActiveMessages.Add(message);
