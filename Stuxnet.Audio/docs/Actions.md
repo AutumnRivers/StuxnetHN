@@ -1,4 +1,5 @@
 # `Stuxnet.Audio.Actions`
+All actions below are **delayable.**
 ---
 
 ## `<PlaySound SoundID="string" />`
