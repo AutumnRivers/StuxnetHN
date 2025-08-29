@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 using BepInEx;
 using Hacknet;
@@ -18,8 +19,23 @@ namespace Stuxnet_HN.SMS
         public List<SMSAttachment> Attachments { get; set; } = new();
         public bool HasBeenRead { get; set; } = false;
         public string OnReadActionsFilepath { get; set; } = null;
+        public string Guid { get; set; } = string.Empty;
 
         public bool IsPlayer => Author == ComputerLoader.filter("#PLAYERNAME#");
+
+        public SMSMessage()
+        {
+            Guid = GenerateGuid();
+        }
+
+        private static string GenerateGuid()
+        {
+            string guid = System.Guid.NewGuid().ToString();
+
+            if (SMSSystem.ActiveMessages.Any(msg => msg.Guid == guid)) return GenerateGuid();
+
+            return guid;
+        }
 
         public void AddAttachment(SMSAttachment attachment)
         {
@@ -45,6 +61,7 @@ namespace Stuxnet_HN.SMS
             XAttribute channel = new("Channel", ChannelName);
             XAttribute read = new("Read", HasBeenRead);
             XAttribute actions = new("Actions", OnReadActionsFilepath);
+            XAttribute guid = new("Guid", Guid);
             messageElement.Add(author, channel, read, actions);
 
             XElement contentElement = new("MessageContent")
@@ -94,7 +111,8 @@ namespace Stuxnet_HN.SMS
                 ChannelName = saveNode.Attribute("Channel").Value,
                 HasBeenRead = bool.Parse(saveNode.Attribute("Read").Value),
                 OnReadActionsFilepath = saveNode.Attribute("Actions").Value,
-                Content = saveNode.Element("MessageContent").Value
+                Content = saveNode.Element("MessageContent").Value,
+                Guid = saveNode.Attribute("Guid").Value
             };
 
             foreach(var attachment in saveNode.Element("Attachments").Elements())
@@ -134,6 +152,8 @@ namespace Stuxnet_HN.SMS
     public class SMSSystemMessage : SMSMessage
     {
         public const string SYSTEM_AUTHOR = "SMSSystemAuthor_DoNotUse";
+
+        public SMSSystemMessage() : base() { }
 
         public static string GetSystemMessage(string messageID, params string[] args)
         {

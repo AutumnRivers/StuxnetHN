@@ -154,6 +154,7 @@ namespace Stuxnet_HN.SMS
             }
 
             GlobalInstance.visible = true;
+            SMSSystem.Active = true;
         }
 
         public static void Deactivate()
@@ -173,6 +174,7 @@ namespace Stuxnet_HN.SMS
             }
 
             GlobalInstance.visible = false;
+            SMSSystem.Active = false;
         }
 
         private int lastMessageOffset = 0;
@@ -280,7 +282,10 @@ namespace Stuxnet_HN.SMS
             string lastMessageContent = lastMessage.Content;
 
             lastMessageContent = lastMessageContent.Truncate(27, splitNewlines: true);
-            lastMessageContent = lastMessage.Author + ": " + lastMessageContent;
+            if(lastMessage.Author != SMSSystemMessage.SYSTEM_AUTHOR)
+            {
+                lastMessageContent = lastMessage.Author + ": " + lastMessageContent;
+            }
 
             if (!lastMessage.HasBeenRead)
             {
@@ -490,6 +495,14 @@ namespace Stuxnet_HN.SMS
                 return;
             }
 
+            int msgIndex = SMSSystem.ActiveMessages.IndexOf(message);
+            SMSMessage prevMessage = null;
+
+            if(msgIndex > 0)
+            {
+                prevMessage = SMSSystem.ActiveMessages[msgIndex - 1];
+            }
+
             bool isLast = SMSSystem.GetActiveMessagesForChannel(message.ChannelName).Last() == message;
             int messageHeight = (int)MeasureMessage(message).Y;
 
@@ -499,6 +512,18 @@ namespace Stuxnet_HN.SMS
             {
                 xOffset = 0;
                 baseYOffset = 0;
+            }
+
+            if(prevMessage is SMSSystemMessage)
+            {
+                Rectangle topBorder = new()
+                {
+                    X = xOffset,
+                    Y = baseYOffset + lastMessageOffset,
+                    Width = MessageHistoryBounds.Width,
+                    Height = 1
+                };
+                GuiData.spriteBatch.Draw(Utils.white, topBorder, os.lightGray);
             }
 
             Rectangle bottomBorder = new()
@@ -535,6 +560,7 @@ namespace Stuxnet_HN.SMS
                 new(xOffset + MESSAGE_PADDING,
                 baseYOffset + lastMessageOffset + (MESSAGE_PADDING * 2) + authorHeight + 3),
                 Color.White);
+
             message.ReadMessage();
 
             var baseAttachmentYOffset = baseYOffset + lastMessageOffset + contentHeight +
@@ -564,6 +590,8 @@ namespace Stuxnet_HN.SMS
             };
             TextItem.doCenteredFontLabel(textDest, content, GuiData.smallfont,
                 Utils.SlightlyDarkGray);
+
+            systemMessage.ReadMessage();
 
             lastMessageOffset += (int)contentSize.Y * 5;
         }

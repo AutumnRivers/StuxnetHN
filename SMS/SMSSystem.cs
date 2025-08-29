@@ -14,6 +14,8 @@ namespace Stuxnet_HN.SMS
     {
         public static bool Disabled { get; set; } = false;
 
+        public static bool Active { get; set; } = false;
+
         public static event Action<string> NewMessageReceived;
 
         public static List<SMSMessage> ActiveMessages = new();
@@ -103,7 +105,7 @@ namespace Stuxnet_HN.SMS
             if(!message.IsPlayer || !(message.ChannelName == SMSModule.GlobalInstance.ActiveChannel &&
                 SMSModule.GlobalInstance.State == SMSModule.SMSModuleState.ViewMessageHistory))
             {
-                if(!SMSModule.GlobalInstance.visible)
+                if(!SMSModule.GlobalInstance.visible && message.Author != SMSSystemMessage.SYSTEM_AUTHOR)
                 {
                     string notif = "SMS ALERT: ";
                     notif += string.Format(Localizer.GetLocalized("You received a message from {0}"),
@@ -112,7 +114,10 @@ namespace Stuxnet_HN.SMS
                     os.write(notif);
                 }
 
-                os.beepSound.Play();
+                if(SMSModule.GlobalInstance.ActiveChannel != message.ChannelName)
+                {
+                    os.beepSound.Play();
+                }
             }
 
             ActiveMessages.Add(message);

@@ -9,11 +9,14 @@ using Newtonsoft.Json;
 using Microsoft.Xna.Framework;
 using Hacknet.Gui;
 using Stuxnet_HN.Localization;
+using System;
 
 namespace Stuxnet_HN.Executables
 {
     public class RadioV3 : GameExecutable
     {
+        public event Action<SongEntry> SongChanged;
+
         public RaindropsEffect backdrop;
 
         SongEntry currentSong;
@@ -122,6 +125,7 @@ namespace Stuxnet_HN.Executables
             MusicManager.transitionToSong(extFolder + songPath);
 
             canPlay = true;
+            SongChanged.Invoke(song);
         }
 
         public void UpdateSongList()

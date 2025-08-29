@@ -301,6 +301,11 @@ namespace Stuxnet_HN.SMS
                 };
             }
 
+            if(blockedMessage.ChannelName == "#PLAYERNAME#")
+            {
+                blockedMessage.ChannelName = UserBeingBlocked;
+            }
+
             SMSSystem.SendMessage(blockedMessage);
         }
     }
@@ -395,7 +400,7 @@ namespace Stuxnet_HN.SMS
     {
         public override void Trigger(OS os)
         {
-            SMSModule.GlobalInstance.visible = false;
+            SMSModule.Deactivate();
         }
     }
 
@@ -407,7 +412,7 @@ namespace Stuxnet_HN.SMS
 
         public override void Trigger(OS os)
         {
-            
+            SMSSystem.Disabled = !AllowSMS;
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Stuxnet_HN.SMS
     public class SMSSavePatch
     {
         [Event()]
-        public void SaveSMSDataToSaveFile(SaveEvent saveEvent)
+        public static void SaveSMSDataToSaveFile(SaveEvent saveEvent)
         {
             var save = saveEvent.Save;
             XElement smsSaveElem = new("StuxnetSMS");
