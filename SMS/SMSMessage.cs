@@ -18,7 +18,7 @@ namespace Stuxnet_HN.SMS
         public string Content { get; set; }
         public List<SMSAttachment> Attachments { get; set; } = new();
         public bool HasBeenRead { get; set; } = false;
-        public string OnReadActionsFilepath { get; set; } = null;
+        public string OnReadActionsFilepath { get; set; } = string.Empty;
         public string Guid { get; set; } = string.Empty;
 
         public bool IsPlayer => Author == ComputerLoader.filter("#PLAYERNAME#");
@@ -62,7 +62,7 @@ namespace Stuxnet_HN.SMS
             XAttribute read = new("Read", HasBeenRead);
             XAttribute actions = new("Actions", OnReadActionsFilepath);
             XAttribute guid = new("Guid", Guid);
-            messageElement.Add(author, channel, read, actions);
+            messageElement.Add(author, channel, read, actions, guid);
 
             XElement contentElement = new("MessageContent")
             {
@@ -96,6 +96,7 @@ namespace Stuxnet_HN.SMS
                         );
                 }
 
+                attachElem.Add(attachName);
                 attachmentsElement.Add(attachElem);
             }
             messageElement.Add(attachmentsElement);
@@ -262,7 +263,7 @@ namespace Stuxnet_HN.SMS
         public static SoundEffect BipSound;
 
         public string NodeID;
-        public string AccountUsername;
+        public string AccountUsername = string.Empty;
 
         public Computer AssociatedComputer;
 

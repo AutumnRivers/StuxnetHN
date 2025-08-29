@@ -61,7 +61,7 @@ namespace Stuxnet_HN.Daemons
 
         public override XElement GetSaveElement()
         {
-            XElement saveElem = new("BYODDaemon");
+            XElement saveElem = base.GetSaveElement();
 
             foreach(var elem in Elements)
             {
@@ -118,7 +118,7 @@ namespace Stuxnet_HN.Daemons
                 }
             }
 
-            return base.GetSaveElement();
+            return saveElem;
         }
 
         public override void LoadFromXml(ElementInfo info)

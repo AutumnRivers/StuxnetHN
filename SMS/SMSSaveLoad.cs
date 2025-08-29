@@ -16,7 +16,7 @@ namespace Stuxnet_HN.SMS
 {
     public static class SMSSaveConstants
     {
-        public const string BASE_SMS_SAVE_ELEMENT = "StuxnetSMS.";
+        public const string BASE_SMS_SAVE_ELEMENT = "HacknetSave.StuxnetSMS.";
         public const string SMS_MESSAGES_ELEMENT = BASE_SMS_SAVE_ELEMENT + "ActiveMessages";
         public const string QSMS_MESSAGES_ELEMENT = BASE_SMS_SAVE_ELEMENT + "QueuedMessages";
         public const string CHOICES_ELEMENT = BASE_SMS_SAVE_ELEMENT + "ActiveChoices";
@@ -27,12 +27,13 @@ namespace Stuxnet_HN.SMS
         [Event()]
         public static void SaveSMSDataToSaveFile(SaveEvent saveEvent)
         {
-            var save = saveEvent.Save;
+            var save = saveEvent.Save.FirstNode;
             XElement smsSaveElem = new("StuxnetSMS");
 
-            var activeMessages = new XElement("ActiveMessages");
+            XElement activeMessages = new("ActiveMessages");
             foreach(var message in SMSSystem.ActiveMessages)
             {
+                if (message == null) continue;
                 activeMessages.Add(message.GetSaveElement());
             }
             smsSaveElem.Add(activeMessages);
@@ -40,6 +41,7 @@ namespace Stuxnet_HN.SMS
             var queuedMessages = new XElement("QueuedMessages");
             foreach(var queued in SMSSystem.QueuedMessages)
             {
+                if (queued == null) continue;
                 queuedMessages.Add(queued.GetSaveElement());
             }
             smsSaveElem.Add(queuedMessages);
@@ -47,6 +49,7 @@ namespace Stuxnet_HN.SMS
             var activeChoices = new XElement("ActiveChoices");
             foreach(var choice in SMSSystem.ActiveChoices)
             {
+                if (choice == null) continue;
                 activeChoices.Add(choice);
             }
             smsSaveElem.Add(activeChoices);
