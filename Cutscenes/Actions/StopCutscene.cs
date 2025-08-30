@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Hacknet;
-
 using Pathfinder.Action;
-using Pathfinder.Util;
-
+using Pathfinder.Meta.Load;
 using Stuxnet_HN.Cutscenes.Patches;
 
 namespace Stuxnet_HN.Cutscenes.Actions
 {
+    [Action("StopActiveCutscene")]
     public class StopCutscene : PathfinderAction
     {
         public override void Trigger(object os_obj)

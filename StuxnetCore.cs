@@ -9,7 +9,6 @@ using Hacknet.Extensions;
 
 using Pathfinder.Daemon;
 using Pathfinder.Executable;
-using Pathfinder.Action;
 using Pathfinder.Replacements;
 using Pathfinder.Command;
 
@@ -24,15 +23,12 @@ using Pathfinder.Util.XML;
 using BepInEx;
 using BepInEx.Hacknet;
 
-using Stuxnet_HN.Conditions;
 using Stuxnet_HN.Daemons;
 using Stuxnet_HN.Executables;
 using Stuxnet_HN.Static;
 using Stuxnet_HN.Commands;
 
 using Stuxnet_HN.Actions;
-using Stuxnet_HN.Actions.Dialogue;
-using Stuxnet_HN.Actions.Nodes;
 
 using Stuxnet_HN.Patches;
 
@@ -45,13 +41,16 @@ using Microsoft.Xna.Framework.Graphics;
 
 using SongEntry = Stuxnet_HN.Executables.SongEntry;
 using BepInEx.Logging;
-using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework.Audio;
 using Stuxnet_HN.SMS;
+using Pathfinder.Meta;
 
 namespace Stuxnet_HN
 {
     [BepInPlugin(ModGUID, ModName, ModVer)]
+    [BepInDependency("tenesiss.XMOD", BepInDependency.DependencyFlags.SoftDependency)]
+    [Updater("https://git.gay/AutumnRivers/StuxnetHN/releases/download/latest/Stuxnet_HN.dll",
+        "StuxnetHN.dll")]
     public class StuxnetCore : HacknetPlugin
     {
         public const string ModGUID = "autumnrivers.stuxnet";
@@ -66,7 +65,7 @@ namespace Stuxnet_HN
         public static List<string> redeemedCodes = new();
         public static List<string> unlockedRadio = new();
 
-        public static Dictionary<string, int> receivedKeys = new Dictionary<string, int>();
+        public static Dictionary<string, int> receivedKeys = new();
 
         public static bool allowRadio = true;
 
@@ -84,14 +83,12 @@ namespace Stuxnet_HN
         public static Dictionary<string, WiresharkContents> wiresharkComps = new();
 
         // Custom Replacements
-        public static Dictionary<string, string> customReplacements = new Dictionary<string, string>();
+        public static Dictionary<string, string> customReplacements = new();
 
         // Temp. cache
-        public static Dictionary<string, Color> colorsCache = new Dictionary<string, Color>();
-        public static Dictionary<string, string> stxStringCache = new Dictionary<string, string>();
-        public static Dictionary<string, Texture2D> texCache = new Dictionary<string, Texture2D>();
-
-        public static Texture2D originalScanlines;
+        public static Dictionary<string, Color> colorsCache = new();
+        public static Dictionary<string, string> stxStringCache = new();
+        public static Dictionary<string, Texture2D> texCache = new();
 
         // Illustrator
         public static States.IllustratorStates illustState = States.IllustratorStates.None;
@@ -113,7 +110,7 @@ namespace Stuxnet_HN
         public static bool dialogueIsActive = false;
         #endregion illustrator dialogue variables
 
-        public static Dictionary<string, StuxnetCutscene> cutscenes = new Dictionary<string, StuxnetCutscene>();
+        public static Dictionary<string, StuxnetCutscene> cutscenes = new();
         public static string activeCutsceneID = "NONE";
         public static bool cutsceneIsActive = false;
 
@@ -142,12 +139,20 @@ namespace Stuxnet_HN
             "What is small child doing with a 'hacked net'?",
             "[ GONE FISHIN' ]",
             "* But nobody came.",
-            "They fly now? They fly now."
+            "They fly now? They fly now.",
+            "Hacknet is technically connected to Hollow Knight.",
+            "WORD OF THE DAY: Extirpate"
         };
 
         public override bool Load()
         {
-            Random random = new Random();
+            Random random = new();
+
+            if(ExtensionLoader.ActiveExtensionInfo == null)
+            {
+                throw new Exception("Stuxnet is designed as an EXTENSION MOD, and WILL NOT WORK " +
+                    "as a global mod. Please move the Stuxnet DLL to your extension's Plugins folder.");
+            }
 
             Logger = Log;
 
@@ -170,58 +175,6 @@ namespace Stuxnet_HN
 
             CommandManager.RegisterCommand("messenger", SMSCommands.ActivateSMS);
             CommandManager.RegisterCommand("unread", SMSCommands.CheckUnread);
-
-            #region register actions
-            LogDebug("Registering Actions...");
-            // Radio Actions
-            ActionManager.RegisterAction<RadioActions.AddSong>("AddSongToRadio");
-            ActionManager.RegisterAction<RadioActions.RemoveSong>("RemoveSongFromRadio");
-            ActionManager.RegisterAction<RadioActions.PreventRadioAccess>("PreventRadioAccess");
-            ActionManager.RegisterAction<RadioActions.AllowRadioAccess>("AllowRadioAccess");
-
-            // Sequencer Actions
-            ActionManager.RegisterAction<SequencerActions.ChangeSequencerManually>("ChangeSequencerManually");
-            ActionManager.RegisterAction<SequencerActions.ChangeSequencerFromID>("ChangeSequencerFromID");
-            ActionManager.RegisterAction<SequencerActions.ClearCustomSequencer>("ClearCustomSequencer");
-
-            // Save Actions
-            ActionManager.RegisterAction<SaveActions.DenySaves>("DenySaves");
-            ActionManager.RegisterAction<SaveActions.AllowSaves>("AllowSaves");
-            ActionManager.RegisterAction<SaveActions.RequireFlagForSaves>("RequireFlagForSaves");
-
-            // Vault Actions
-            ActionManager.RegisterAction<VaultKeyActions.AddVaultKey>("AddVaultKey");
-            ActionManager.RegisterAction<VaultKeyActions.RemoveVaultKey>("RemoveVaultKey");
-
-            // Dialogue / Chapter Actions
-            ActionManager.RegisterAction<ChapterTitleActions.ShowChapterTitle>("ShowChapterTitle");
-            ActionManager.RegisterAction<ChapterTitleActions.HideChapterTitle>("HideChapterTitle");
-
-            ActionManager.RegisterAction<VisualNovelText.CTCDialogueAction>("ShowCTCDialogue");
-            ActionManager.RegisterAction<VisualNovelText.AutoDialogueAction>("ShowAutoDialogue");
-
-            // Node Actions
-            ActionManager.RegisterAction<PlaceOnNetMap>("PlaceNodeOnNetMap");
-
-            // Custom Replacement Actions
-            ActionManager.RegisterAction<AddCustomReplacements>("AddCustomWildcard");
-            ActionManager.RegisterAction<AddNodeCustomReplacement>("AddNodeIPWildcard");
-            ActionManager.RegisterAction<AddAdminPassCustomReplacement>("AddNodeAdminWildcard");
-
-            // Cutscene Actions
-            ActionManager.RegisterAction<Cutscenes.Actions.RegisterCutscene>("RegisterStuxnetCutscene");
-            ActionManager.RegisterAction<Cutscenes.Actions.TriggerCutscene>("TriggerStuxnetCutscene");
-            ActionManager.RegisterAction<Cutscenes.Actions.StopCutscene>("StopActiveCutscene");
-
-            // Misc. Actions
-            ActionManager.RegisterAction<ForceConnect>("ForceConnectPlayer");
-            ActionManager.RegisterAction<DisableAlertsIcon>("DisableAlertsIcon");
-            ActionManager.RegisterAction<EnableAlertsIcon>("EnableAlertsIcon");
-            ActionManager.RegisterAction<WriteToTerminal>("WriteToTerminal");
-            #endregion register actions
-
-            LogDebug("Registering Conditions...");
-            ConditionManager.RegisterCondition<OnSequencerKill>("OnExtSequencerKill");
 
             LogDebug("Creating events...");
             Action<SaveEvent> stuxnetSaveDelegate = InjectStuxnetSaveData;

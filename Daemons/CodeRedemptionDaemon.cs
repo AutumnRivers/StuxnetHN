@@ -117,12 +117,12 @@ namespace Stuxnet_HN.Daemons
 
             // Splash Text
             Vector2 splshVector = GuiData.font.MeasureString(LocaleTerms.Loc(splashText));
-            Vector2 splshPosition = new Vector2((float)(bounds.X + bounds.Width / 2) - splshVector.X / 2f, textBoxRect.Y + textBoxRect.Height + 130);
+            Vector2 splshPosition = new((float)(bounds.X + bounds.Width / 2) - splshVector.X / 2f, textBoxRect.Y + textBoxRect.Height + 130);
             GuiData.spriteBatch.DrawString(GuiData.font, LocaleTerms.Loc(splashText), splshPosition, Color.WhiteSmoke);
 
             // Result Text
             Vector2 resVector = GuiData.smallfont.MeasureString(LocaleTerms.Loc(resultText));
-            Vector2 resPosition = new Vector2((float)(bounds.X + bounds.Width / 2) - resVector.X / 2f, textBoxRect.Y + textBoxRect.Height + 170);
+            Vector2 resPosition = new((float)(bounds.X + bounds.Width / 2) - resVector.X / 2f, textBoxRect.Y + textBoxRect.Height + 170);
             GuiData.spriteBatch.DrawString(GuiData.smallfont, LocaleTerms.Loc(resultText), resPosition, resultColor);
 
             // Logic

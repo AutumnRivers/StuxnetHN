@@ -4,10 +4,12 @@ using System.Timers;
 using Hacknet;
 
 using Pathfinder.Action;
+using Pathfinder.Meta.Load;
 using Pathfinder.Util;
 
 namespace Stuxnet_HN.Actions
 {
+    [Action("ForceConnectPlayer")]
     public class ForceConnect : DelayablePathfinderAction
     {
         [XMLStorage]

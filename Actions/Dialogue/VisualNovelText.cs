@@ -12,11 +12,13 @@ using Pathfinder.Util;
 using Microsoft.Xna.Framework;
 using Stuxnet_HN.Extensions;
 using BepInEx;
+using Pathfinder.Meta.Load;
 
 namespace Stuxnet_HN.Actions.Dialogue
 {
     public class VisualNovelText
     {
+        [Action("ShowCTCDialogue")]
         public class CTCDialogueAction : PathfinderAction
         {
             [XMLStorage(IsContent = true)]
@@ -81,6 +83,7 @@ namespace Stuxnet_HN.Actions.Dialogue
             }
         }
 
+        [Action("ShowAutoDialogue")]
         public class AutoDialogueAction : PathfinderAction
         {
             [XMLStorage(IsContent = true)]

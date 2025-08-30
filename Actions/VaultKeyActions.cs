@@ -10,11 +10,13 @@ using BepInEx;
 
 using Pathfinder.Action;
 using Pathfinder.Util;
+using Pathfinder.Meta.Load;
 
 namespace Stuxnet_HN.Actions
 {
     public class VaultKeyActions
     {
+        [Action("AddVaultKey")]
         public class AddVaultKey : DelayablePathfinderAction
         {
             [XMLStorage]
@@ -44,6 +46,7 @@ namespace Stuxnet_HN.Actions
             }
         }
 
+        [Action("RemoveVaultKey")]
         public class RemoveVaultKey : DelayablePathfinderAction
         {
             [XMLStorage]

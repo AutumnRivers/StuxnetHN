@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 using Hacknet;
 
 using Pathfinder.Action;
+using Pathfinder.Meta.Load;
 
 namespace Stuxnet_HN.Conditions
 {
+    [Condition("OnCutsceneEnd")]
     public class OnCutsceneEnd : PathfinderCondition
     {
         bool hasStarted;

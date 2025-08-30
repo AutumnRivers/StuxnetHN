@@ -1,77 +1,49 @@
 ﻿using System;
-
+using BepInEx;
 using Hacknet;
 
 using Microsoft.Xna.Framework;
 
 using Pathfinder.Action;
+using Pathfinder.Meta.Load;
 using Pathfinder.Util;
 
 namespace Stuxnet_HN.Actions.Nodes
 {
+    [Action("PlaceNodeOnNetMap")]
     public class PlaceOnNetMap : DelayablePathfinderAction
     {
         [XMLStorage]
         public string TargetCompID;
 
         [XMLStorage]
-        public string StartingPosition = "truecenter";
+        public string Offset;
 
         [XMLStorage]
-        public string Offset = "0,0";
+        public string StartingPosition = string.Empty;
 
         public override void Trigger(OS os)
         {
+            if(!StartingPosition.IsNullOrWhiteSpace())
+            {
+                StuxnetCore.Logger.LogWarning("The StartingPosition attribute for PlaceNodeOnNetMap is " +
+                    "deprecated, and will be removed in Stuxnet 2.1.0, which will break your extension.\n" +
+                    "Please remove the attribute ASAP!");
+            }
+
             string[] offsetSplit = Offset.Split(',');
-            Vector2 offsetVector = new Vector2(
+            Vector2 offsetVector = new(
                 float.Parse(offsetSplit[0]),
                 float.Parse(offsetSplit[1])
                 );
 
-            Vector2 startingPos;
-
-            switch(StartingPosition)
-            {
-                case "truecenter": // Center
-                    startingPos = new Vector2(0.5f, 0.5f);
-                    break;
-                case "topleft": // Top Left
-                    startingPos = new Vector2(0, 0);
-                    break;
-                case "centerleft": // Center Left
-                    startingPos = new Vector2(0, 0.5f);
-                    break;
-                case "bottomleft": // Bottom Left
-                    startingPos = new Vector2(0, 1);
-                    break;
-                case "topcenter": // Top Center
-                    startingPos = new Vector2(0.5f, 0);
-                    break;
-                case "bottomcenter": // Bottom Center
-                    startingPos = new Vector2(0.5f, 1);
-                    break;
-                case "topright": // Top Right
-                    startingPos = new Vector2(1, 0);
-                    break;
-                case "centerright": // Center Right
-                    startingPos = new Vector2(1, 0.5f);
-                    break;
-                case "bottomright": // Bottom Right
-                    startingPos = new Vector2(1, 1);
-                    break;
-                default: // Default to center
-                    startingPos = new Vector2(0.5f, 0.5f);
-                    break;
-            }
-
-            Computer targetComp = ComputerLookup.FindById(TargetCompID) ?? throw new NullReferenceException($"Target Comp with ID {TargetCompID} not found!");
+            Computer targetComp = ComputerLookup.FindById(TargetCompID) ?? throw new
+                NullReferenceException($"Target Comp with ID {TargetCompID} not found!");
 
             targetComp.location = new Vector2(
-                startingPos.X + offsetVector.X,
-                startingPos.Y + offsetVector.Y
+                offsetVector.X,
+                offsetVector.Y
                 );
-
-            Console.WriteLine($"{targetComp.idName} :: {targetComp.location.X} , {targetComp.location.Y}");
         }
     }
 }

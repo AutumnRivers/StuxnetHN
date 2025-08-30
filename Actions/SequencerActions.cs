@@ -7,11 +7,13 @@ using Pathfinder.Action;
 using Pathfinder.Util;
 
 using Newtonsoft.Json;
+using Pathfinder.Meta.Load;
 
 namespace Stuxnet_HN.Actions
 {
     public class SequencerActions
     {
+        [Action("ChangeSequencerManually")]
         public class ChangeSequencerManually : PathfinderAction
         {
             [XMLStorage]
@@ -38,15 +40,11 @@ namespace Stuxnet_HN.Actions
                     sequencerActions = ActionsToRun
                 };
 
-                /*activeInfo.SequencerFlagRequiredForStart = seqInfo.requiredFlag;
-                activeInfo.SequencerTargetID = seqInfo.targetIDorIP;
-                activeInfo.SequencerSpinUpTime = seqInfo.spinUpTime;
-                activeInfo.ActionsToRunOnSequencerStart = seqInfo.sequencerActions;*/
-
                 StuxnetCore.currentSequencerInfo = seqInfo;
             }
         }
 
+        [Action("ChangeSequencerFromID")]
         public class ChangeSequencerFromID : PathfinderAction
         {
             [XMLStorage]
@@ -54,7 +52,7 @@ namespace Stuxnet_HN.Actions
 
             private const string SequencerFileName = "/sequencers.json";
 
-            ExtensionInfo activeInfo = ExtensionLoader.ActiveExtensionInfo;
+            private readonly ExtensionInfo activeInfo = ExtensionLoader.ActiveExtensionInfo;
 
             public override void Trigger(object os_obj)
             {
@@ -96,6 +94,7 @@ namespace Stuxnet_HN.Actions
             }
         }
 
+        [Action("ClearCustomSequencer")]
         public class ClearCustomSequencer : DelayablePathfinderAction
         {
             public override void Trigger(OS os)
