@@ -18,7 +18,6 @@ namespace Stuxnet_HN.Actions.Dialogue
 {
     public class VisualNovelText
     {
-        [Action("ShowCTCDialogue")]
         public class CTCDialogueAction : PathfinderAction
         {
             [XMLStorage(IsContent = true)]
@@ -83,7 +82,6 @@ namespace Stuxnet_HN.Actions.Dialogue
             }
         }
 
-        [Action("ShowAutoDialogue")]
         public class AutoDialogueAction : PathfinderAction
         {
             [XMLStorage(IsContent = true)]

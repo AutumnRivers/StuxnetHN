@@ -9,7 +9,6 @@ using Pathfinder.Util;
 
 namespace Stuxnet_HN.Actions
 {
-    [Action("ForceConnectPlayer")]
     public class ForceConnect : DelayablePathfinderAction
     {
         [XMLStorage]

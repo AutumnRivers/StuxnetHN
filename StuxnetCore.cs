@@ -1,54 +1,43 @@
-﻿using System;
+﻿using BepInEx;
+using BepInEx.Hacknet;
+using BepInEx.Logging;
+using Hacknet;
+using Hacknet.Extensions;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Graphics;
+using Pathfinder.Action;
+using Pathfinder.Command;
+using Pathfinder.Daemon;
+using Pathfinder.Event;
+using Pathfinder.Event.Gameplay;
+using Pathfinder.Event.Loading;
+using Pathfinder.Event.Saving;
+using Pathfinder.Executable;
+using Pathfinder.Meta;
+using Pathfinder.Meta.Load;
+using Pathfinder.Replacements;
+using Pathfinder.Util.XML;
+using Stuxnet_HN.Actions;
+using Stuxnet_HN.Actions.Dialogue;
+using Stuxnet_HN.Actions.Nodes;
+using Stuxnet_HN.Commands;
+using Stuxnet_HN.Configuration;
+using Stuxnet_HN.Cutscenes;
+using Stuxnet_HN.Daemons;
+using Stuxnet_HN.Executables;
+using Stuxnet_HN.Patches;
+using Stuxnet_HN.SMS;
+using Stuxnet_HN.Static;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
-using System.IO;
-
-using Hacknet;
-using Hacknet.Extensions;
-
-using Pathfinder.Daemon;
-using Pathfinder.Executable;
-using Pathfinder.Replacements;
-using Pathfinder.Command;
-
-using Pathfinder.Event;
-using Pathfinder.Event.Saving;
-using Pathfinder.Event.Loading;
-using Pathfinder.Event.Gameplay;
-
-using Pathfinder.Meta.Load;
-using Pathfinder.Util.XML;
-
-using BepInEx;
-using BepInEx.Hacknet;
-
-using Stuxnet_HN.Daemons;
-using Stuxnet_HN.Executables;
-using Stuxnet_HN.Static;
-using Stuxnet_HN.Commands;
-
-using Stuxnet_HN.Actions;
-
-using Stuxnet_HN.Patches;
-
-using Stuxnet_HN.Cutscenes;
-
-using Newtonsoft.Json;
-
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-
-using SongEntry = Stuxnet_HN.Executables.SongEntry;
-using BepInEx.Logging;
-using Microsoft.Xna.Framework.Audio;
-using Stuxnet_HN.SMS;
-using Pathfinder.Meta;
 
 namespace Stuxnet_HN
 {
     [BepInPlugin(ModGUID, ModName, ModVer)]
-    [BepInDependency("tenesiss.XMOD", BepInDependency.DependencyFlags.SoftDependency)]
+    [BepInDependency(XMOD_ID, BepInDependency.DependencyFlags.SoftDependency)]
     [Updater("https://git.gay/AutumnRivers/StuxnetHN/releases/download/latest/Stuxnet_HN.dll",
         "StuxnetHN.dll")]
     public class StuxnetCore : HacknetPlugin
@@ -58,9 +47,19 @@ namespace Stuxnet_HN
         public const string ModVer = "2.0.0";
         public const string VersionName = "WannaCry";
 
+        public const string XMOD_ID = "tenesiss.XMOD";
+
         private readonly bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
 
         public static ManualLogSource Logger;
+
+        public static StuxnetConfig Configuration
+        {
+            get
+            {
+                return StuxnetConfig.GlobalConfig;
+            }
+        }
 
         public static List<string> redeemedCodes = new();
         public static List<string> unlockedRadio = new();
@@ -113,6 +112,12 @@ namespace Stuxnet_HN
         public static Dictionary<string, StuxnetCutscene> cutscenes = new();
         public static string activeCutsceneID = "NONE";
         public static bool cutsceneIsActive = false;
+
+        public static bool XMODLoaded { get
+            {
+                return HacknetChainloader.Instance.Plugins.ContainsKey(XMOD_ID);
+            }
+        }
 
         public static readonly string[] postMsg = new string[]
         {
@@ -176,6 +181,56 @@ namespace Stuxnet_HN
             CommandManager.RegisterCommand("messenger", SMSCommands.ActivateSMS);
             CommandManager.RegisterCommand("unread", SMSCommands.CheckUnread);
 
+            #region register actions
+            LogDebug("Registering Actions...");
+            // Radio Actions
+            ActionManager.RegisterAction<RadioActions.AddSong>("AddSongToRadio");
+            ActionManager.RegisterAction<RadioActions.RemoveSong>("RemoveSongFromRadio");
+            ActionManager.RegisterAction<RadioActions.PreventRadioAccess>("PreventRadioAccess");
+            ActionManager.RegisterAction<RadioActions.AllowRadioAccess>("AllowRadioAccess");
+
+            // Sequencer Actions
+            ActionManager.RegisterAction<SequencerActions.ChangeSequencerManually>("ChangeSequencerManually");
+            ActionManager.RegisterAction<SequencerActions.ChangeSequencerFromID>("ChangeSequencerFromID");
+            ActionManager.RegisterAction<SequencerActions.ClearCustomSequencer>("ClearCustomSequencer");
+
+            // Save Actions
+            ActionManager.RegisterAction<SaveActions.DenySaves>("DenySaves");
+            ActionManager.RegisterAction<SaveActions.AllowSaves>("AllowSaves");
+            ActionManager.RegisterAction<SaveActions.RequireFlagForSaves>("RequireFlagForSaves");
+
+            // Vault Actions
+            ActionManager.RegisterAction<VaultKeyActions.AddVaultKey>("AddVaultKey");
+            ActionManager.RegisterAction<VaultKeyActions.RemoveVaultKey>("RemoveVaultKey");
+
+            // Dialogue / Chapter Actions
+            ActionManager.RegisterAction<ChapterTitleActions.ShowChapterTitle>("ShowChapterTitle");
+            ActionManager.RegisterAction<ChapterTitleActions.HideChapterTitle>("HideChapterTitle");
+
+            ActionManager.RegisterAction<VisualNovelText.CTCDialogueAction>("ShowCTCDialogue");
+            ActionManager.RegisterAction<VisualNovelText.AutoDialogueAction>("ShowAutoDialogue");
+
+            // Node Actions
+            ActionManager.RegisterAction<PlaceOnNetMap>("PlaceNodeOnNetMap");
+
+            // Custom Replacement Actions
+            ActionManager.RegisterAction<AddCustomReplacements>("AddCustomWildcard");
+            ActionManager.RegisterAction<AddNodeCustomReplacement>("AddNodeIPWildcard");
+            ActionManager.RegisterAction<AddAdminPassCustomReplacement>("AddNodeAdminWildcard");
+
+            // Cutscene Actions
+            ActionManager.RegisterAction<Cutscenes.Actions.RegisterCutscene>("RegisterStuxnetCutscene");
+            ActionManager.RegisterAction<Cutscenes.Actions.TriggerCutscene>("TriggerStuxnetCutscene");
+            ActionManager.RegisterAction<Cutscenes.Actions.StopCutscene>("StopActiveCutscene");
+
+            // Misc. Actions
+            ActionManager.RegisterAction<ForceConnect>("ForceConnectPlayer");
+            ActionManager.RegisterAction<DisableAlertsIcon>("DisableAlertsIcon");
+            ActionManager.RegisterAction<EnableAlertsIcon>("EnableAlertsIcon");
+            ActionManager.RegisterAction<WriteToTerminal>("WriteToTerminal");
+            #endregion register actions
+
+
             LogDebug("Creating events...");
             Action<SaveEvent> stuxnetSaveDelegate = InjectStuxnetSaveData;
             Action<OSUpdateEvent> stuxnetSaveCheckDelegate = CheckIfUserCanSave;
@@ -190,6 +245,7 @@ namespace Stuxnet_HN
             EventManager<SaveComputerLoadedEvent>.AddHandler(wiresharkLoadDelegate);
 
             LogDebug("Adding the finishing touches...");
+            StuxnetConfig.LoadFromJson();
             InitializeRadio();
 
             LogDebug("--- Finished Loading! :D");
@@ -232,6 +288,7 @@ namespace Stuxnet_HN
             os_event.Os.modules.Add(smsModule);
 
             Localization.Localizer.Initialize();
+            Quests.QuestManager.Initialize();
 
             if(OS.DEBUG_COMMANDS)
             {
@@ -410,18 +467,9 @@ namespace Stuxnet_HN
 
         private void InitializeRadio()
         {
-            string extensionFolder = ExtensionLoader.ActiveExtensionInfo.FolderPath;
-            string expectedRadioFilePath = extensionFolder + "/radio.json";
+            var songs = Configuration.Audio.Songs;
 
-            if(!File.Exists(expectedRadioFilePath)) { return; }
-
-            StreamReader radioFileStream = new StreamReader(expectedRadioFilePath);
-            string radioFile = radioFileStream.ReadToEnd();
-            radioFileStream.Close();
-
-            var radioJSON = JsonConvert.DeserializeObject<Dictionary<string, SongEntry>>(radioFile);
-
-            foreach(var song in radioJSON)
+            foreach(var song in songs)
             {
                 string id = song.Key;
                 SongEntry songEntry = song.Value;

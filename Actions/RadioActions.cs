@@ -10,7 +10,6 @@ namespace Stuxnet_HN.Actions
 {
     public class RadioActions
     {
-        [Action("AddSongToRadio")]
         public class AddSong : PathfinderAction
         {
             [XMLStorage]
@@ -35,7 +34,6 @@ namespace Stuxnet_HN.Actions
             }
         }
 
-        [Action("RemoveSongFromRadio")]
         public class RemoveSong : PathfinderAction
         {
             [XMLStorage]
@@ -49,7 +47,6 @@ namespace Stuxnet_HN.Actions
             }
         }
 
-        [Action("PreventRadioAccess")]
         public class PreventRadioAccess : DelayablePathfinderAction
         {
             public override void Trigger(OS os)
@@ -58,7 +55,6 @@ namespace Stuxnet_HN.Actions
             }
         }
 
-        [Action("AllowRadioAccess")]
         public class AllowRadioAccess : DelayablePathfinderAction
         {
             public override void Trigger(OS os)

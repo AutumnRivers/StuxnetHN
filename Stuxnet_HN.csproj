@@ -81,6 +81,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="XMOD">
+      <HintPath>lib\XMOD.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actions\CustomReplacements.cs" />
@@ -112,6 +115,7 @@
     <Compile Include="Executables\RadioV3.cs" />
     <Compile Include="Executables\RevolutionExe.cs" />
     <Compile Include="Executables\Wireshark.cs" />
+    <Compile Include="Extensions\GuiHelpers.cs" />
     <Compile Include="Extensions\Texture2DExtensions.cs" />
     <Compile Include="Extensions\Vector2Extensions.cs" />
     <Compile Include="Extensions\XmlReaderExtensions.cs" />
@@ -122,6 +126,11 @@
     <Compile Include="Patches\MissionDisplayLogo.cs" />
     <Compile Include="Patches\Wireshark\WiresharkContents.cs" />
     <Compile Include="Patches\Wireshark\WiresharkCompExecutors.cs" />
+    <Compile Include="Quests\QuestActions.cs" />
+    <Compile Include="Quests\QuestManager.cs" />
+    <Compile Include="Quests\QuestPatches.cs" />
+    <Compile Include="Quests\QuestsPanel.cs" />
+    <Compile Include="Quests\QuestsXMODCompat.cs" />
     <Compile Include="SMS\SMSActions.cs" />
     <Compile Include="SMS\SMSIllustrator.cs" />
     <Compile Include="SMS\SMSMessage.cs" />
@@ -129,6 +138,7 @@
     <Compile Include="SMS\SMSSaveLoad.cs" />
     <Compile Include="SMS\SMSSystem.cs" />
     <Compile Include="Static\States.cs" />
+    <Compile Include="StuxnetConfig.cs" />
     <Compile Include="StuxnetCore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

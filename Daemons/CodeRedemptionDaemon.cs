@@ -14,8 +14,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 using BepInEx;
 
-using Newtonsoft.Json;
 using Stuxnet_HN.Localization;
+
+using Stuxnet_HN.Configuration;
 
 namespace Stuxnet_HN.Daemons
 {
@@ -173,21 +174,7 @@ namespace Stuxnet_HN.Daemons
             Console.WriteLine(StuxnetCore.logPrefix + $"Checking against code {code}...");
 
             if (StuxnetCore.redeemedCodes.Contains(code)) { return false; }
-
-            string extensionFolder = ExtensionLoader.ActiveExtensionInfo.FolderPath;
-            string expectedCodeFilePath = extensionFolder + "/codes.json";
-
-            if (!File.Exists(expectedCodeFilePath)) { return false; }
-
-            Console.WriteLine(StuxnetCore.logPrefix + $"Codes file exists");
-
-            StreamReader codeFile = new StreamReader(expectedCodeFilePath);
-
-            string codesJSON = codeFile.ReadToEnd();
-
-            codeFile.Close();
-
-            Dictionary<string,CodeEntry> codes = JsonConvert.DeserializeObject<Dictionary<string, CodeEntry>>(codesJSON);
+            Dictionary<string, CodeEntry> codes = StuxnetConfig.GlobalConfig.Codes;
 
             if(!codes.ContainsKey(code)) { return false; }
 
@@ -287,15 +274,5 @@ namespace Stuxnet_HN.Daemons
 
             splashText = StuxnetCore.postMsg[random.Next(0, StuxnetCore.postMsg.Length)];
         }
-    }
-
-    public class CodeEntry
-    {
-        public Dictionary<string, string> files;
-        public string[] radio;
-        public Dictionary<string, string> themes;
-        public Dictionary<string, string> pfthemes;
-        public string email;
-        public string action;
     }
 }

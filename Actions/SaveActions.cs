@@ -11,7 +11,6 @@ namespace Stuxnet_HN.Actions
 {
     public class SaveActions
     {
-        [Action("DenySaves")]
         public class DenySaves : DelayablePathfinderAction
         {
             public override void Trigger(OS os)
@@ -21,7 +20,6 @@ namespace Stuxnet_HN.Actions
             }
         }
 
-        [Action("AllowSaves")]
         public class AllowSaves : DelayablePathfinderAction
         {
             public override void Trigger(OS os)
@@ -31,7 +29,6 @@ namespace Stuxnet_HN.Actions
             }
         }
 
-        [Action("RequireFlagForSaves")]
         public class RequireFlagForSaves : DelayablePathfinderAction
         {
             [XMLStorage]

@@ -10,7 +10,6 @@ using Pathfinder.Util;
 
 namespace Stuxnet_HN.Actions.Nodes
 {
-    [Action("PlaceNodeOnNetMap")]
     public class PlaceOnNetMap : DelayablePathfinderAction
     {
         [XMLStorage]

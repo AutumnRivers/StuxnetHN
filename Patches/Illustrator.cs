@@ -25,11 +25,6 @@ namespace Stuxnet_HN.Patches
         [HarmonyPatch(typeof(OS), "drawScanlines")]
         public static bool Prefix(OS __instance)
         {
-            if(StuxnetCore.originalScanlines == null)
-            {
-                StuxnetCore.originalScanlines = __instance.scanLines;
-            }
-
             switch(StuxnetCore.illustState)
             {
                 case States.DrawTitle:

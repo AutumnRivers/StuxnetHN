@@ -12,6 +12,7 @@ using Pathfinder.GUI;
 using Pathfinder.Util;
 using Stuxnet_HN.Patches;
 using Stuxnet_HN.Localization;
+using static Stuxnet_HN.Extensions.GuiHelpers;
 
 namespace Stuxnet_HN.Executables
 {
@@ -570,16 +571,6 @@ namespace Stuxnet_HN.Executables
 
             entryPosition.X = xPositions[6];
             GuiData.spriteBatch.DrawString(GuiData.smallfont, entry.method, entryPosition, textColor);
-        }
-
-        private void DrawCenteredText(Rectangle bounds, string text, SpriteFont font)
-        {
-            Vector2 textVector = font.MeasureString(text);
-            Vector2 textPosition = new Vector2(
-                (float)(bounds.X + bounds.Width / 2) - textVector.X / 2f,
-                (float)(bounds.Y + bounds.Height / 2) - textVector.Y / 2f);
-
-            GuiData.spriteBatch.DrawString(font, text, textPosition, Color.White);
         }
     }
 

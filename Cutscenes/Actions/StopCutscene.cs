@@ -5,7 +5,6 @@ using Stuxnet_HN.Cutscenes.Patches;
 
 namespace Stuxnet_HN.Cutscenes.Actions
 {
-    [Action("StopActiveCutscene")]
     public class StopCutscene : PathfinderAction
     {
         public override void Trigger(object os_obj)

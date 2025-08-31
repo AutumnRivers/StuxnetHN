@@ -12,7 +12,6 @@ using Pathfinder.Util;
 
 namespace Stuxnet_HN.Actions
 {
-    [Action("AddCustomWildcard")]
     public class AddCustomReplacements : PathfinderAction
     {
         [XMLStorage]
@@ -27,7 +26,6 @@ namespace Stuxnet_HN.Actions
         }
     }
 
-    [Action("AddNodeIPWildcard")]
     public class AddNodeCustomReplacement : PathfinderAction
     {
         [XMLStorage]
@@ -44,7 +42,6 @@ namespace Stuxnet_HN.Actions
         }
     }
 
-    [Action("AddNodeAdminWildcard")]
     public class AddAdminPassCustomReplacement : PathfinderAction
     {
         [XMLStorage]

@@ -12,7 +12,6 @@ using Pathfinder.Util;
 
 namespace Stuxnet_HN.Cutscenes.Actions
 {
-    [Action("RegisterStuxnetCutscene")]
     public class RegisterCutscene : PathfinderAction
     {
         [XMLStorage]
@@ -33,7 +32,6 @@ namespace Stuxnet_HN.Cutscenes.Actions
         }
     }
 
-    [Action("TriggerStuxnetCutscene")]
     public class TriggerCutscene : PathfinderAction
     {
         [XMLStorage]

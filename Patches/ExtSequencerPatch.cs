@@ -3,7 +3,7 @@
 using Hacknet;
 using Hacknet.Extensions;
 
-using Stuxnet_HN.Actions;
+using Stuxnet_HN.Configuration;
 
 namespace Stuxnet_HN.Patches
 {

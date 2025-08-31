@@ -23,8 +23,24 @@ namespace Stuxnet_HN.SMS
         public static List<SMSChoice> ActiveChoices = new();
         public static Dictionary<string, Color> AuthorColors = new()
         {
-            { "player", Color.Transparent } // Transparent = Theme Highlight Color
+
         };
+
+        public static void Initialize()
+        {
+            foreach(var author in StuxnetCore.Configuration.SMS.AuthorColors)
+            {
+                string parsedAuthor = ComputerLoader.filter(author.Key);
+                if (AuthorColors.ContainsKey(parsedAuthor)) continue;
+                AuthorColors.Add(parsedAuthor, Utils.convertStringToColor(author.Value));
+            }
+
+            if(!AuthorColors.ContainsKey("#PLAYERNAME#"))
+            {
+                string player = ComputerLoader.filter("#PLAYERNAME#");
+                AuthorColors.Add(player, Color.Transparent); // Transparent = theme highlight color
+            }
+        }
 
         public static void QueueMessage(SMSMessage message, float delay, string messageID = null)
         {

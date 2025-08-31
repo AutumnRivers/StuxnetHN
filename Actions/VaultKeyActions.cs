@@ -16,7 +16,6 @@ namespace Stuxnet_HN.Actions
 {
     public class VaultKeyActions
     {
-        [Action("AddVaultKey")]
         public class AddVaultKey : DelayablePathfinderAction
         {
             [XMLStorage]
@@ -46,7 +45,6 @@ namespace Stuxnet_HN.Actions
             }
         }
 
-        [Action("RemoveVaultKey")]
         public class RemoveVaultKey : DelayablePathfinderAction
         {
             [XMLStorage]

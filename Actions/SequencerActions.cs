@@ -9,11 +9,12 @@ using Pathfinder.Util;
 using Newtonsoft.Json;
 using Pathfinder.Meta.Load;
 
+using Stuxnet_HN.Configuration;
+
 namespace Stuxnet_HN.Actions
 {
     public class SequencerActions
     {
-        [Action("ChangeSequencerManually")]
         public class ChangeSequencerManually : PathfinderAction
         {
             [XMLStorage]
@@ -27,8 +28,6 @@ namespace Stuxnet_HN.Actions
 
             [XMLStorage]
             public string ActionsToRun = ExtensionLoader.ActiveExtensionInfo.ActionsToRunOnSequencerStart;
-
-            ExtensionInfo activeInfo = ExtensionLoader.ActiveExtensionInfo;
 
             public override void Trigger(object os_obj)
             {
@@ -44,19 +43,16 @@ namespace Stuxnet_HN.Actions
             }
         }
 
-        [Action("ChangeSequencerFromID")]
         public class ChangeSequencerFromID : PathfinderAction
         {
             [XMLStorage]
             public string SequencerID;
 
-            private const string SequencerFileName = "/sequencers.json";
-
             private readonly ExtensionInfo activeInfo = ExtensionLoader.ActiveExtensionInfo;
 
             public override void Trigger(object os_obj)
             {
-                SequencerInfo seqInfo = new SequencerInfo
+                SequencerInfo seqInfo = new()
                 {
                     requiredFlag = activeInfo.SequencerFlagRequiredForStart,
                     targetIDorIP = activeInfo.SequencerTargetID,
@@ -64,25 +60,18 @@ namespace Stuxnet_HN.Actions
                     sequencerActions = activeInfo.ActionsToRunOnSequencerStart
                 };
 
-                if(!File.Exists(activeInfo.FolderPath + SequencerFileName))
+                var sequencers = StuxnetCore.Configuration.Sequencers;
+
+                if (!sequencers.ContainsKey(SequencerID))
                 {
-                    throw new FileNotFoundException(SequencerFileName + " could not be found in the root folder of the extension.");
-                }
-
-                StreamReader sequencerFileStream = new StreamReader(activeInfo.FolderPath + SequencerFileName);
-                string seqFileJSON = sequencerFileStream.ReadToEnd();
-
-                Dictionary<string, SequencerInfo> sequencersJSON = JsonConvert.DeserializeObject<Dictionary<string, SequencerInfo>>(seqFileJSON);
-
-                sequencerFileStream.Close();
-
-                if (!sequencersJSON.ContainsKey(SequencerID))
-                {
-                    throw new KeyNotFoundException($"Could not find the Sequencer ID {SequencerID} in {SequencerFileName}.");
+                    throw new KeyNotFoundException(
+                        string.Format("Could not find sequencer ID '{0}' in Stuxnet configuration file.",
+                        SequencerID)
+                        );
                 }
 
                 // Now we can actually use the sequencer
-                SequencerInfo targetSeq = sequencersJSON[SequencerID];
+                SequencerInfo targetSeq = sequencers[SequencerID];
 
                 if(targetSeq.requiredFlag != null) { seqInfo.requiredFlag = targetSeq.requiredFlag; }
                 if(targetSeq.targetIDorIP != null) { seqInfo.targetIDorIP = targetSeq.targetIDorIP; }
@@ -94,7 +83,6 @@ namespace Stuxnet_HN.Actions
             }
         }
 
-        [Action("ClearCustomSequencer")]
         public class ClearCustomSequencer : DelayablePathfinderAction
         {
             public override void Trigger(OS os)
@@ -103,13 +91,5 @@ namespace Stuxnet_HN.Actions
                 StuxnetCore.currentSequencerInfo = null;
             }
         }
-    }
-
-    public class SequencerInfo
-    {
-        public string requiredFlag;
-        public float spinUpTime;
-        public string targetIDorIP;
-        public string sequencerActions;
     }
 }

@@ -19,7 +19,6 @@ namespace Stuxnet_HN.Actions.Dialogue
 {
     public class ChapterTitleActions
     {
-        [Action("ShowChapterTitle")]
         public class ShowChapterTitle : DelayablePathfinderAction
         {
             [XMLStorage]
@@ -64,7 +63,6 @@ namespace Stuxnet_HN.Actions.Dialogue
             }
         }
 
-        [Action("HideChapterTitle")]
         public class HideChapterTitle : DelayablePathfinderAction
         {
             public override void Trigger(OS os)

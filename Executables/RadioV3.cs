@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework;
 using Hacknet.Gui;
 using Stuxnet_HN.Localization;
 using System;
+using Stuxnet_HN.Configuration;
 
 namespace Stuxnet_HN.Executables
 {
@@ -21,7 +22,7 @@ namespace Stuxnet_HN.Executables
 
         SongEntry currentSong;
 
-        List<SongEntry> songs = new List<SongEntry>();
+        List<SongEntry> songs = new();
 
         readonly List<string> songTitles = new List<string>();
 
@@ -170,14 +171,5 @@ namespace Stuxnet_HN.Executables
                 songTitles.Add(songTitle);
             }
         }
-    }
-
-    public class SongEntry
-    {
-        public string artist;
-        public string title;
-        public string path;
-        public bool initial = false;
-        public string songId;
     }
 }
