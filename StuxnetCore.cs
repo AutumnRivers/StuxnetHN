@@ -244,8 +244,11 @@ namespace Stuxnet_HN
             EventManager<SaveComputerEvent>.AddHandler(wiresharkSaveDelegate);
             EventManager<SaveComputerLoadedEvent>.AddHandler(wiresharkLoadDelegate);
 
-            LogDebug("Adding the finishing touches...");
+            LogDebug("Early initialization...");
             StuxnetConfig.LoadFromJson();
+            EarlyInitializeStuxnet();
+
+            LogDebug("Adding the finishing touches...");
             InitializeRadio();
 
             LogDebug("--- Finished Loading! :D");
@@ -268,6 +271,13 @@ namespace Stuxnet_HN
             return true;
         }
 
+        public void EarlyInitializeStuxnet()
+        {
+            Localization.Localizer.Initialize();
+            Persistence.PersistenceManager.Initialize();
+            Gamemode.GamemodeMenu.Initialize();
+        }
+
         public void InitializeStuxnet(OSLoadedEvent os_event)
         {
             if (disableAlerts) { os_event.Os.DisableEmailIcon = true; }
@@ -287,7 +297,6 @@ namespace Stuxnet_HN
             SMSModule smsModule = new(smsBounds, os_event.Os);
             os_event.Os.modules.Add(smsModule);
 
-            Localization.Localizer.Initialize();
             Quests.QuestManager.Initialize();
 
             if(OS.DEBUG_COMMANDS)
