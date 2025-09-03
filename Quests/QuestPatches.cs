@@ -8,7 +8,8 @@ namespace Stuxnet_HN.Quests
         [Event()]
         public static void CheckQuestsOnUpdate(OSUpdateEvent updateEvent)
         {
-            if(StuxnetCore.XMODLoaded)
+            if(StuxnetCore.XMODLoaded
+                && !StuxnetCore.Configuration.Quests.IgnoreXMODMissions)
             {
                 XMODCompat.QuestsXMODCompat.AddXMissionsAsQuests();
                 XMODCompat.QuestsXMODCompat.CheckForLostMissions();

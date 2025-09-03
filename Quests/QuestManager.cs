@@ -22,7 +22,8 @@ namespace Stuxnet_HN.Quests
 
         public static void Initialize()
         {
-            if(StuxnetCore.XMODLoaded)
+            if(StuxnetCore.XMODLoaded
+                && !StuxnetCore.Configuration.Quests.IgnoreXMODMissions)
             {
                 StuxnetCore.Logger.LogDebug("XMOD is detected. Stuxnet.Quests will also load XMissions.");
                 XMODCompat.QuestsXMODCompat.AddXMissionsAsQuests();
@@ -70,7 +71,8 @@ namespace Stuxnet_HN.Quests
         {
             if (!Quests.Contains(quest)) return;
 
-            if(StuxnetCore.XMODLoaded && quest.IsXMission)
+            if(StuxnetCore.XMODLoaded && quest.IsXMission
+                && !StuxnetCore.Configuration.Quests.IgnoreXMODMissions)
             {
                 XMODCompat.QuestsXMODCompat.RemoveXMissionFromXMOD(quest.OriginalXMission);
             }

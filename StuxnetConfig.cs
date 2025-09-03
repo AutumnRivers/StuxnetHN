@@ -9,6 +9,8 @@ namespace Stuxnet_HN.Configuration
     {
         public static StuxnetConfig GlobalConfig;
 
+        public bool ShowDebugText = true;
+
         public StuxnetAudioConfig Audio;
         public StuxnetQuestsConfig Quests;
         public StuxnetSMSConfig SMS;
@@ -40,6 +42,7 @@ namespace Stuxnet_HN.Configuration
     public class StuxnetQuestsConfig
     {
         public bool ReplaceLoadMissionAction = true;
+        public bool IgnoreXMODMissions = false;
     }
 
     public class StuxnetSMSConfig

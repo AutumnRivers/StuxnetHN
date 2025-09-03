@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BepInEx;
 using Hacknet;
 using Hacknet.Gui;
@@ -21,7 +17,7 @@ namespace Stuxnet_HN.Quests
         public static bool Opened { get; set; } = false;
         public static float TweenAmount { get; set; } = 0.0f;
 
-        public const string QUEST_TEXT = "Quests";
+        public static readonly string QuestText = Localizer.GetLocalized("Quests");
 
         [HarmonyPrefix]
         [HarmonyPriority(Priority.Last)]
@@ -34,7 +30,7 @@ namespace Stuxnet_HN.Quests
                 return;
             }
 
-            var textVec = GuiData.smallfont.MeasureString(QUEST_TEXT);
+            var textVec = GuiData.smallfont.MeasureString(QuestText);
             Rectangle button = new()
             {
                 X = (int)((OS.currentInstance.topBar.Width / 2) - (textVec.X / 2) - 10),
@@ -51,7 +47,7 @@ namespace Stuxnet_HN.Quests
             GuiData.spriteBatch.Draw(Utils.white, button, Color.Black * buttonOpacity);
             TextItem.doSmallLabel(new((textVec.X / 2) + button.X + 10,
                 (int)((OS.TOP_BAR_HEIGHT / 2) - (textVec.Y / 2))),
-                QUEST_TEXT, OS.currentInstance.topBarTextColor);
+                QuestText, OS.currentInstance.topBarTextColor);
 
             if(MouseWasClickedIn(button))
             {
@@ -67,6 +63,12 @@ namespace Stuxnet_HN.Quests
 
         private static bool _begun = false;
 
+        public static readonly string MainMissionText = Localizer.GetLocalized("Main Mission");
+        public static readonly string SQText = Localizer.GetLocalized("Sidequests");
+        public static readonly string CompleteSQText = Localizer.GetLocalized("Complete Sidequest");
+        public static readonly string ICSQText = Localizer.GetLocalized("Incomplete Sidequest");
+
+
         public static void DrawQuestPanel()
         {
             var os = OS.currentInstance;
@@ -79,6 +81,11 @@ namespace Stuxnet_HN.Quests
             } else if(!Opened && TweenAmount > 0.0f)
             {
                 TweenAmount -= (float)os.lastGameTime.ElapsedGameTime.TotalSeconds * 0.65f;
+            }
+
+            if(TweenAmount > 1.0f)
+            {
+                TweenAmount = 1.0f;
             }
 
             int panelY = (int)MathHelper.Lerp(-1 - height, -1, TweenAmount);
@@ -113,24 +120,24 @@ namespace Stuxnet_HN.Quests
 
             int yOffset = 10;
             TextItem.doLabel(new Vector2(panelRect.X + 10, panelRect.Y + yOffset),
-                QUEST_TEXT, Color.White);
-            yOffset += GuiData.font.GetTextHeight(QUEST_TEXT) + 10;
+                QuestText, Color.White);
+            yOffset += GuiData.font.GetTextHeight(QuestText) + 10;
 
             DrawLine(new(panelRect.X, panelRect.Y + yOffset), panelRect.Width - 6, 3);
             yOffset += 8;
 
-            GuiData.font.DrawScaledText("Main Mission", new(panelRect.X + 10, panelRect.Y + yOffset),
+            GuiData.font.DrawScaledText(MainMissionText, new(panelRect.X + 10, panelRect.Y + yOffset),
                 Color.White, 0.8f);
-            yOffset += GuiData.font.GetTextHeight("Main Mission", 0.8f) + 5;
+            yOffset += GuiData.font.GetTextHeight(MainMissionText, 0.8f) + 5;
 
             int missionHeight = (int)((panelRect.Width - 20) * MISSION_PANEL_HEIGHT_SCALE);
             DrawMission(QuestManager.MainMission, panelRect.Width - 20,
                 new(panelRect.X + 10, panelRect.Y + yOffset));
             yOffset += missionHeight + 20;
 
-            GuiData.font.DrawScaledText("Sidequests", new(panelRect.X + 10, panelRect.Y + yOffset),
+            GuiData.font.DrawScaledText(SQText, new(panelRect.X + 10, panelRect.Y + yOffset),
                 Color.White, 0.7f);
-            yOffset += GuiData.font.GetTextHeight("Sidequests", 0.7f) + 5;
+            yOffset += GuiData.font.GetTextHeight(SQText, 0.7f) + 5;
 
             for(int q = 0; q < QuestManager.Quests.Count; q++)
             {
@@ -151,6 +158,7 @@ namespace Stuxnet_HN.Quests
         public int CompleteMainMissionButtonID = PFButton.GetNextID();
 
         public const float MISSION_PANEL_HEIGHT_SCALE = 0.15f;
+        public const int DESCRIPTION_CHAR_LIMIT = 256;
 
         public static void DrawMission(ActiveMission mission, int width, Vector2 position)
         {
@@ -176,21 +184,15 @@ namespace Stuxnet_HN.Quests
             if (mission.postingTitle.IsNullOrWhiteSpace())
             {
                 title = mission.email.subject;
-                description = mission.email.body.Truncate(128, splitNewlines: true);
+                description = mission.email.body.Truncate(DESCRIPTION_CHAR_LIMIT, splitNewlines: true);
             } else
             {
                 title = mission.postingTitle;
-                description = mission.postingBody.Truncate(128, splitNewlines: true);
+                description = mission.postingBody.Truncate(DESCRIPTION_CHAR_LIMIT, splitNewlines: true);
             }
 
             description = Utils.SuperSmartTwimForWidth(description,
                 width - 10, GuiData.smallfont);
-
-            if(OS.DEBUG_COMMANDS)
-            {
-                TextItem.doTinyLabel(new(backingRect.X + 5, backingRect.Y + backingRect.Height - 15),
-                    "id n/a", Color.White * 0.5f);
-            }
 
             TextItem.doLabel(new Vector2(position.X + 5, position.Y + 10),
                 title, Color.White);
@@ -209,11 +211,16 @@ namespace Stuxnet_HN.Quests
 
             GuiData.font.DrawScaledText(quest.Title, new(position.X + 8, position.Y + yOffset + 8), Color.White,
                 0.75f);
-            if(OS.DEBUG_COMMANDS)
+            if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
             {
                 int textWidth = (int)(GuiData.font.MeasureString(quest.Title).X * 0.75f);
+                string idText = string.Format("id: {0}", quest.ID);
+                string xMisText = string.Format("is XMOD: {0}", quest.IsXMission.ToString());
+                int idHeight = GuiData.tinyfont.GetTextHeight(idText);
                 TextItem.doTinyLabel(new(position.X + textWidth + 15, position.Y + yOffset + 8),
-                    string.Format("id: {0}", quest.ID), Color.White * 0.5f);
+                    idText, Color.White * 0.5f);
+                TextItem.doTinyLabel(new(position.X + textWidth + 15,
+                    position.Y + yOffset + 8 + idHeight + 2), xMisText, Color.White * 0.5f);
             }
             yOffset += GuiData.font.GetTextHeight(quest.Title, 0.75f);
 
@@ -250,13 +257,13 @@ namespace Stuxnet_HN.Quests
                 int buttonWidth = maxWidth / 8;
                 TextItem.doSmallLabel(new(position.X + 8 + buttonWidth + 5,
                     position.X + yOffset + 10),
-                    "Incomplete Mission", Color.Red);
+                    ICSQText, Color.Red);
             }
             yOffset += 20;
 
             bool attemptComplete = Button.doButton(quest.CompletionButtonID,
                 (int)position.X + 8, (int)position.Y + yOffset + 10, maxWidth / 8, 20,
-                "Complete SQ", OS.currentInstance.unlockedColor);
+                CompleteSQText, OS.currentInstance.unlockedColor);
             if (attemptComplete)
             {
                 bool success = QuestManager.AttemptCompleteQuest(quest);

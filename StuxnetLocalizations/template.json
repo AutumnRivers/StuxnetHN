@@ -65,9 +65,11 @@
 
     "//7": "Stuxnet.Quest Terms",
 
-    "Active Missions": "",
-    "Abandon Mission": "",
-    "Complete Mission": "",
+    "Main Mission": "",
+    "Sidequests": "",
+    "Complete Sidequest": "",
+    "Incomplete Sidequest": "",
+    "Quests": "",
 
     "//8": "SMS/Messenger Terms",
 
