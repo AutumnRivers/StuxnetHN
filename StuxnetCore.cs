@@ -228,6 +228,9 @@ namespace Stuxnet_HN
             ActionManager.RegisterAction<DisableAlertsIcon>("DisableAlertsIcon");
             ActionManager.RegisterAction<EnableAlertsIcon>("EnableAlertsIcon");
             ActionManager.RegisterAction<WriteToTerminal>("WriteToTerminal");
+
+            // Persistence Actions
+            Persistence.PersistenceActions.RegisterActions();
             #endregion register actions
 
 
@@ -269,6 +272,13 @@ namespace Stuxnet_HN
             LogDebug(postMsg[random.Next(0, postMsg.Length)]);
 
             return true;
+        }
+
+        public override bool Unload()
+        {
+            Persistence.PersistenceManager.Reset();
+            Gamemode.GamemodeMenu.CloseMenu();
+            return base.Unload();
         }
 
         public void EarlyInitializeStuxnet()

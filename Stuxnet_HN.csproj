@@ -95,6 +95,7 @@
     <Compile Include="Actions\RadioActions.cs" />
     <Compile Include="Actions\SaveActions.cs" />
     <Compile Include="Actions\SequencerActions.cs" />
+    <Compile Include="Actions\StuxnetAction.cs" />
     <Compile Include="Actions\ToggleAlertsIcon.cs" />
     <Compile Include="Actions\VaultKeyActions.cs" />
     <Compile Include="Actions\WriteToTerminal.cs" />
@@ -129,6 +130,7 @@
     <Compile Include="Patches\MissionDisplayLogo.cs" />
     <Compile Include="Patches\Wireshark\WiresharkContents.cs" />
     <Compile Include="Patches\Wireshark\WiresharkCompExecutors.cs" />
+    <Compile Include="Persistence\PersistenceActions.cs" />
     <Compile Include="Persistence\PersistenceManager.cs" />
     <Compile Include="Quests\QuestActions.cs" />
     <Compile Include="Quests\QuestManager.cs" />

@@ -33,11 +33,18 @@ namespace Stuxnet_HN.Persistence
                 saveDataReader.Close();
                 saveData.Close();
 
+                LoadPersistentData(LastLoadedData);
+
                 if (StuxnetCore.Configuration.ShowDebugText && OS.DEBUG_COMMANDS)
                 {
                     StuxnetCore.Logger.LogDebug("Successfully read data from persistent savefile.");
                 }
             }
+        }
+
+        public static void LoadPersistentData(PersistentFileData fileData)
+        {
+            PersistentFlags = fileData.Flags;
         }
 
         public static void SavePersistentData()
@@ -51,6 +58,33 @@ namespace Stuxnet_HN.Persistence
             {
                 StuxnetCore.Logger.LogDebug("Successfully wrote to persistent savefile.");
             }
+        }
+
+        public static void Reset()
+        {
+            PersistentFlags = new();
+            LastLoadedData = null;
+        }
+
+        public static void AddFlag(string flag)
+        {
+            if(!PersistentFlags.Contains(flag))
+            {
+                PersistentFlags.Add(flag);
+            }
+        }
+
+        public static void TakeFlag(string flag)
+        {
+            if(PersistentFlags.Contains(flag))
+            {
+                PersistentFlags.Remove(flag);
+            }
+        }
+
+        public static void ResetFlags()
+        {
+            PersistentFlags.Clear();
         }
 
         public static bool HasGlobalFlag(string flagName)

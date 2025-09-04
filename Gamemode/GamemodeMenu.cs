@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using BepInEx;
 using Hacknet;
 using Hacknet.Extensions;
@@ -60,7 +61,7 @@ namespace Stuxnet_HN.Gamemode
         private static int EntriesPanelID = -1;
         private static int SelectPathButtonID = -1;
 
-        public const int ENTRY_PANEL_HEIGHT = 175;
+        public const int ENTRY_PANEL_HEIGHT = 140;
         public const int ENTRY_PANEL_MARGIN = 50;
         public const int ENTRIES_BOT_MARGIN = 15;
 
@@ -99,14 +100,29 @@ namespace Stuxnet_HN.Gamemode
             DrawRectangle(descBounds, Color.Black * 0.3f);
             DrawOutline(descBounds, Utils.SlightlyDarkGray, 1);
 
-            int finalHeight = (Entries.Count * ENTRY_PANEL_HEIGHT) +
-                ((Entries.Count - 1) * ENTRIES_BOT_MARGIN);
+            string fullDescription = ExtensionLoader.ActiveExtensionInfo.Description;
+            if (PotentialPath != null)
+            {
+                fullDescription = PotentialPath.Description;
+            }
+            fullDescription = fullDescription.Truncate(1024);
+            fullDescription = Utils.SuperSmartTwimForWidth(fullDescription, descBounds.Width - 20, GuiData.smallfont);
+
+            TextItem.doSmallLabel(new(descBounds.X + 10, descBounds.Y + 10), fullDescription, Color.White);
+
+            List<GamemodeEntry> VisibleEntries = Entries.ToList();
+            VisibleEntries.RemoveAll(e => !e.CanBeSeen);
+
+            int finalHeight = (VisibleEntries.Count * ENTRY_PANEL_HEIGHT) +
+                ((VisibleEntries.Count - 1) * ENTRIES_BOT_MARGIN);
             bool needsScroll = finalHeight > listBounds.Height;
             int xOffset = bounds.X;
+            yOffset = listBounds.Y;
             if (needsScroll)
             {
                 Rectangle drawbounds = listBounds;
                 drawbounds.Height = finalHeight;
+                drawbounds.Width += drawbounds.Width / 10;
                 ScrollablePanel.beginPanel(EntriesPanelID, drawbounds, new(0, EntryPanelScroll));
 
                 yOffset = 0;
@@ -129,16 +145,6 @@ namespace Stuxnet_HN.Gamemode
                     CatchError(e);
                 }
             }
-
-            string fullDescription = ExtensionLoader.ActiveExtensionInfo.Description;
-            if(PotentialPath != null)
-            {
-                fullDescription = PotentialPath.Description;
-            }
-            fullDescription = fullDescription.Truncate(1024);
-            fullDescription = Utils.SuperSmartTwimForWidth(fullDescription, descBounds.Width - 20, GuiData.smallfont);
-
-            TextItem.doSmallLabel(new(descBounds.X + 10, descBounds.Y + 10), fullDescription, Color.White);
 
             if (needsScroll)
             {
@@ -218,7 +224,7 @@ namespace Stuxnet_HN.Gamemode
             yOffset += GuiData.font.GetTextHeight(entry.Title, 0.75f);
 
             string description = Utils.SuperSmartTwimForWidth(entry.ShortDescription, width, GuiData.smallfont);
-            TextItem.doSmallLabel(new(pos.X + 5, pos.Y + yOffset + 10), description, Utils.SlightlyDarkGray);
+            TextItem.doSmallLabel(new(pos.X + 5, pos.Y + yOffset + 5), description, Utils.SlightlyDarkGray);
         }
 
         private static int ConfirmButtonID = -1;
@@ -341,6 +347,8 @@ namespace Stuxnet_HN.Gamemode
 
         public static void CloseMenu()
         {
+            if (State == GamemodeMenuState.Disabled) return;
+
             EntriesPanelID = ReturnAndResetID(EntriesPanelID);
             SelectPathButtonID = ReturnAndResetID(SelectPathButtonID);
             ConfirmButtonID = ReturnAndResetID(ConfirmButtonID);
