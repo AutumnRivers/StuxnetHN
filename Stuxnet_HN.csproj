@@ -90,6 +90,7 @@
     <Compile Include="Actions\Dialogue\ChapterTitle.cs" />
     <Compile Include="Actions\Dialogue\VisualNovelText.cs" />
     <Compile Include="Actions\ForceConnect.cs" />
+    <Compile Include="Actions\FullscreenCredits.cs" />
     <Compile Include="Actions\MiscActions.cs" />
     <Compile Include="Actions\Nodes\PlaceOnNetMap.cs" />
     <Compile Include="Actions\RadioActions.cs" />
@@ -114,7 +115,6 @@
     <Compile Include="Daemons\DebugDaemon.cs" />
     <Compile Include="Daemons\VaultDaemon.cs" />
     <Compile Include="Executables\RadioV3.cs" />
-    <Compile Include="Executables\RevolutionExe.cs" />
     <Compile Include="Executables\Wireshark.cs" />
     <Compile Include="Extensions\GuiHelpers.cs" />
     <Compile Include="Extensions\Texture2DExtensions.cs" />

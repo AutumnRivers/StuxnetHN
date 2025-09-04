@@ -15,12 +15,32 @@ using System.Xml;
 using States = Stuxnet_HN.Static.States.IllustratorStates;
 using Stuxnet_HN.Actions.Dialogue;
 using Stuxnet_HN.Localization;
+using Stuxnet_HN.Actions;
+using static Stuxnet_HN.Extensions.GuiHelpers;
 
 namespace Stuxnet_HN.Patches
 {
     [HarmonyPatch]
     public class Illustrator
     {
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(OS), nameof(OS.drawModules))]
+        public static bool EarlyIllustratorPatch(OS __instance)
+        {
+            if(FullscreenCredits.IsActive)
+            {
+                var vp = GuiData.spriteBatch.GraphicsDevice.Viewport.Bounds;
+
+                DrawRectangle(vp, __instance.moduleColorBacking);
+
+                FullscreenCredits.DrawFullscreenCredits();
+                __instance.drawScanlines();
+                return false;
+            }
+
+            return true;
+        }
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(OS), "drawScanlines")]
         public static bool Prefix(OS __instance)
