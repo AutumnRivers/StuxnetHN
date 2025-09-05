@@ -114,6 +114,7 @@
     <Compile Include="Daemons\CodeRedemptionDaemon.cs" />
     <Compile Include="Daemons\DebugDaemon.cs" />
     <Compile Include="Daemons\VaultDaemon.cs" />
+    <Compile Include="DrawStuxnetMainMenu.cs" />
     <Compile Include="Executables\RadioV3.cs" />
     <Compile Include="Executables\Wireshark.cs" />
     <Compile Include="Extensions\GuiHelpers.cs" />
@@ -122,7 +123,6 @@
     <Compile Include="Extensions\XmlReaderExtensions.cs" />
     <Compile Include="Gamemode\GamemodeMenu.cs" />
     <Compile Include="Gamemode\GamemodePatches.cs" />
-    <Compile Include="Gamemode\GamemodeReplacements.cs" />
     <Compile Include="Localization\Localizer.cs" />
     <Compile Include="Patches\ApplyCustomReplacements.cs" />
     <Compile Include="Patches\ExtSequencerPatch.cs" />

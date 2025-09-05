@@ -7,6 +7,7 @@ using Hacknet.UIUtils;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace Stuxnet_HN.Gamemode
 {
@@ -59,16 +60,6 @@ namespace Stuxnet_HN.Gamemode
             return false;
         }
 
-        /*[HarmonyPrefix]
-        [HarmonyPatch(typeof(ExtensionLoader), "LoadNewExtensionSession")]
-        public static bool ReplaceNewExtensionSessionIfNecessary(ExtensionInfo info, object os_obj)
-        {
-            if (GamemodeMenu.SelectedEntry == null) return true;
-
-            GamemodeReplacements.StartNewExtensionSaveReplacement(info, os_obj);
-            return false;
-        }*/
-
         [HarmonyPrefix]
         [HarmonyPatch(typeof(ExtensionLoader), "CheckAndAssignCoreServer")]
         public static bool ReplacePlayerCompIfNecessary(Computer c, OS os)
@@ -89,10 +80,11 @@ namespace Stuxnet_HN.Gamemode
 
             if(c.idName == targetID)
             {
-                os.netMap.nodes.Remove(c);
-                os.netMap.nodes.Insert(0, c);
+                os.netMap.nodes.Remove(os.thisComputer);
                 os.thisComputer = c;
                 c.adminIP = c.ip;
+                os.netMap.nodes.Remove(c);
+                os.netMap.nodes.Insert(0, c);
                 if(!os.netMap.visibleNodes.Contains(0))
                 {
                     os.netMap.visibleNodes.Add(0);
@@ -145,6 +137,7 @@ namespace Stuxnet_HN.Gamemode
             string username = SavescreenInstance.Answers[0];
             string password = SavescreenInstance.Answers[1];
 
+            SavescreenInstance.InPasswordMode = false;
             SavescreenInstance.StartNewGameForUsernameAndPass(username, password);
             SavescreenInstance = null;
         }

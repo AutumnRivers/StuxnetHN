@@ -6,6 +6,7 @@ using Hacknet.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+using Pathfinder;
 using Pathfinder.Action;
 using Pathfinder.Command;
 using Pathfinder.Daemon;
@@ -16,7 +17,9 @@ using Pathfinder.Event.Saving;
 using Pathfinder.Executable;
 using Pathfinder.Meta;
 using Pathfinder.Meta.Load;
+using Pathfinder.Options;
 using Pathfinder.Replacements;
+using Pathfinder.Util;
 using Pathfinder.Util.XML;
 using Stuxnet_HN.Actions;
 using Stuxnet_HN.Actions.Dialogue;
@@ -33,6 +36,7 @@ using Stuxnet_HN.Static;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Xml.Linq;
 
 namespace Stuxnet_HN
@@ -279,7 +283,7 @@ namespace Stuxnet_HN
         {
             StuxnetConfig.GlobalConfig = null;
             Persistence.PersistenceManager.Reset();
-            Gamemode.GamemodeMenu.CloseMenu();
+            GamemodeMenu.CloseMenu();
             return base.Unload();
         }
 
@@ -287,11 +291,12 @@ namespace Stuxnet_HN
         {
             Localization.Localizer.Initialize();
             Persistence.PersistenceManager.Initialize();
-            Gamemode.GamemodeMenu.Initialize();
+            GamemodeMenu.Initialize();
         }
 
         public void InitializeStuxnet(OSLoadedEvent os_event)
         {
+            
             if (disableAlerts) { os_event.Os.DisableEmailIcon = true; }
 
             NodeAttachment.BipSound = os_event.Os.content.Load<SoundEffect>("SFX/Bip");
