@@ -1,4 +1,5 @@
-﻿using Hacknet;
+﻿using BepInEx;
+using Hacknet;
 using Hacknet.Extensions;
 using Hacknet.Gui;
 using Hacknet.Screens;
@@ -6,11 +7,6 @@ using Hacknet.UIUtils;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Stuxnet_HN.Gamemode
 {
@@ -23,14 +19,11 @@ namespace Stuxnet_HN.Gamemode
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(SavefileLoginScreen), "Draw")]
-        public static bool DrawGamemodeMenuIfNeeded(SavefileLoginScreen __instance, Rectangle dest)
+        public static bool DrawGamemodeMenuIfNeeded(SavefileLoginScreen __instance)
         {
-            if (GamemodeMenu.Entries.Count == 0) return true;
+            if (GamemodeMenu.VisibleEntries.Count == 0) return true;
 
-            if(SavescreenInstance == null)
-            {
-                SavescreenInstance = __instance;
-            }
+            SavescreenInstance ??= __instance;
 
             if(GamemodeMenu.State != GamemodeMenu.GamemodeMenuState.Disabled)
             {
@@ -58,7 +51,7 @@ namespace Stuxnet_HN.Gamemode
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(ExtensionsMenuScreen), "Draw")]
-        public static bool DrawGamemodeMenuOverExtensions(ExtensionsMenuScreen __instance, Rectangle dest)
+        public static bool DrawGamemodeMenuOverExtensions(Rectangle dest)
         {
             if (GamemodeMenu.State == GamemodeMenu.GamemodeMenuState.Disabled) return true;
 
@@ -66,7 +59,7 @@ namespace Stuxnet_HN.Gamemode
             return false;
         }
 
-        [HarmonyPrefix]
+        /*[HarmonyPrefix]
         [HarmonyPatch(typeof(ExtensionLoader), "LoadNewExtensionSession")]
         public static bool ReplaceNewExtensionSessionIfNecessary(ExtensionInfo info, object os_obj)
         {
@@ -74,6 +67,75 @@ namespace Stuxnet_HN.Gamemode
 
             GamemodeReplacements.StartNewExtensionSaveReplacement(info, os_obj);
             return false;
+        }*/
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ExtensionLoader), "CheckAndAssignCoreServer")]
+        public static bool ReplacePlayerCompIfNecessary(Computer c, OS os)
+        {
+            if (GamemodeMenu.SelectedEntry == null) return true;
+            if (GamemodeMenu.SelectedEntry.PlayerComputerID.IsNullOrWhiteSpace() ||
+                GamemodeMenu.SelectedEntry.PlayerComputerID.ToLower() == "playercomp") return true;
+            string targetID = GamemodeMenu.SelectedEntry.PlayerComputerID;
+            if (c.idName.ToLower() != "playercomp" &&
+                c.idName != targetID) return true;
+
+            if(c.idName.ToLower() == "playercomp" &&
+                targetID != c.idName)
+            {
+                os.netMap.nodes.Remove(c);
+                return false;
+            }
+
+            if(c.idName == targetID)
+            {
+                os.netMap.nodes.Remove(c);
+                os.netMap.nodes.Insert(0, c);
+                os.thisComputer = c;
+                c.adminIP = c.ip;
+                if(!os.netMap.visibleNodes.Contains(0))
+                {
+                    os.netMap.visibleNodes.Add(0);
+                }
+            }
+
+            return false;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MainMenu), "CreateNewAccountForExtensionAndStart")]
+        public static void ReplaceNewExtensionAccountIfNecessary()
+        {
+            ExtensionInfo extensionInfo = ExtensionLoader.ActiveExtensionInfo;
+            var currentEntry = GamemodeMenu.SelectedEntry;
+            if (currentEntry == null) return;
+
+            if(!currentEntry.StartingSongPath.IsNullOrWhiteSpace())
+            {
+                extensionInfo.IntroStartupSong = currentEntry.StartingSongPath;
+            }
+
+            if(!currentEntry.StartingActionsPath.IsNullOrWhiteSpace())
+            {
+                extensionInfo.StartingActionsPath = currentEntry.StartingActionsPath;
+            }
+
+            if(!currentEntry.StartingMissionPath.IsNullOrWhiteSpace())
+            {
+                extensionInfo.StartingMissionPath = currentEntry.StartingMissionPath;
+            }
+
+            if(!currentEntry.StartingThemePath.IsNullOrWhiteSpace())
+            {
+                extensionInfo.Theme = currentEntry.StartingThemePath;
+            }
+
+            if(currentEntry.DisableSavesByDefault)
+            {
+                extensionInfo.AllowSave = currentEntry.DisableSavesByDefault;
+            }
+
+            ExtensionLoader.ActiveExtensionInfo = extensionInfo;
         }
 
         public static void StartNewGame()

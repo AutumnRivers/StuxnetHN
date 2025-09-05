@@ -9,14 +9,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using States = Stuxnet_HN.Static.States.IllustratorStates;
 using Stuxnet_HN.Actions.Dialogue;
 using Stuxnet_HN.Localization;
 using Stuxnet_HN.Actions;
 using static Stuxnet_HN.Extensions.GuiHelpers;
+using Pathfinder.Util.XML;
+using Pathfinder.Replacements;
 
 namespace Stuxnet_HN.Patches
 {
@@ -240,13 +240,29 @@ namespace Stuxnet_HN.Patches
             }
 
             bool nextActionIsDialogue = false;
-            using (FileStream input = File.OpenRead(LocalizedFileLoader.GetLocalizedFilepath(Utils.GetFileLoadPrefix() + endActionsPath)))
+            using (FileStream input = File.OpenRead(Utils.GetFileLoadPrefix() + endActionsPath))
             {
-                XmlReader rdr = XmlReader.Create(input);
-                RunnableConditionalActions runnableConditionalActions = RunnableConditionalActions.Deserialize(rdr);
-                foreach(var actionSet in runnableConditionalActions.Actions)
+                if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
                 {
-                    if(actionSet.Actions.Any(a => a is VisualNovelText.CTCDialogueAction ||
+                    StuxnetCore.Logger.LogDebug("Loading end dialogue action at " +
+                        Utils.GetFileLoadPrefix() + endActionsPath);
+                }
+
+                XmlReader rdr = XmlReader.Create(input);
+                EventExecutor xmlExecutor = new(rdr);
+                ElementInfo rootElement = null;
+
+                xmlExecutor.RegisterExecutor("*", (exec, info) =>
+                {
+                    rootElement = info;
+                }, ParseOption.ParseInterior);
+                xmlExecutor.Parse();
+
+                RunnableConditionalActions runnableConditionalActions = ActionsLoader.LoadActionSets(rootElement);
+
+                foreach (var actionSet in runnableConditionalActions.Actions)
+                {
+                    if (actionSet.Actions.Any(a => a is VisualNovelText.CTCDialogueAction ||
                     a is VisualNovelText.AutoDialogueAction ||
                     a is ChapterTitleActions.ShowChapterTitle))
                     {
@@ -254,6 +270,7 @@ namespace Stuxnet_HN.Patches
                         break;
                     }
                 }
+                rdr.Close();
                 input.Close();
             }
 

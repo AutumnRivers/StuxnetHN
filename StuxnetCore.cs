@@ -26,6 +26,7 @@ using Stuxnet_HN.Configuration;
 using Stuxnet_HN.Cutscenes;
 using Stuxnet_HN.Daemons;
 using Stuxnet_HN.Executables;
+using Stuxnet_HN.Gamemode;
 using Stuxnet_HN.Patches;
 using Stuxnet_HN.SMS;
 using Stuxnet_HN.Static;
@@ -276,6 +277,7 @@ namespace Stuxnet_HN
 
         public override bool Unload()
         {
+            StuxnetConfig.GlobalConfig = null;
             Persistence.PersistenceManager.Reset();
             Gamemode.GamemodeMenu.CloseMenu();
             return base.Unload();

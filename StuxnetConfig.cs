@@ -121,7 +121,7 @@ namespace Stuxnet_HN
         public string StartingActionsPath;
         public string StartingThemePath;
         public string StartingSongPath;
-        public string PlayerComputerID;
+        public string PlayerComputerID = string.Empty;
 
         public string RequiredFlagForSelection;
         public string RequiredFlagForVisibility;

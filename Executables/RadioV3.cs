@@ -123,7 +123,7 @@ namespace Stuxnet_HN.Executables
             string songPath = song.path;
             string extFolder = "../" + ExtensionLoader.ActiveExtensionInfo.FolderPath;
 
-            MusicManager.transitionToSong(extFolder + songPath);
+            MusicManager.transitionToSong(extFolder + "/" + songPath);
 
             canPlay = true;
             SongChanged.Invoke(song);

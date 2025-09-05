@@ -79,6 +79,10 @@ namespace Stuxnet_HN.Daemons
             RenderedRectangle.doRectangle(boundaryX, boundaryY + 125, bounds.Width, 30, os.defaultHighlightColor);
 
             // Get current amount of keys
+            if(!StuxnetCore.receivedKeys.ContainsKey(KeyName))
+            {
+                StuxnetCore.receivedKeys.Add(KeyName, 0);
+            }
             int currentKeys = StuxnetCore.receivedKeys[KeyName];
 
             // Base/interval offsets for the for loop

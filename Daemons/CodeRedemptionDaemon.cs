@@ -239,7 +239,7 @@ namespace Stuxnet_HN.Daemons
             // Send associated email (if any)
             if(!validCode.email.IsNullOrWhiteSpace())
             {
-                string emailFile = ExtensionLoader.ActiveExtensionInfo.FolderPath + validCode.email;
+                string emailFile = ExtensionLoader.ActiveExtensionInfo.FolderPath + "/" + validCode.email;
 
                 if(!File.Exists(emailFile)) { return true; }
 
@@ -251,7 +251,7 @@ namespace Stuxnet_HN.Daemons
             // Load conditional actions (if any)
             if(!validCode.action.IsNullOrWhiteSpace())
             {
-                RunnableConditionalActions.LoadIntoOS(validCode.action, os);
+                RunnableConditionalActions.LoadIntoOS("/" + validCode.action, os);
             }
 
             return true;
@@ -259,7 +259,7 @@ namespace Stuxnet_HN.Daemons
 
         private FileEntry CreateCustomThemeFile(string name, string filepath)
         {
-            string data = ThemeManager.getThemeDataStringForCustomTheme(filepath);
+            string data = ThemeManager.getThemeDataStringForCustomTheme("/" + filepath);
 
             if(data.IsNullOrWhiteSpace()) { return new FileEntry("!!! ERROR LOADING THEME !!!", name + "-error"); }
 

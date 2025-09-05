@@ -19,6 +19,14 @@ namespace Stuxnet_HN.Gamemode
         public static GamemodeEntry SelectedEntry { get; set; }
         public static GamemodeMenuState State { get; set; } = GamemodeMenuState.Disabled;
 
+        public static List<GamemodeEntry> VisibleEntries
+        {
+            get
+            {
+                return Entries.Where(e => e.CanBeSeen).ToList();
+            }
+        }
+
         private static string LastError;
 
         public enum GamemodeMenuState
@@ -148,8 +156,9 @@ namespace Stuxnet_HN.Gamemode
 
             if (needsScroll)
             {
+                float maxScroll = Math.Max(finalHeight, listBounds.Height - finalHeight);
                 var scroll = ScrollablePanel.endPanel(EntriesPanelID, new(0, EntryPanelScroll),
-                    listBounds, listBounds.Height);
+                    listBounds, maxScroll);
                 EntryPanelScroll = scroll.Y;
             }
 
