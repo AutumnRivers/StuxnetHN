@@ -10,7 +10,16 @@ using System.Xml;
 
 namespace Stuxnet_HN.Quests
 {
-    [Action("ReplaceMainMission")]
+    public static class QuestActions
+    {
+        public static void RegisterActions()
+        {
+            ActionManager.RegisterAction<SAReplaceMainMission>("ReplaceMainMission");
+            ActionManager.RegisterAction<SALoadSideQuest>("LoadSideQuest");
+            ActionManager.RegisterAction<SAUnloadSideQuest>("UnloadSideQuest");
+        }
+    }
+
     public class SAReplaceMainMission : DelayablePathfinderAction
     {
         [XMLStorage]
@@ -22,7 +31,6 @@ namespace Stuxnet_HN.Quests
         }
     }
 
-    [Action("LoadSideQuest")]
     public class SALoadSideQuest : DelayablePathfinderAction
     {
         [XMLStorage]
@@ -46,7 +54,6 @@ namespace Stuxnet_HN.Quests
         }
     }
 
-    [Action("UnloadSideQuest")]
     public class SAUnloadSideQuest : DelayablePathfinderAction
     {
         [XMLStorage]

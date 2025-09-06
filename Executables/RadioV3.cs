@@ -16,7 +16,7 @@ namespace Stuxnet_HN.Executables
 {
     public class RadioV3 : GameExecutable
     {
-        public event Action<SongEntry> SongChanged;
+        public static event Action<SongEntry> SongChanged;
 
         public RaindropsEffect backdrop;
 

@@ -47,11 +47,22 @@
     <Reference Include="Hacknet">
       <HintPath>$(HacknetInstall)Hacknet.exe</HintPath>
     </Reference>
+    <Reference Include="Mono.Cecil, Version=0.11.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>M:\SteamLibrary\steamapps\common\Hacknet\BepInEx\core\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoMod.Utils, Version=21.9.19.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>M:\SteamLibrary\steamapps\common\Hacknet\BepInEx\core\MonoMod.Utils.dll</HintPath>
+    </Reference>
     <Reference Include="NVorbis, Version=0.10.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\NVorbis.0.10.5\lib\net45\NVorbis.dll</HintPath>
     </Reference>
     <Reference Include="PathfinderAPI">
       <HintPath>$(HacknetInstall)BepInEx\plugins\PathfinderAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="StuxnetHN">
+      <HintPath>..\bin\Debug\StuxnetHN.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -82,11 +93,14 @@
     <Compile Include="Actions\MusicActions.cs" />
     <Compile Include="Actions\Sounds\PlaySFX.cs" />
     <Compile Include="OGGSoundEffectLoader.cs" />
+    <Compile Include="Patches\MusicManagerPatches.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Replacements\LRUCache.cs" />
+    <Compile Include="Replacements\StuxnetMusicManager.cs" />
     <Compile Include="StuxnetAudioCore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -117,10 +131,6 @@
       <MergeAssemblies Include="$(OutputPath)$(AssemblyName).dll" />
       <MergeAssemblies Include="$(OutputPath)NVorbis.dll" />
       <MergeAssemblies Include="$(OutputPath)System.ValueTuple.dll" />
-      <MergeAssemblies Include="$(OutputPath)System.Buffers.dll" />
-      <MergeAssemblies Include="$(OutputPath)System.Numerics.Vectors.dll" />
-      <MergeAssemblies Include="$(OutputPath)System.Runtime.CompilerServices.Unsafe.dll" />
-      <MergeAssemblies Include="$(OutputPath)System.Memory.dll" />
     </ItemGroup>
     <!-- Run global dotnet-ilrepack with all listed assemblies -->
     <Exec Command="ilrepack /parallel /internalize /lib:&quot;$(TargetDir)MergeLib&quot; /out:&quot;$(TargetDir)$(TargetName).Merged.dll&quot; @(MergeAssemblies->'&quot;%(FullPath)&quot;', ' ')" />

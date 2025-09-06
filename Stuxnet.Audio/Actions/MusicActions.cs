@@ -1,6 +1,7 @@
 using Pathfinder.Action;
 using Hacknet;
 using Pathfinder.Util;
+using StuxnetHN.Audio.Replacements;
 
 namespace StuxnetHN.Audio.Actions
 {
@@ -13,6 +14,12 @@ namespace StuxnetHN.Audio.Actions
         [XMLStorage]
         public bool Immediately = false;
 
+        [XMLStorage]
+        public int BeginLoop = -1;
+
+        [XMLStorage]
+        public int EndLoop = -1;
+
         public override void Trigger(OS os)
         {
             string command = "playCustomSong";
@@ -20,6 +27,11 @@ namespace StuxnetHN.Audio.Actions
             command += ":" + SongFile;
 
             MissionFunctions.runCommand(0, command);
+
+            StuxnetMusicManager.LoopBegin = BeginLoop;
+            StuxnetMusicManager.LoopEnd = EndLoop;
+
+            StuxnetMusicManager.CurrentSongEntry = null;
         }
     }
 

@@ -97,14 +97,14 @@ namespace StuxnetHN.Audio.Actions
             } else if(filepath.EndsWith(".ogg"))
             {
                 SoundEffect customSfx = OGGSoundEffectLoader.LoadOgg(filepath);
-                StuxnetAudioCore.SFXCache.Add(filepath, customSfx);
+                StuxnetAudioCore.SFXCache.Add(filepath, customSfx.CreateInstance());
                 customSfx.Play();
             } else if(filepath.EndsWith(".wav"))
             {
                 StuxnetAudioCore.Logger.LogWarning("<!> Loading WAVE files is supported by FNA, but not fully supported " +
                     "by Stuxnet. It is recommended to use OGG Vorbis files, instead!");
                 SoundEffect customSfx = OS.currentInstance.content.Load<SoundEffect>(filepath);
-                StuxnetAudioCore.SFXCache.Add(filepath, customSfx);
+                StuxnetAudioCore.SFXCache.Add(filepath, customSfx.CreateInstance());
                 customSfx.Play();
             } else
             {

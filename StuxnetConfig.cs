@@ -3,7 +3,6 @@ using Hacknet;
 using Hacknet.Extensions;
 using Newtonsoft.Json;
 using Pathfinder.GUI;
-using Pathfinder.Util;
 using Stuxnet_HN.Configuration;
 using Stuxnet_HN.Persistence;
 using System;
@@ -18,12 +17,12 @@ namespace Stuxnet_HN.Configuration
 
         public bool ShowDebugText = true;
 
-        public StuxnetAudioConfig Audio;
-        public StuxnetQuestsConfig Quests;
-        public StuxnetSMSConfig SMS;
-        public StuxnetGamemodeConfig Gamemode;
-        public Dictionary<string, CodeEntry> Codes;
-        public Dictionary<string, SequencerInfo> Sequencers;
+        public StuxnetAudioConfig Audio = new();
+        public StuxnetQuestsConfig Quests = new();
+        public StuxnetSMSConfig SMS = new();
+        public StuxnetGamemodeConfig Gamemode = new();
+        public Dictionary<string, CodeEntry> Codes = new();
+        public Dictionary<string, SequencerInfo> Sequencers = new();
 
         public const string STUXNET_CONFIG_FILENAME = "stuxnet_config.json";
 
@@ -32,8 +31,7 @@ namespace Stuxnet_HN.Configuration
             string extensionFolder = ExtensionLoader.ActiveExtensionInfo.FolderPath + "/";
             if(!File.Exists(extensionFolder + STUXNET_CONFIG_FILENAME))
             {
-                StuxnetCore.Logger.LogWarning("Stuxnet configuration file not found!");
-                return null;
+                throw new FileNotFoundException("Stuxnet configuration file not found in extension root!");
             }
 
             var rawConfig = File.ReadAllText(extensionFolder + STUXNET_CONFIG_FILENAME);
@@ -45,11 +43,12 @@ namespace Stuxnet_HN.Configuration
     public class StuxnetAudioConfig
     {
         public Dictionary<string, SongEntry> Songs;
+        public bool ReplaceMusicManager = true;
     }
 
     public class StuxnetQuestsConfig
     {
-        public bool ReplaceLoadMissionAction = true;
+        public bool ReplaceLoadMissionAction = false;
         public bool IgnoreXMODMissions = false;
     }
 
@@ -101,6 +100,10 @@ namespace Stuxnet_HN
         public string path;
         public bool initial = false;
         public string songId;
+
+        public int BeginLoop = -1;
+        public int EndLoop = -1;
+        public bool SkipToLoopStart = false;
     }
 
     public class SequencerInfo
