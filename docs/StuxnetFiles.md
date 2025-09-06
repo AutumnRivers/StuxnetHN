@@ -1,13 +1,4 @@
-<center>
-<h1>Stuxnet.JSON</h1>
-</center>
-
----
-
-# Codes File
-## `<Extension>/codes.json`
-[View an example of this file here.](./examples/codes.json)
-
+# Codes
 For use with the [Code Redemption Daemon](./Daemons.md#code-redemption-daemon).
 ```json
 {
@@ -41,14 +32,9 @@ Alright, let's break this down.
 
 If any of the above values (besides `codeID`) are omitted, they will be skipped.
 
-Place a file titled `codes.json` using the above schema in the root folder of your extension directory.
-
 ---
 
-# Radio File
-## `<Extension>/radio.json`
-[View an example of this file here.](./examples/radio.json)
-
+# Radio
 For use with [RadioV3](../README.md#radiov3--radio_v3).
 ```json
 {
@@ -56,26 +42,23 @@ For use with [RadioV3](../README.md#radiov3--radio_v3).
         "artist": "Song Artist",
         "title": "Song Title",
         "path": "/Music/Song.ogg",
-        "initial": false
+        "initial": false,
+        "beginLoop": -1,
+        "endLoop": -1
     }
 }
 ```
-You know the drill.
-
 * `songID` - The ID of the song to be used with actions and [the codes file](#codes-file).
     * `artist` - The song artist. Shown at the bottom of RadioV3 when currently playing.
     * `title` - The song title.
     * `path` - The path to the song.
-    * `initial` - Whether or not this song is available from the beginning of the extension. If omitted, is `false`.
-
-Place a file titled `radio.json` using the above schema in the root folder of your extension directory.
+    * `initial` - *Optional.* Whether or not this song is available from the beginning of the extension.
+    * `beginLoop` - *Optional.* For use with [`StuxnetMusicManager`](../Stuxnet.Audio/docs/StuxnetMusicManager.md). Value in milliseconds.
+    * `endLoop` - *Optional.* For use with [`StuxnetMusicManager`](../Stuxnet.Audio/docs/StuxnetMusicManager.md). Value in milliseconds.
 
 ---
 
-# Sequencers File
-## `<Extension>/sequencers.json`
-[View an example of this file here.](./examples/sequencers.json)
-
+# Sequencers
 For use with [ChangeSequencerFromID](./Actions.md#changesequencerfromid-sequenceridseq3).
 ```json
 {
@@ -93,5 +76,3 @@ For use with [ChangeSequencerFromID](./Actions.md#changesequencerfromid-sequence
     * `spinUpTime` - The spin up time. Should be a float.
     * `targetIDorIP` - ID of target node, IP should theoretically work, too.
     * `sequencerActions` - Actions to run when the sequencer is activated.
-
-Place a file titled `sequencers.json` using the above schema in the root folder of your extension directory.

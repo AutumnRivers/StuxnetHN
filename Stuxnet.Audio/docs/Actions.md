@@ -31,8 +31,10 @@ Allows you to play a custom OGG file (or WAV, though this is not fully supported
 
 ---
 
-## `<PlayCustomSong SongFile="string" Immediately="bool(default=false)" />`
+## `<PlayCustomSong SongFile="string" Immediately="bool(default=false)" LoopBegin="int(default=-1)" LoopEnd="int(default=-1)" />`
 Action-ized version of `playCustomSong` mission function. Works the same.
+* `LoopBegin` - Where to begin the loop when SMM reaches `LoopEnd`. Value in milliseconds.
+* `LoopEnd` - Where to end the loop, in milliseconds.
 
 ---
 

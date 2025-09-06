@@ -103,7 +103,6 @@ namespace Stuxnet_HN
 
         public int BeginLoop = -1;
         public int EndLoop = -1;
-        public bool SkipToLoopStart = false;
     }
 
     public class SequencerInfo
