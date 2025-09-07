@@ -28,25 +28,27 @@ namespace Stuxnet_HN.Actions.Dialogue
             public string ChapterSubTitle;
 
             [XMLStorage]
-            public string HideTopBar = "true";
+            public bool HideTopBar = true;
 
             [XMLStorage]
             public string BackingOpacity;
 
             public override void Trigger(OS os)
             {
+                ChapterData chapterData = new();
+
                 if (!BackingOpacity.IsNullOrWhiteSpace())
                 {
-                    StuxnetCore.backingOpacity = float.Parse(BackingOpacity);
+                    chapterData.BackingOpacity = float.Parse(BackingOpacity);
                 }
 
-                if (HideTopBar.ToLower() == "true")
+                if (HideTopBar && !TopBarColorsCache.HasCache)
                 {
                     os.DisableTopBarButtons = true;
                     os.DisableEmailIcon = true;
 
-                    StuxnetCore.colorsCache["topBarTextColor"] = os.topBarTextColor;
-                    StuxnetCore.colorsCache["topBarColor"] = os.topBarColor;
+                    TopBarColorsCache.TopBarTextColor = os.topBarTextColor;
+                    TopBarColorsCache.TopBarColor = os.topBarColor;
 
                     os.topBarTextColor = Color.Transparent;
                     os.topBarColor = Color.Transparent;
@@ -57,8 +59,9 @@ namespace Stuxnet_HN.Actions.Dialogue
                 os.ram.visible = false;
                 os.terminal.visible = false;
 
-                StuxnetCore.chapterTitle = ChapterTitle;
-                StuxnetCore.chapterSubTitle = ChapterSubTitle;
+                chapterData.Title = ChapterTitle;
+                chapterData.Subtitle = ChapterSubTitle;
+                StuxnetCore.ChapterData = chapterData;
                 StuxnetCore.illustState = States.IllustratorStates.DrawTitle;
             }
         }
@@ -74,10 +77,10 @@ namespace Stuxnet_HN.Actions.Dialogue
                     os.DisableEmailIcon = false;
                 }
 
-                if(StuxnetCore.colorsCache.ContainsKey("topBarTextColor"))
+                if(TopBarColorsCache.HasCache)
                 {
-                    os.topBarTextColor = StuxnetCore.colorsCache["topBarTextColor"];
-                    os.topBarColor = StuxnetCore.colorsCache["topBarColor"];
+                    os.topBarTextColor = TopBarColorsCache.TopBarTextColor;
+                    os.topBarColor = TopBarColorsCache.TopBarColor;
                 }
 
                 os.display.visible = true;

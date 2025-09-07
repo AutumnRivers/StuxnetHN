@@ -16,7 +16,7 @@ using Pathfinder.Meta.Load;
 
 namespace Stuxnet_HN.Actions.Dialogue
 {
-    public class VisualNovelText
+    public class VisualNovelTextActions
     {
         public class CTCDialogueAction : PathfinderAction
         {
@@ -30,13 +30,13 @@ namespace Stuxnet_HN.Actions.Dialogue
             public string TextColor = "255,255,255";
 
             [XMLStorage]
-            public string TextSpeed = "1";
+            public float TextSpeed = 1f;
 
             [XMLStorage]
-            public string HideTopBar = "true";
+            public bool HideTopBar = true;
 
             [XMLStorage]
-            public string BackingOpacity;
+            public float BackingOpacity = 0f;
 
             public override void Trigger(object os_obj)
             {
@@ -45,33 +45,37 @@ namespace Stuxnet_HN.Actions.Dialogue
                     return;
                 }
 
-                if(!BackingOpacity.IsNullOrWhiteSpace())
+                VisualNovelTextData vnTextData = new()
                 {
-                    StuxnetCore.backingOpacity = float.Parse(BackingOpacity);
+                    IsCtc = true
+                };
+
+                if(BackingOpacity > 0f)
+                {
+                    vnTextData.BackingOpacity = BackingOpacity;
                 }
 
                 OS os = (OS)os_obj;
 
-                if (HideTopBar.ToLower() == "true")
+                if (HideTopBar && !TopBarColorsCache.HasCache)
                 {
                     os.DisableTopBarButtons = true;
                     os.DisableEmailIcon = true;
 
-                    StuxnetCore.colorsCache["topBarTextColor"] = os.topBarTextColor;
-                    StuxnetCore.colorsCache["topBarColor"] = os.topBarColor;
+                    TopBarColorsCache.TopBarTextColor = os.topBarTextColor;
+                    TopBarColorsCache.TopBarColor = os.topBarColor;
 
                     os.topBarTextColor = Color.Transparent;
                     os.topBarColor = Color.Transparent;
                 }
 
-                float dialogueSpeed = float.Parse(TextSpeed);
+                vnTextData.Text = Text;
+                vnTextData.Speed = TextSpeed;
+                vnTextData.EndActions = EndDialogueActions;
+                vnTextData.Color = Utils.convertStringToColor(TextColor);
 
-                StuxnetCore.dialogueText = Text;
-                StuxnetCore.dialogueSpeed = dialogueSpeed;
-                StuxnetCore.dialogueEndActions = EndDialogueActions;
-                StuxnetCore.dialogueColor = Utils.convertStringToColor(TextColor);
+                StuxnetCore.CurrentVNTextData = vnTextData;
 
-                StuxnetCore.dialogueIsCtc = true;
                 StuxnetCore.dialogueIsActive = true;
                 StuxnetCore.illustState = Static.States.IllustratorStates.CTCDialogue;
 
@@ -91,19 +95,19 @@ namespace Stuxnet_HN.Actions.Dialogue
             public string TextColor = "255,255,255";
 
             [XMLStorage]
-            public string TextSpeed = "1";
+            public float TextSpeed = 1;
 
             [XMLStorage]
-            public string ContinueDelay = "0";
+            public float ContinueDelay = 0f;
 
             [XMLStorage]
             public string EndDialogueActions;
 
             [XMLStorage]
-            public string HideTopBar = "true";
+            public bool HideTopBar = true;
 
             [XMLStorage]
-            public string BackingOpacity;
+            public float BackingOpacity = 0f;
 
             public override void Trigger(object os_obj)
             {
@@ -112,38 +116,39 @@ namespace Stuxnet_HN.Actions.Dialogue
                     return;
                 }
 
-                if (!BackingOpacity.IsNullOrWhiteSpace())
+                VisualNovelTextData vnTextData = new()
                 {
-                    StuxnetCore.backingOpacity = float.Parse(BackingOpacity);
+                    IsCtc = false
+                };
+
+                if (BackingOpacity > 0f)
+                {
+                    vnTextData.BackingOpacity = BackingOpacity;
                 }
 
                 OS os = (OS)os_obj;
 
-                if (HideTopBar.ToLower() == "true")
+                if (HideTopBar && !TopBarColorsCache.HasCache)
                 {
                     os.DisableTopBarButtons = true;
                     os.DisableEmailIcon = true;
 
-                    StuxnetCore.colorsCache["topBarTextColor"] = os.topBarTextColor;
-                    StuxnetCore.colorsCache["topBarColor"] = os.topBarColor;
+                    TopBarColorsCache.TopBarTextColor = os.topBarTextColor;
+                    TopBarColorsCache.TopBarColor = os.topBarColor;
 
                     os.topBarTextColor = Color.Transparent;
                     os.topBarColor = Color.Transparent;
                 }
 
-                float continueDelay = float.Parse(ContinueDelay);
+                vnTextData.CompleteDelay = ContinueDelay;
+                vnTextData.Text = Text;
+                vnTextData.Speed = TextSpeed;
+                vnTextData.EndActions = EndDialogueActions;
+                vnTextData.Color = Utils.convertStringToColor(TextColor);
 
-                StuxnetCore.dialogueIsCtc = false;
-                StuxnetCore.dialogueCompleteDelay = continueDelay;
+                StuxnetCore.CurrentVNTextData = vnTextData;
+
                 StuxnetCore.dialogueIsActive = true;
-
-                float dialogueSpeed = float.Parse(TextSpeed);
-
-                StuxnetCore.dialogueText = Text;
-                StuxnetCore.dialogueSpeed = dialogueSpeed;
-                StuxnetCore.dialogueEndActions = EndDialogueActions;
-                StuxnetCore.dialogueColor = Utils.convertStringToColor(TextColor);
-
                 StuxnetCore.illustState = Static.States.IllustratorStates.AutoDialogue;
 
                 os.display.visible = false;

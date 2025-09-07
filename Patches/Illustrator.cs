@@ -52,11 +52,8 @@ namespace Stuxnet_HN.Patches
 
                     goto default;
                 case States.CTCDialogue:
-                    IllustratorTypewriter.DrawCtcDialogue(__instance, StuxnetCore.dialogueText, StuxnetCore.dialogueEndActions);
-
-                    goto default;
                 case States.AutoDialogue:
-                    IllustratorTypewriter.DrawCtcDialogue(__instance, StuxnetCore.dialogueText, StuxnetCore.dialogueEndActions);
+                    IllustratorTypewriter.DrawVNDialogue(__instance, StuxnetCore.CurrentVNTextData);
 
                     goto default;
                 default:
@@ -69,8 +66,8 @@ namespace Stuxnet_HN.Patches
             SpriteFont titleFont = GuiData.titlefont;
             SpriteFont subTitleFont = GuiData.font;
 
-            string ChapterTitle = StuxnetCore.chapterTitle.ToUpper();
-            string ChapterSubTitle = StuxnetCore.chapterSubTitle;
+            string ChapterTitle = StuxnetCore.ChapterData.Title;
+            string ChapterSubTitle = StuxnetCore.ChapterData.Subtitle;
 
             int titleOffset = -50;
             int subTitleOffset = 50;
@@ -78,7 +75,7 @@ namespace Stuxnet_HN.Patches
             Rectangle userBounds = os.fullscreen;
 
             RenderedRectangle.doRectangle(userBounds.X, userBounds.Y, userBounds.Width, userBounds.Height,
-                Color.Black * StuxnetCore.backingOpacity);
+                Color.Black * StuxnetCore.ChapterData.BackingOpacity);
 
             // Draw chapter title
             Vector2 titleVector = titleFont.MeasureString(ChapterTitle);
@@ -112,10 +109,10 @@ namespace Stuxnet_HN.Patches
 
         private static readonly SpriteFont ctcFont = GuiData.detailfont;
 
-        public static void DrawCtcDialogue(OS os, string textToWrite, string endActionsPath)
+        public static void DrawVNDialogue(OS os, VisualNovelTextData vnTextData)
         {
             string ctcText = string.Format("{0}...", Localizer.GetLocalized("Click anywhere to continue"));
-            ParseText(textToWrite);
+            ParseText(vnTextData.Text);
 
             TextLine currentTextLine = textLines[currentLine];
             SpriteFont dialogueFont = currentTextLine.font;
@@ -130,18 +127,18 @@ namespace Stuxnet_HN.Patches
             float lineOffset = 0f;
 
             RenderedRectangle.doRectangle(userBounds.X, userBounds.Y, userBounds.Width, userBounds.Height,
-                Color.Black * StuxnetCore.backingOpacity);
+                Color.Black * vnTextData.BackingOpacity);
 
             for (int i = 0; i < currentLine; i++)
             {
                 TextLine targetLine = textLines[i];
 
                 Vector2 lineVector = targetLine.font.MeasureString(targetLine.text);
-                Vector2 linePosition = new Vector2(
+                Vector2 linePosition = new(
                     (gameScreen.X + gameScreen.Width / 2) - lineVector.X / 2f,
                     (gameScreen.Center.Y - centerOffset) + lineOffset);
 
-                GuiData.spriteBatch.DrawString(targetLine.font, targetLine.text, linePosition, StuxnetCore.dialogueColor);
+                GuiData.spriteBatch.DrawString(targetLine.font, targetLine.text, linePosition, vnTextData.Color);
 
                 lineOffset += targetLine.lineOffset;
             }
@@ -150,7 +147,7 @@ namespace Stuxnet_HN.Patches
 
             if(timeTracker < textLength)
             {
-                timeTracker += (float)gameTime.ElapsedGameTime.TotalSeconds * (10f * StuxnetCore.dialogueSpeed);
+                timeTracker += (float)gameTime.ElapsedGameTime.TotalSeconds * (10f * vnTextData.Speed);
             }
 
             int charRange = (int)Math.Floor(timeTracker);
@@ -165,7 +162,7 @@ namespace Stuxnet_HN.Patches
                 (gameScreen.Center.Y - centerOffset) + lineOffset);
 
             // Actually show the text
-            GuiData.spriteBatch.DrawString(dialogueFont, displayText, dialoguePosition, StuxnetCore.dialogueColor);
+            GuiData.spriteBatch.DrawString(dialogueFont, displayText, dialoguePosition, vnTextData.Color);
 
             if(timeTracker >= textLength && currentLine < (textLines.Count - 1))
             {
@@ -176,15 +173,15 @@ namespace Stuxnet_HN.Patches
             // Show CTC text
             if(currentLine >= (textLines.Count - 1) && timeTracker >= textLength)
             {
-                if(!StuxnetCore.dialogueIsCtc)
+                if(!vnTextData.IsCtc)
                 {
-                    float completeDelay = StuxnetCore.dialogueCompleteDelay;
+                    float completeDelay = vnTextData.CompleteDelay;
 
                     completeDelayTracker += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
                     if(completeDelayTracker >= completeDelay)
                     {
-                        ResetTypewriter(os, endActionsPath);
+                        ResetTypewriter(os, vnTextData.EndActions);
                     }
 
                     return;
@@ -201,7 +198,7 @@ namespace Stuxnet_HN.Patches
 
                 if(mouse.LeftButton == ButtonState.Pressed)
                 {
-                    ResetTypewriter(os, endActionsPath);
+                    ResetTypewriter(os, vnTextData.EndActions);
                 }
             }
         }
@@ -225,10 +222,11 @@ namespace Stuxnet_HN.Patches
 
                 os.DisableTopBarButtons = false;
 
-                if (StuxnetCore.colorsCache.ContainsKey("topBarTextColor"))
+                if(TopBarColorsCache.HasCache)
                 {
-                    os.topBarTextColor = StuxnetCore.colorsCache["topBarTextColor"];
-                    os.topBarColor = StuxnetCore.colorsCache["topBarColor"];
+                    os.topBarTextColor = TopBarColorsCache.TopBarTextColor;
+                    os.topBarColor = TopBarColorsCache.TopBarColor;
+                    TopBarColorsCache.ClearCache();
                 }
 
                 os.display.visible = true;
@@ -262,8 +260,8 @@ namespace Stuxnet_HN.Patches
 
                 foreach (var actionSet in runnableConditionalActions.Actions)
                 {
-                    if (actionSet.Actions.Any(a => a is VisualNovelText.CTCDialogueAction ||
-                    a is VisualNovelText.AutoDialogueAction ||
+                    if (actionSet.Actions.Any(a => a is VisualNovelTextActions.CTCDialogueAction ||
+                    a is VisualNovelTextActions.AutoDialogueAction ||
                     a is ChapterTitleActions.ShowChapterTitle))
                     {
                         nextActionIsDialogue = true;
@@ -280,10 +278,11 @@ namespace Stuxnet_HN.Patches
 
                 os.DisableTopBarButtons = false;
 
-                if (StuxnetCore.colorsCache.ContainsKey("topBarTextColor"))
+                if (TopBarColorsCache.HasCache)
                 {
-                    os.topBarTextColor = StuxnetCore.colorsCache["topBarTextColor"];
-                    os.topBarColor = StuxnetCore.colorsCache["topBarColor"];
+                    os.topBarTextColor = TopBarColorsCache.TopBarTextColor;
+                    os.topBarColor = TopBarColorsCache.TopBarColor;
+                    TopBarColorsCache.ClearCache();
                 }
 
                 os.display.visible = true;

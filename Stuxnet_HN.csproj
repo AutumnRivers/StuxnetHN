@@ -88,7 +88,7 @@
   <ItemGroup>
     <Compile Include="Actions\CustomReplacements.cs" />
     <Compile Include="Actions\Dialogue\ChapterTitle.cs" />
-    <Compile Include="Actions\Dialogue\VisualNovelText.cs" />
+    <Compile Include="Actions\Dialogue\VisualNovelTextActions.cs" />
     <Compile Include="Actions\ForceConnect.cs" />
     <Compile Include="Actions\FullscreenCredits.cs" />
     <Compile Include="Actions\MiscActions.cs" />
@@ -104,6 +104,7 @@
     <Compile Include="Commands\SMSCommands.cs" />
     <Compile Include="Conditions\OnCutsceneEnd.cs" />
     <Compile Include="Conditions\OnSequencerKill.cs" />
+    <Compile Include="CoreClasses.cs" />
     <Compile Include="Cutscenes\Actions\CutsceneActions.cs" />
     <Compile Include="Cutscenes\Actions\StopCutscene.cs" />
     <Compile Include="Cutscenes\Patches\CutsceneExecutor.cs" />

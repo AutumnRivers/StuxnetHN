@@ -6,7 +6,6 @@ using Hacknet.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
-using Pathfinder;
 using Pathfinder.Action;
 using Pathfinder.Command;
 using Pathfinder.Daemon;
@@ -17,9 +16,7 @@ using Pathfinder.Event.Saving;
 using Pathfinder.Executable;
 using Pathfinder.Meta;
 using Pathfinder.Meta.Load;
-using Pathfinder.Options;
 using Pathfinder.Replacements;
-using Pathfinder.Util;
 using Pathfinder.Util.XML;
 using Stuxnet_HN.Actions;
 using Stuxnet_HN.Actions.Dialogue;
@@ -36,7 +33,6 @@ using Stuxnet_HN.Static;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Xml.Linq;
 
 namespace Stuxnet_HN
@@ -68,20 +64,12 @@ namespace Stuxnet_HN
 
         public static List<string> redeemedCodes = new();
         public static List<string> unlockedRadio = new();
-
         public static Dictionary<string, int> receivedKeys = new();
-
         public static bool allowRadio = true;
-
         public static readonly string logPrefix = $"[{ModName}] ";
-
         public static string currentSequencerID = null;
         public static SequencerInfo currentSequencerInfo = null;
-
         public static string saveFlag = null;
-
-        public static bool useScanLinesFix = false;
-
         public static bool disableAlerts = false;
 
         public static Dictionary<string, WiresharkContents> wiresharkComps = new();
@@ -89,30 +77,14 @@ namespace Stuxnet_HN
         // Custom Replacements
         public static Dictionary<string, string> customReplacements = new();
 
-        // Temp. cache
-        public static Dictionary<string, Color> colorsCache = new();
-        public static Dictionary<string, string> stxStringCache = new();
-        public static Dictionary<string, Texture2D> texCache = new();
-
         // Illustrator
         public static States.IllustratorStates illustState = States.IllustratorStates.None;
 
-        // Illustrator - Chapter Data
-        public static string chapterTitle = "Chapter X";
-        public static string chapterSubTitle = "Chapter Title";
+        public static ChapterData ChapterData { get; set; }
 
-        #region illustrator dialogue variables
         // Illustrator - Dialogue
-        public static string dialogueText;
-        public static bool dialogueIsCtc = false;
-        public static float dialogueCompleteDelay = 0f;
-        public static float dialogueSpeed = 1f;
-        public static string dialogueEndActions;
-        public static Color dialogueColor = Color.White;
-        public static float backingOpacity = 0.6f;
-
+        public static VisualNovelTextData CurrentVNTextData { get; set; }
         public static bool dialogueIsActive = false;
-        #endregion illustrator dialogue variables
 
         public static Dictionary<string, StuxnetCutscene> cutscenes = new();
         public static string activeCutsceneID = "NONE";
@@ -212,8 +184,8 @@ namespace Stuxnet_HN
             ActionManager.RegisterAction<ChapterTitleActions.ShowChapterTitle>("ShowChapterTitle");
             ActionManager.RegisterAction<ChapterTitleActions.HideChapterTitle>("HideChapterTitle");
 
-            ActionManager.RegisterAction<VisualNovelText.CTCDialogueAction>("ShowCTCDialogue");
-            ActionManager.RegisterAction<VisualNovelText.AutoDialogueAction>("ShowAutoDialogue");
+            ActionManager.RegisterAction<VisualNovelTextActions.CTCDialogueAction>("ShowCTCDialogue");
+            ActionManager.RegisterAction<VisualNovelTextActions.AutoDialogueAction>("ShowAutoDialogue");
 
             // Node Actions
             ActionManager.RegisterAction<PlaceOnNetMap>("PlaceNodeOnNetMap");
