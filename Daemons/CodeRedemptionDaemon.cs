@@ -17,6 +17,7 @@ using BepInEx;
 using Stuxnet_HN.Localization;
 
 using Stuxnet_HN.Configuration;
+using System.Linq;
 
 namespace Stuxnet_HN.Daemons
 {
@@ -171,14 +172,10 @@ namespace Stuxnet_HN.Daemons
 
         private bool CheckCode(string code)
         {
-            Console.WriteLine(StuxnetCore.logPrefix + $"Checking against code {code}...");
-
             if (StuxnetCore.redeemedCodes.Contains(code)) { return false; }
-            Dictionary<string, CodeEntry> codes = StuxnetConfig.GlobalConfig.Codes;
+            Dictionary<string, CodeEntry> codes = StuxnetConfig.GlobalConfig.CodeRedemption.Codes;
 
             if(!codes.ContainsKey(code)) { return false; }
-
-            Console.WriteLine(StuxnetCore.logPrefix + $"codes.json has code {code}");
 
             CodeEntry validCode = codes[code];
 
@@ -270,9 +267,16 @@ namespace Stuxnet_HN.Daemons
 
         private void ShowNewSplash()
         {
-            Random random = new Random();
+            Random random = Utils.random;
 
-            splashText = StuxnetCore.postMsg[random.Next(0, StuxnetCore.postMsg.Length)];
+            string[] splashes = StuxnetCore.postMsg;
+
+            if(StuxnetCore.Configuration.CodeRedemption.CustomSplashText.Any())
+            {
+                splashes = StuxnetCore.Configuration.CodeRedemption.CustomSplashText;
+            }
+
+            splashText = splashes[random.Next(0, splashes.Length)];
         }
     }
 }

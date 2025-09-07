@@ -3,7 +3,7 @@
 
 As of version 2.0.0 of Stuxnet, everything you'd want to modify in Stuxnet is now located in a global configuration file, placed at your extension's root folder.
 
-To get started, place a file titled `stuxnet_config.json` in your extension's root directory. There should also be a template JSON file with the latest release of Stuxnet.
+To get started, place a file titled `stuxnet_config.json` in your extension's root directory. There should also be a template JSON file with the latest release of Stuxnet. [You can also find an example file here](./examples/stuxnet_config.json).
 
 ```json
 {
@@ -23,7 +23,10 @@ To get started, place a file titled `stuxnet_config.json` in your extension's ro
         "selectPathText": "",
         "requirePersistentFlag": ""
     },
-    "codes": {},
+    "codeRedemption": {
+        "codes": {},
+        "customSplashText": []
+    },
     "sequencers": {}
 }
 ```
@@ -85,8 +88,10 @@ For configuration related to `Stuxnet.Quests`.
     * Or you can use this to have the player play as someone completely different!
 * `startingFlags` - *Optional.* Currently unused, use the `addFlags` mission function.
 
-## `Codes`
-[See here.](StuxnetFiles.md#codes)
+## `CodeRedemption`
+* `codes` - [See here.](StuxnetFiles.md#codes)
+* `customSplashText` - Array of strings for custom splash text for the daemon.
+    * When you set this value, Stuxnet's built-in splash text won't be used.
 
 ## `Sequencers`
 [See here.](StuxnetFiles.md#sequencers)

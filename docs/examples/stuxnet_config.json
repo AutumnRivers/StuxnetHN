@@ -1,0 +1,71 @@
+{
+    "audio": {
+        "replaceMusicManager": true,
+        "songs": {
+            "goldengroove": {
+                "artist": "LemKuuja",
+                "title": "Golden Funky Groove",
+                "path": "Music/GoldenGroove.ogg",
+                "initial": true,
+                "beginLoop": 19750,
+                "endLoop": 169500
+            }
+        }
+    },
+    "quests": {
+        "replaceLoadMissionAction": false,
+        "ignoreXMODMissions": false
+    },
+    "sms": {
+        "authorColors": {
+            "Autumn": "180,180,180",
+            "RedGuy": "255,80,80"
+        }
+    },
+    "gamemode": {
+        "gamemodes": [
+            {
+                "title": "Start Anew",
+                "description": "Start from the very beginning."
+            },
+            {
+                "title": "Chapter 1",
+                "description": "Start from the first chapter - John Doe has just met Jane Doe.",
+                "requiredFlagForVisibility": "prologue_complete",
+                "requiredFlagForSelection": "chapter1finished",
+                "startingMission": "none",
+                "startingActions": "Actions/Chapter1Start.xml",
+                "startingSong": "Music/Resonance.ogg",
+                "playerCompID": "ch1StartingComp"
+            }
+        ],
+        "requirePersistentFlag": "prologue_complete"
+    },
+    "codeRedemption": {
+        "codes": {
+            "123": {
+                "files": {
+                    "Important.txt": "Lorem ipsum"
+                },
+                "radio": ["goldengroove"],
+                "themes": {
+                    "VeryCoolTheme": "Themes/ExampleTheme.xml"
+                },
+                "email": "Emails/ExampleMission.xml",
+                "actions": "Actions/SomeAction.xml"
+            }
+        },
+        "customSplashText": [
+            "Some splash text here",
+            "Some more splash text here"
+        ]
+    },
+    "sequencers": {
+        "seq3": {
+            "requiredFlag": "testflag3",
+            "spinUpTime": 5.0,
+            "targetIDorIP": "testseq3",
+            "sequencerActions": "Actions/TestSequencers/3.xml"
+        }
+    }
+}

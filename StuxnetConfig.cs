@@ -21,7 +21,7 @@ namespace Stuxnet_HN.Configuration
         public StuxnetQuestsConfig Quests = new();
         public StuxnetSMSConfig SMS = new();
         public StuxnetGamemodeConfig Gamemode = new();
-        public Dictionary<string, CodeEntry> Codes = new();
+        public StuxnetCodesConfig CodeRedemption = new();
         public Dictionary<string, SequencerInfo> Sequencers = new();
 
         public const string STUXNET_CONFIG_FILENAME = "stuxnet_config.json";
@@ -38,6 +38,12 @@ namespace Stuxnet_HN.Configuration
             GlobalConfig = JsonConvert.DeserializeObject<StuxnetConfig>(rawConfig);
             return GlobalConfig;
         }
+    }
+
+    public class StuxnetCodesConfig
+    {
+        public Dictionary<string, CodeEntry> Codes = new();
+        public string[] CustomSplashText;
     }
 
     public class StuxnetAudioConfig
