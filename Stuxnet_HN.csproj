@@ -124,7 +124,11 @@
     <Compile Include="Extensions\XmlReaderExtensions.cs" />
     <Compile Include="Gamemode\GamemodeMenu.cs" />
     <Compile Include="Gamemode\GamemodePatches.cs" />
+    <Compile Include="Gui\AnimatedElements.cs" />
+    <Compile Include="Gui\StuxnetGUI.cs" />
     <Compile Include="Localization\Localizer.cs" />
+    <Compile Include="Patches\AnimatedThemeFilePatch.cs" />
+    <Compile Include="Patches\AnimatedThemeIllustrator.cs" />
     <Compile Include="Patches\ApplyCustomReplacements.cs" />
     <Compile Include="Patches\ExtSequencerPatch.cs" />
     <Compile Include="Patches\Illustrator.cs" />
@@ -157,6 +161,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="docs\" />
+    <Folder Include="Executors\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

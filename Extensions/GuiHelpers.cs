@@ -18,6 +18,27 @@ namespace Stuxnet_HN.Extensions
             RenderedRectangle.doRectangle(target.X, target.Y, target.Width, target.Height, color);
         }
 
+        public static void DrawDynamicRectangle(Rectangle target, Color color, float rotation = 0f,
+            Texture2D texture = null)
+        {
+            texture ??= Utils.white;
+            // Center of target
+            Vector2 position = new(
+                target.X + target.Width / 2f,
+                target.Y + target.Height / 2f
+            );
+
+            Vector2 origin = new(texture.Width / 2f, texture.Height / 2f);
+            Vector2 scale = new(
+                (float)target.Width / texture.Width,
+                (float)target.Height / texture.Height
+            );
+
+            GuiData.spriteBatch.Draw(texture, position, null, color, rotation, origin,
+                scale, SpriteEffects.None, 1f);
+
+        }
+
         public static void DrawOutline(Rectangle target, Color color, int thickness)
         {
             RenderedRectangle.doRectangleOutline(target.X, target.Y, target.Width, target.Height,

@@ -253,7 +253,6 @@ namespace Stuxnet_HN
 
         public override bool Unload()
         {
-            StuxnetConfig.GlobalConfig = null;
             Persistence.PersistenceManager.Reset();
             GamemodeMenu.CloseMenu();
             return base.Unload();

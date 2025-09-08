@@ -15,6 +15,8 @@ namespace Stuxnet_HN.Configuration
     {
         public static StuxnetConfig GlobalConfig;
 
+        public bool Loaded { get; private set; } = false;
+
         public bool ShowDebugText = true;
 
         public StuxnetAudioConfig Audio = new();
@@ -36,6 +38,7 @@ namespace Stuxnet_HN.Configuration
 
             var rawConfig = File.ReadAllText(extensionFolder + STUXNET_CONFIG_FILENAME);
             GlobalConfig = JsonConvert.DeserializeObject<StuxnetConfig>(rawConfig);
+            GlobalConfig.Loaded = true;
             return GlobalConfig;
         }
     }

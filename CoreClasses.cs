@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Stuxnet_HN.Patches;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +26,12 @@ namespace Stuxnet_HN
         public string Subtitle;
         public Color Color;
         public float BackingOpacity;
+    }
+
+    public static class StuxnetCache
+    {
+        public static List<AnimatedTheme> AnimatedThemes { get; private set; } = new();
+        public static List<Texture2D> Images { get; private set; } = new();
     }
 
     public static class TopBarColorsCache
