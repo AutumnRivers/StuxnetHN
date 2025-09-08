@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("Your all-in-one extensions mod for Hacknet!")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Stuxnet_HN")]
+[assembly: AssemblyProduct("StuxnetHN")]
 [assembly: AssemblyCopyright("Copyright © Autumn Rivers 2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

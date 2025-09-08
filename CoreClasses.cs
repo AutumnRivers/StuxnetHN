@@ -32,6 +32,27 @@ namespace Stuxnet_HN
     {
         public static List<AnimatedTheme> AnimatedThemes { get; private set; } = new();
         public static List<Texture2D> Images { get; private set; } = new();
+
+        public static bool TryGetCachedTheme(string filepath, out AnimatedTheme theme)
+        {
+            theme = null;
+            if (!AnimatedThemes.Any(theme => theme.Filepath == filepath)) return false;
+
+            theme = AnimatedThemes.Find(theme => theme.Filepath == filepath);
+            return true;
+        }
+
+        public static void CacheTheme(AnimatedTheme theme)
+        {
+            if(TryGetCachedTheme(theme.Filepath, out var existingTheme))
+            {
+                int index = AnimatedThemes.IndexOf(existingTheme);
+                AnimatedThemes[index] = theme;
+            } else
+            {
+                AnimatedThemes.Add(theme);
+            }
+        }
     }
 
     public static class TopBarColorsCache

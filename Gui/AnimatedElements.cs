@@ -1,9 +1,6 @@
-﻿using BepInEx;
-using Hacknet;
-using Hacknet.Gui;
+﻿using Hacknet;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Pathfinder.Util.XML;
 using System;
 using System.IO;
 using System.Linq;
@@ -17,6 +14,8 @@ namespace Stuxnet_HN.Gui
         private float _duration = 1.0f;
         private float _progress = 0.0f;
         private readonly Action _onCompleted;
+
+        public T Initial { get; private set; }
 
         public T Origin { get; set; }
         public T Current { get; set; }
@@ -48,7 +47,15 @@ namespace Stuxnet_HN.Gui
             Origin = initialValue;
             Current = initialValue;
             Target = initialValue;
+            Initial = initialValue;
             _onCompleted = onCompleted;
+        }
+
+        public void Reset()
+        {
+            Origin = Current = Target = Initial;
+            AnimationDuration = 0.0f;
+            AnimationProgress = 0.0f;
         }
     }
 
@@ -103,17 +110,6 @@ namespace Stuxnet_HN.Gui
                 vector2.Y *= OS.currentInstance.fullscreen.Height;
             }
             return vector2;
-        }
-
-        internal AnimatedElement DeepCopy()
-        {
-            if(!ImagePath.IsNullOrWhiteSpace())
-            {
-                return new AnimatedElement(ID, Position.Current, Size.Current, ImagePath, Rotation.Current);
-            } else
-            {
-                return new AnimatedElement(ID, Position.Current, Size.Current, Rotation.Current, Color);
-            }
         }
 
         public AnimatedElement(string id)
@@ -325,6 +321,14 @@ namespace Stuxnet_HN.Gui
         public void OnFadeCompleted()
         {
             Opacity.AnimationProgress = 0.0f;
+        }
+
+        public void Reset()
+        {
+            Position.Reset();
+            Size.Reset();
+            Rotation.Reset();
+            Opacity.Reset();
         }
 
         private void SetInitialRotation(float rotation)

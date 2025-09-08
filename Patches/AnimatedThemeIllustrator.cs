@@ -15,6 +15,8 @@ namespace Stuxnet_HN.Patches
     public static class AnimatedThemeIllustrator
     {
         public static AnimatedTheme CurrentTheme;
+        internal static AnimatedTheme LastLoadedAnimatedTheme;
+
         public static bool Visible { get; set; } = true;
 
         [HarmonyPostfix]
@@ -80,6 +82,7 @@ namespace Stuxnet_HN.Patches
     public class AnimatedTheme
     {
         public string ThemePath;
+        public string Filepath { get; private set; }
         public List<AnimatedElement> Elements = new();
         public List<AnimatedElementInstruction> Instructions = new();
 
@@ -88,8 +91,6 @@ namespace Stuxnet_HN.Patches
         public bool LastDelayNeedsReset = false;
 
         public float LastDelayTriggered { get; set; } = -1;
-
-        private List<AnimatedElement> InitialValues = new();
 
         private float _lifetime = 0;
         public float Lifetime
@@ -155,8 +156,7 @@ namespace Stuxnet_HN.Patches
             {
                 var elem = Elements[idx];
                 if (elem.RotateIndefinitely) continue;
-                AnimatedElement initialElement = InitialValues.First(el => el.ID == elem.ID);
-                Elements[idx] = initialElement.DeepCopy();
+                Elements[idx].Reset();
             }
             Lifetime = 0.0f;
             LastDelayTriggered = -1.0f;
@@ -173,10 +173,20 @@ namespace Stuxnet_HN.Patches
             {
                 filepath = Utils.GetFileLoadPrefix() + filepath;
             }
+            if(StuxnetCache.TryGetCachedTheme(filepath, out var cachedTheme))
+            {
+                if(AnimatedThemeIllustrator.CurrentTheme != cachedTheme)
+                {
+                    cachedTheme.Reset();
+                }
+                return cachedTheme;
+            }
             FileStream themeFileStream = File.OpenRead(filepath);
             XDocument themeDocument = XDocument.Load(themeFileStream);
             AnimatedTheme theme = LoadFromXml(themeDocument);
+            theme.Filepath = filepath;
             themeFileStream.Close();
+            StuxnetCache.CacheTheme(theme);
             return theme;
         }
 
@@ -210,7 +220,6 @@ namespace Stuxnet_HN.Patches
                 if (theme.Elements.Any(el => el.ID == id)) continue;
                 AnimatedElement animatedElement = AnimatedElement.LoadFromXml(elem);
                 theme.Elements.Add(animatedElement);
-                theme.InitialValues.Add(animatedElement.DeepCopy());
             }
 
             var instructionsChild = baseElement.Element("Instructions");
