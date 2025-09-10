@@ -126,6 +126,7 @@
     <Compile Include="Gamemode\GamemodePatches.cs" />
     <Compile Include="Gui\AnimatedElements.cs" />
     <Compile Include="Gui\StuxnetGUI.cs" />
+    <Compile Include="Gui\TimedAnimation.cs" />
     <Compile Include="Localization\Localizer.cs" />
     <Compile Include="Patches\AnimatedThemeFilePatch.cs" />
     <Compile Include="Patches\AnimatedThemeIllustrator.cs" />
@@ -161,7 +162,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="docs\" />
-    <Folder Include="Executors\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

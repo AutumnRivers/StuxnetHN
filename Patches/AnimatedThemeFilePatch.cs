@@ -47,7 +47,8 @@ namespace Stuxnet_HN.Patches
                 return;
             }
 
-            AnimatedTheme animatedTheme = AnimatedTheme.LoadFromXml(fullPath);
+            AnimatedTheme animatedTheme = new();
+            animatedTheme.LoadFromXml(fullPath);
             AnimatedThemeIllustrator.CurrentTheme = animatedTheme;
             StuxnetCore.Logger.LogDebug("Loading animated theme...");
             customThemePath = animatedTheme.ThemePath;
@@ -108,7 +109,8 @@ namespace Stuxnet_HN.Patches
 
                 try
                 {
-                    AnimatedTheme animatedTheme = AnimatedTheme.LoadFromXml(themePath);
+                    AnimatedTheme animatedTheme = new();
+                    animatedTheme.LoadFromXml(themePath);
                     AnimatedThemeIllustrator.LastLoadedAnimatedTheme = animatedTheme;
                     CustomTheme vanillaTheme = CustomTheme.Deserialize(Utils.GetFileLoadPrefix() + animatedTheme.ThemePath);
                     ThemeManager.LastLoadedCustomTheme = vanillaTheme;

@@ -86,6 +86,16 @@ namespace Stuxnet_HN
         public static VisualNovelTextData CurrentVNTextData { get; set; }
         public static bool dialogueIsActive = false;
 
+        public static StuxnetCutscene CurrentlyLoadedCutscene;
+        public static bool CutsceneIsActive
+        {
+            get
+            {
+                if (CurrentlyLoadedCutscene == null) return false;
+                return CurrentlyLoadedCutscene.Active;
+            }
+        }
+
         public static Dictionary<string, StuxnetCutscene> cutscenes = new();
         public static string activeCutsceneID = "NONE";
         public static bool cutsceneIsActive = false;
@@ -196,9 +206,7 @@ namespace Stuxnet_HN
             ActionManager.RegisterAction<AddAdminPassCustomReplacement>("AddNodeAdminWildcard");
 
             // Cutscene Actions
-            ActionManager.RegisterAction<Cutscenes.Actions.RegisterCutscene>("RegisterStuxnetCutscene");
-            ActionManager.RegisterAction<Cutscenes.Actions.TriggerCutscene>("TriggerStuxnetCutscene");
-            ActionManager.RegisterAction<Cutscenes.Actions.StopCutscene>("StopActiveCutscene");
+            Cutscenes.Actions.CutsceneActionsRegister.RegisterActions();
 
             // Misc. Actions
             ActionManager.RegisterAction<ForceConnect>("ForceConnectPlayer");

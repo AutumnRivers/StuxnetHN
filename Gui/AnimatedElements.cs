@@ -171,7 +171,7 @@ namespace Stuxnet_HN.Gui
             ImagePath = imageFilepath;
         }
 
-        public void Draw(Rectangle bounds)
+        public virtual void Draw(Rectangle bounds)
         {
             Rectangle targetRect = new()
             {
@@ -184,7 +184,7 @@ namespace Stuxnet_HN.Gui
             DrawDynamicRectangle(targetRect, Color, rotation, Image);
         }
 
-        public void Update(GameTime gameTime)
+        public virtual void Update(GameTime gameTime)
         {
             float t = (float)gameTime.ElapsedGameTime.TotalSeconds;
 

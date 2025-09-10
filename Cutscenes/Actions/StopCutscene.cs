@@ -1,7 +1,4 @@
-﻿using System;
-using Pathfinder.Action;
-using Pathfinder.Meta.Load;
-using Stuxnet_HN.Cutscenes.Patches;
+﻿using Pathfinder.Action;
 
 namespace Stuxnet_HN.Cutscenes.Actions
 {
@@ -9,12 +6,11 @@ namespace Stuxnet_HN.Cutscenes.Actions
     {
         public override void Trigger(object os_obj)
         {
-            if (StuxnetCore.activeCutsceneID == "NONE") return;
+            if (StuxnetCore.CurrentlyLoadedCutscene == null) return;
+            if (!StuxnetCore.CutsceneIsActive) return;
 
-            StuxnetCutsceneInstruction resetInst = StuxnetCutsceneInstruction.CreateResetInstruction();
-            resetInst.Cutscene = CutsceneExecutor.ActiveCutscene;
-            PathfinderAction resetAction = new TriggerInstruction(resetInst);
-            resetAction.Trigger(os_obj);
+            StuxnetCore.CurrentlyLoadedCutscene.Active = false;
+            StuxnetCore.CurrentlyLoadedCutscene = null;
         }
     }
 }

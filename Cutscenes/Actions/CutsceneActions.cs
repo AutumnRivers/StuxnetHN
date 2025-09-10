@@ -1,84 +1,84 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Hacknet.Extensions;
-
+using BepInEx;
+using Hacknet;
 using Pathfinder.Action;
-using Pathfinder.Meta.Load;
 using Pathfinder.Util;
 
 namespace Stuxnet_HN.Cutscenes.Actions
 {
-    public class RegisterCutscene : PathfinderAction
+    public static class CutsceneActionsRegister
+    {
+        public static void RegisterActions()
+        {
+            ActionManager.RegisterAction<SAPreloadCutscene>("RegisterCutscene");
+            ActionManager.RegisterAction<SAPreloadCutscene>("PreloadCutscene");
+            ActionManager.RegisterAction<SATriggerCutscene>("TriggerCutscene");
+        }
+    }
+
+    public class SAPreloadCutscene : PathfinderAction
     {
         [XMLStorage]
         public string FilePath;
 
         public override void Trigger(object os_obj)
         {
-            string path = ExtensionLoader.ActiveExtensionInfo.FolderPath +
-                "/" + FilePath;
+            StuxnetCore.Logger.LogWarning("RegisterCutscene will be removed in favor of PreloadCutscene in Stuxnet 2.1.0, so please " +
+                "change it in your extension ASAP.");
 
-            StuxnetCutscene cutscene = StuxnetCutsceneRegister.ReadFromFile(path);
-            cutscene.filepath = path;
+            string path = Utils.GetFileLoadPrefix() + FilePath;
 
-            if(!StuxnetCore.cutscenes.ContainsKey(cutscene.id))
-            {
-                StuxnetCore.cutscenes.Add(cutscene.id, cutscene);
-            }
+            StuxnetCutscene cutscene = new();
+            cutscene.LoadFromXml(path);
+
+            StuxnetCache.CacheCutscene(cutscene);
         }
     }
 
-    public class TriggerCutscene : PathfinderAction
+    public class SATriggerCutscene : PathfinderAction
     {
         [XMLStorage]
         public string CutsceneID;
 
+        [XMLStorage]
+        public string FilePath;
+
         public override void Trigger(object os_obj)
         {
-            StuxnetCutscene cutscene;
-
-            if(StuxnetCore.cutscenes.ContainsKey(CutsceneID))
+            if(!CutsceneID.IsNullOrWhiteSpace())
             {
-                cutscene = StuxnetCore.cutscenes[CutsceneID];
+                if(!FilePath.IsNullOrWhiteSpace())
+                {
+                    StuxnetCore.Logger.LogWarning(
+                        "TriggerCutscene will exclusively use the FilePath variable in the future, " +
+                        "so please remove it from your actions."
+                        );
+                } else
+                {
+                    throw new ArgumentException("TriggerCutscene now uses FilePath instead of CutsceneID - check " +
+                        "Stuxnet 2.0's breaking changes list.");
+                }
+            }
+
+            FilePath = Utils.GetFileLoadPrefix() + FilePath;
+
+            if(StuxnetCache.TryGetCachedCutscene(FilePath, out var cutscene))
+            {
+                cutscene.LoadInCutscene();
             } else
             {
-                throw new KeyNotFoundException($"Cutscene ID '{CutsceneID}' could not be found - did you register it?");
+                try
+                {
+                    StuxnetCutscene cs = new();
+                    cs.LoadFromXml(FilePath);
+                    cs.LoadInCutscene();
+                } catch(Exception e)
+                {
+                    StuxnetCore.Logger.LogWarning("Caught exception when attempting to load cutscene:\n" +
+                        string.Format("{0}\n{1}", e.ToString(), (e.InnerException ?? e).StackTrace)
+                        );
+                }
             }
-
-            if(StuxnetCore.cutsceneIsActive == true || StuxnetCore.activeCutsceneID != "NONE")
-            {
-                Console.Error.WriteLine(StuxnetCore.logPrefix + " There's already an active cutscene. " +
-                    "Please refrain from triggering another cutscene until the current one finishes. Skipping...");
-                return;
-            }
-
-            StuxnetCore.activeCutsceneID = cutscene.id;
-            StuxnetCore.cutsceneIsActive = true;
-        }
-    }
-
-    public class TriggerInstruction : PathfinderAction
-    {
-        readonly StuxnetCutsceneInstruction inst;
-
-        public TriggerInstruction(StuxnetCutsceneInstruction instruction)
-        {
-            inst = instruction;
-        }
-
-        public override void Trigger(object os_obj)
-        {
-            if (!StuxnetCore.cutsceneIsActive || StuxnetCore.activeCutsceneID == "NONE")
-            {
-                Console.WriteLine(StuxnetCore.logPrefix + "WARN:Tried to run a cutscene action, but there isn't an active cutscene.");
-                return;
-            }
-
-            inst.Execute();
         }
     }
 }
