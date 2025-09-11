@@ -16,7 +16,7 @@ namespace Stuxnet_HN.Cutscenes.Actions
         }
     }
 
-    [Obsolete("Use SAPreloadCutscene instead. RegisterCutscene will be removed in Stuxnet 2.1")]
+    [Obsolete("Use SAPreloadCutscene instead. RegisterStuxnetCutscene will be removed in Stuxnet 2.1")]
     public class RegisterCutscene : PathfinderAction
     {
         [XMLStorage]

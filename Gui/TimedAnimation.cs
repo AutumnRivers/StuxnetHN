@@ -186,6 +186,12 @@ namespace Stuxnet_HN.Gui
                     case "ToggleVisibility":
                         elemInst = new ToggleVisibilityInstruction(elem, inst);
                         break;
+                    case "Typewriter":
+                        elemInst = new TypewriterInstruction(elem, inst);
+                        break;
+                    case "ChangeFontScale":
+                        elemInst = new FontScaleInstruction(elem, inst);
+                        break;
                     default:
                         continue;
                 }

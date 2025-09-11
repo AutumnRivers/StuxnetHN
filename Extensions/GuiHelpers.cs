@@ -36,7 +36,6 @@ namespace Stuxnet_HN.Extensions
 
             GuiData.spriteBatch.Draw(texture, position, null, color, rotation, origin,
                 scale, SpriteEffects.None, 1f);
-
         }
 
         public static void DrawOutline(Rectangle target, Color color, int thickness)

@@ -1,7 +1,9 @@
 ﻿using Hacknet;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Stuxnet_HN.Extensions;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -63,10 +65,10 @@ namespace Stuxnet_HN.Gui
     {
         public string ID { get; private set; }
 
-        public AnimatedProperty<Vector2> Position { get; private set; }
-        public AnimatedProperty<Vector2> Size { get; private set; }
-        public AnimatedProperty<float> Rotation { get; private set; }
-        public AnimatedProperty<float> Opacity { get; private set; }
+        public AnimatedProperty<Vector2> Position { get; protected set; }
+        public AnimatedProperty<Vector2> Size { get; protected set; }
+        public AnimatedProperty<float> Rotation { get; protected set; }
+        public AnimatedProperty<float> Opacity { get; protected set; }
 
         public bool RotateIndefinitely = false;
         public float RotationSpeed = 360.0f; // angles per second
@@ -74,6 +76,8 @@ namespace Stuxnet_HN.Gui
         public Texture2D Image;
         public string ImagePath = string.Empty;
         public Color Color = Color.White;
+
+        public virtual string XmlName => null;
 
         public bool Visible { get; set; } = false;
 
@@ -101,19 +105,6 @@ namespace Stuxnet_HN.Gui
             }
         }
 
-        private Vector2 GetParsedVector2(Vector2 vector2)
-        {
-            if(vector2.X < 1.0f && vector2.X > -1.0f)
-            {
-                vector2.X *= OS.currentInstance.fullscreen.Width;
-            }
-            if(vector2.Y < 1.0f && vector2.Y > -1.0f)
-            {
-                vector2.Y *= OS.currentInstance.fullscreen.Height;
-            }
-            return vector2;
-        }
-
         public AnimatedElement(string id)
         {
             ID = id;
@@ -127,10 +118,6 @@ namespace Stuxnet_HN.Gui
         public AnimatedElement(string id, Vector2 startingPosition, Vector2 startingSize, Color color)
         {
             ID = id;
-
-            startingPosition = GetParsedVector2(startingPosition);
-            startingSize = GetParsedVector2(startingSize);
-
             Position = new(OnTranslationCompleted, startingPosition);
             Size = new(OnResizeCompleted, startingSize);
             Rotation = new(OnRotationCompleted, 0);
@@ -142,10 +129,6 @@ namespace Stuxnet_HN.Gui
         public AnimatedElement(string id, Vector2 startingPosition, Vector2 startingSize, float rotation, Color color)
         {
             ID = id;
-
-            startingPosition = GetParsedVector2(startingPosition);
-            startingSize = GetParsedVector2(startingSize);
-
             Position = new(OnTranslationCompleted, startingPosition);
             Size = new(OnResizeCompleted, startingSize);
             Rotation = new(OnRotationCompleted, rotation);
@@ -157,10 +140,6 @@ namespace Stuxnet_HN.Gui
         public AnimatedElement(string id, Vector2 startingPosition, Vector2 startingSize, string imageFilepath, float rotation = 0f)
         {
             ID = id;
-
-            startingPosition = GetParsedVector2(startingPosition);
-            startingSize = GetParsedVector2(startingSize);
-
             Position = new(OnTranslationCompleted, startingPosition);
             Size = new(OnResizeCompleted, startingSize);
             Rotation = new(OnRotationCompleted, rotation);
@@ -176,12 +155,14 @@ namespace Stuxnet_HN.Gui
         public virtual void Draw(Rectangle bounds)
         {
             if (!Visible) return;
+            var position = ParseVector2Multipliers(Position.Current);
+            var size = ParseVector2Multipliers(Size.Current);
             Rectangle targetRect = new()
             {
-                X = (int)Position.Current.X + bounds.X,
-                Y = (int)Position.Current.Y + bounds.Y,
-                Width = (int)Size.Current.X,
-                Height = (int)Size.Current.Y
+                X = (int)position.X + bounds.X,
+                Y = (int)position.Y + bounds.Y,
+                Width = (int)size.X,
+                Height = (int)size.Y
             };
             float rotation = MathHelper.ToRadians(Rotation.Current);
             DrawDynamicRectangle(targetRect, Color, rotation, Image);
@@ -360,35 +341,120 @@ namespace Stuxnet_HN.Gui
             Rotation.Origin = Rotation.Target = Rotation.Current = rotation;
         }
 
+        protected virtual void Register(XElement element)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static List<Type> CustomElements = new();
+
         public static AnimatedElement LoadFromXml(XElement xml)
         {
             AnimatedElement element;
+            List<string> attributes = new()
+            {
+                "ID", "Position", "Size"
+            };
+            string[] attrValues;
+            if(!CustomElements.Any(t => t.IsSubclassOf(typeof(AnimatedElement)) && t.Name == xml.Name.LocalName))
+            {
+                var customType = CustomElements.Find(t => t.BaseType.Name == "AnimatedElement" && t.Name == xml.Name.LocalName);
+                element = Activator.CreateInstance(customType, xml.GetAttributeValues(attributes)[0]) as AnimatedElement;
+                element.Register(xml);
+                return element;
+            }
             switch(xml.Name.LocalName)
             {
                 case "Rectangle":
-                    element = new(xml.Attribute("ID").Value,
-                        GetVec2FromString(xml.Attribute("Position").Value),
-                        GetVec2FromString(xml.Attribute("Size").Value),
-                        Utils.convertStringToColor(xml.Attribute("Color").Value));
+                    attributes.Add("Color");
+                    attrValues = xml.GetAttributeValues(attributes);
+                    element = new(attrValues[0],
+                        GetVec2FromString(attrValues[1]),
+                        GetVec2FromString(attrValues[2]),
+                        Utils.convertStringToColor(attrValues[3]));
                     if(xml.Attributes().Any(a => a.Name == "Rotation"))
                     {
                         element.SetInitialRotation(float.Parse(xml.Attribute("Rotation").Value));
                     }
                     break;
                 case "Image":
-                    element = new(xml.Attribute("ID").Value,
-                        GetVec2FromString(xml.Attribute("Position").Value),
-                        GetVec2FromString(xml.Attribute("Size").Value),
-                        xml.Attribute("FilePath").Value);
+                    attributes.Add("FilePath");
+                    attrValues = xml.GetAttributeValues(attributes);
+                    element = new(attrValues[0],
+                        GetVec2FromString(attrValues[1]),
+                        GetVec2FromString(attrValues[2]),
+                        attrValues[3]);
                     if (xml.Attributes().Any(a => a.Name == "Rotation"))
                     {
                         element.SetInitialRotation(float.Parse(xml.Attribute("Rotation").Value));
                     }
                     break;
+                case "RaindropsFX":
+                    attributes = new()
+                    {
+                        "ID", "FallRate", "MaxDropsRadius", "DropsPerSecond", "DropsColor"
+                    };
+                    attrValues = xml.GetAttributeValues(attributes);
+                    element = new RaindropsEffectElement(
+                        attrValues[0],
+                        float.Parse(attrValues[1]),
+                        float.Parse(attrValues[2]),
+                        float.Parse(attrValues[3])
+                        );
+                    if (attrValues[4] != null)
+                    {
+                        element.Color = Utils.convertStringToColor(attrValues[4]);
+                    }
+                    break;
+                case "Text":
+                    attributes[2] = "StartingValue";
+                    attributes.Add("FontScale");
+                    attributes.Add("Color");
+                    attrValues = xml.GetAttributeValues(attributes);
+                    element = new AnimatedTextElement(
+                        attrValues[0],
+                        GetVec2FromString(attrValues[1]),
+                        Vector2.Zero,
+                        Utils.convertStringToColor(attrValues[4]),
+                        attrValues[2],
+                        float.Parse(attrValues[3])
+                        );
+                    break;
+                case "GridFX":
+                    attributes.Add("Color");
+                    attrValues = xml.GetAttributeValues(attributes);
+                    element = new AnimatedGridEffectElement(
+                        attrValues[0],
+                        GetVec2FromString(attrValues[1]),
+                        GetVec2FromString(attrValues[2]),
+                        Utils.convertStringToColor(attrValues[3])
+                        );
+                    break;
                 default:
                     throw new FormatException("Invalid animated element in file!");
             }
             return element;
+        }
+
+        public static Vector2 ParseVector2Multipliers(Vector2 vector)
+        {
+            Vector2 result = new(vector.X, vector.Y);
+
+            Rectangle fullscreen = OS.currentInstance.fullscreen;
+            if ((result.Y < 1.0f && result.Y > 0) || (result.Y > -1.0f && result.Y < 0))
+            {
+                result.Y *= fullscreen.Height;
+            }
+            if(result.X == default)
+            {
+                result.X = result.Y;
+            }
+            if ((result.X < 1.0f && result.X > 0) || (result.X > -1.0f && result.X < 0))
+            {
+                result.X *= fullscreen.Width;
+            }
+
+            return result;
         }
 
         public static Vector2 GetVec2FromString(string vec2string)
@@ -403,20 +469,6 @@ namespace Stuxnet_HN.Gui
             } else
             {
                 y = float.Parse(vec2string);
-            }
-
-            Rectangle fullscreen = OS.currentInstance.fullscreen;
-            if ((y < 1.0f && y > 0) || (y > -1.0f && y < 0))
-            {
-                y *= fullscreen.Height;
-            }
-            if(x == default)
-            {
-                x = y;
-            }
-            if ((x < 1.0f && x > 0) || (x > -1.0f && x < 0))
-            {
-                x *= fullscreen.Width;
             }
             return new(x, y);
         }

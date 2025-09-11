@@ -118,10 +118,12 @@
     <Compile Include="Extensions\GuiHelpers.cs" />
     <Compile Include="Extensions\Texture2DExtensions.cs" />
     <Compile Include="Extensions\Vector2Extensions.cs" />
+    <Compile Include="Extensions\XDocumentExtensions.cs" />
     <Compile Include="Extensions\XmlReaderExtensions.cs" />
     <Compile Include="Gamemode\GamemodeMenu.cs" />
     <Compile Include="Gamemode\GamemodePatches.cs" />
     <Compile Include="Gui\AnimatedElements.cs" />
+    <Compile Include="Gui\Extended\ExtendedElements.cs" />
     <Compile Include="Gui\StuxnetGUI.cs" />
     <Compile Include="Gui\TimedAnimation.cs" />
     <Compile Include="Localization\Localizer.cs" />
