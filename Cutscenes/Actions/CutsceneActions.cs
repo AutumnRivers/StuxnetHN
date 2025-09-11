@@ -10,9 +10,23 @@ namespace Stuxnet_HN.Cutscenes.Actions
     {
         public static void RegisterActions()
         {
-            ActionManager.RegisterAction<SAPreloadCutscene>("RegisterCutscene");
+            ActionManager.RegisterAction<RegisterCutscene>("RegisterStuxnetCutscene");
             ActionManager.RegisterAction<SAPreloadCutscene>("PreloadCutscene");
             ActionManager.RegisterAction<SATriggerCutscene>("TriggerCutscene");
+        }
+    }
+
+    [Obsolete("Use SAPreloadCutscene instead. RegisterCutscene will be removed in Stuxnet 2.1")]
+    public class RegisterCutscene : PathfinderAction
+    {
+        [XMLStorage]
+        public string FilePath;
+
+        public override void Trigger(object os_obj)
+        {
+            StuxnetCore.Logger.LogWarning("RegisterCutscene will be removed in favor of PreloadCutscene in Stuxnet 2.1.0, so please " +
+                "change it in your extension ASAP.");
+            new SAPreloadCutscene() { FilePath = FilePath }.Trigger(os_obj);
         }
     }
 
@@ -23,9 +37,6 @@ namespace Stuxnet_HN.Cutscenes.Actions
 
         public override void Trigger(object os_obj)
         {
-            StuxnetCore.Logger.LogWarning("RegisterCutscene will be removed in favor of PreloadCutscene in Stuxnet 2.1.0, so please " +
-                "change it in your extension ASAP.");
-
             string path = Utils.GetFileLoadPrefix() + FilePath;
 
             StuxnetCutscene cutscene = new();
@@ -51,7 +62,7 @@ namespace Stuxnet_HN.Cutscenes.Actions
                 {
                     StuxnetCore.Logger.LogWarning(
                         "TriggerCutscene will exclusively use the FilePath variable in the future, " +
-                        "so please remove it from your actions."
+                        "so please remove CutsceneID from your actions."
                         );
                 } else
                 {
@@ -72,6 +83,7 @@ namespace Stuxnet_HN.Cutscenes.Actions
                     StuxnetCutscene cs = new();
                     cs.LoadFromXml(FilePath);
                     cs.LoadInCutscene();
+                    cs.Active = true;
                 } catch(Exception e)
                 {
                     StuxnetCore.Logger.LogWarning("Caught exception when attempting to load cutscene:\n" +

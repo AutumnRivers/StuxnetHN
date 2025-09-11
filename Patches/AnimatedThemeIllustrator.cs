@@ -82,8 +82,18 @@ namespace Stuxnet_HN.Patches
         {
             if (!File.Exists(filepath)) return false;
 
-            string firstLine = File.ReadLines(filepath).First();
-            return firstLine.Contains("StuxnetAnimatedTheme");
+            var lines = File.ReadAllLines(filepath);
+
+            string firstLine = lines.First();
+            bool probablyValid = firstLine.Contains("StuxnetAnimatedTheme");
+            
+            if(!probablyValid)
+            {
+                string secondLine = lines[1];
+                probablyValid = secondLine.Contains("StuxnetAnimatedTheme");
+            }
+
+            return probablyValid;
         }
 
         public static string GetBaseThemeFromAnimatedTheme(string filepath)

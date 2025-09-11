@@ -100,15 +100,12 @@
     <Compile Include="Actions\ToggleAlertsIcon.cs" />
     <Compile Include="Actions\VaultKeyActions.cs" />
     <Compile Include="Actions\WriteToTerminal.cs" />
-    <Compile Include="Commands\CutsceneDebugCommands.cs" />
     <Compile Include="Commands\SMSCommands.cs" />
     <Compile Include="Conditions\OnCutsceneEnd.cs" />
     <Compile Include="Conditions\OnSequencerKill.cs" />
     <Compile Include="CoreClasses.cs" />
     <Compile Include="Cutscenes\Actions\CutsceneActions.cs" />
     <Compile Include="Cutscenes\Actions\StopCutscene.cs" />
-    <Compile Include="Cutscenes\Patches\CutsceneExecutor.cs" />
-    <Compile Include="Cutscenes\StuxnetCutsceneRegister.cs" />
     <Compile Include="Cutscenes\StuxnetCutscenes.cs" />
     <Compile Include="Daemons\BYOD\BYODCore.cs" />
     <Compile Include="Daemons\BYOD\BYODDaemon.cs" />

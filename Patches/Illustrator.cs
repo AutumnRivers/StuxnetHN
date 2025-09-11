@@ -24,40 +24,34 @@ namespace Stuxnet_HN.Patches
     public class Illustrator
     {
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(OS), nameof(OS.drawModules))]
-        public static bool EarlyIllustratorPatch(OS __instance)
+        [HarmonyPatch(typeof(OS), "drawScanlines")]
+        public static void Prefix(OS __instance)
         {
-            if(FullscreenCredits.IsActive)
+            if (FullscreenCredits.IsActive)
             {
-                var vp = GuiData.spriteBatch.GraphicsDevice.Viewport.Bounds;
+                var fullscreen = __instance.fullscreen;
 
-                DrawRectangle(vp, __instance.moduleColorBacking);
+                DrawRectangle(fullscreen, __instance.moduleColorBacking);
 
                 FullscreenCredits.DrawFullscreenCredits();
                 __instance.drawScanlines();
-                return false;
+                return;
             }
 
-            return true;
-        }
+            if(StuxnetCore.CutsceneIsActive)
+            {
+                StuxnetCore.CurrentlyLoadedCutscene.Draw();
+            }
 
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(OS), "drawScanlines")]
-        public static bool Prefix(OS __instance)
-        {
-            switch(StuxnetCore.illustState)
+            switch (StuxnetCore.illustState)
             {
                 case States.DrawTitle:
                     DrawTitle(__instance);
-
-                    goto default;
+                    break;
                 case States.CTCDialogue:
                 case States.AutoDialogue:
                     IllustratorTypewriter.DrawVNDialogue(__instance, StuxnetCore.CurrentVNTextData);
-
-                    goto default;
-                default:
-                    return true;
+                    break;
             }
         }
 

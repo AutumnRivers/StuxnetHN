@@ -70,11 +70,16 @@ namespace Stuxnet_HN.Gui
             float fullDuration = Instructions.Last().DelayFromStart + Instructions.Last().Duration;
             List<AnimatedElementInstruction> lastInstructions = new();
 
+            List<AnimatedElementInstruction> instructionsWithElements = Instructions.Where(inst => inst.Element != null)
+                .ToList();
+
             foreach (var elem in Elements)
             {
-                if (!Instructions.Any(inst => inst.Element.ID == elem.ID)) continue;
-                lastInstructions.Add(Instructions.Last(inst => inst.Element.ID == elem.ID));
+                if (!instructionsWithElements.Any(inst => inst.Element.ID == elem.ID)) continue;
+                lastInstructions.Add(instructionsWithElements.Last(inst => inst.Element.ID == elem.ID));
             }
+
+            lastInstructions.AddRange(Instructions.Where(inst => inst.Element == null));
 
             foreach (var inst in lastInstructions)
             {
@@ -107,9 +112,9 @@ namespace Stuxnet_HN.Gui
                 }
                 if (inst.DelayFromStart < LastDelayTriggered) continue;
 
-                if(inst.DelayFromStart >= Lifetime && !inst.Activated)
+                if(inst.DelayFromStart <= Lifetime && !inst.Activated)
                 {
-                    LastDelayTriggered = Lifetime;
+                    LastDelayTriggered = inst.DelayFromStart;
                     inst.Activate();
                 }
             }
@@ -142,7 +147,7 @@ namespace Stuxnet_HN.Gui
         {
             XElement baseElement = document.Element(baseElementName);
 
-            var elementsChild = baseElement.Element("Elements");
+            var elementsChild = baseElement.Element("Elements") ?? throw new FormatException("Elements child node missing!");
             foreach (var elem in elementsChild.Elements())
             {
                 string id = elem.Attribute("ID").Value;
@@ -151,28 +156,39 @@ namespace Stuxnet_HN.Gui
                 Elements.Add(animatedElement);
             }
 
-            var instructionsChild = baseElement.Element("Instructions");
+            var instructionsChild = baseElement.Element("Instructions") ??
+                throw new FormatException("Instructions child node missing!");
             foreach (var inst in instructionsChild.Elements())
             {
-                if (!Elements.Any(el => el.ID == inst.Attribute("ElementID").Value))
+                AnimatedElement elem = null;
+                if(inst.Attributes().Any(atr => atr.Name.LocalName == "ElementID"))
                 {
-                    throw new FormatException(
-                        string.Format("Invalid animated element instruction -- no element exists with an ID of {0}",
-                        inst.Attribute("ElementID").Value)
-                        );
+                    if (Elements.Any(el => el.ID == inst.Attribute("ElementID").Value))
+                    {
+                        elem = Elements.Find(el => el.ID == inst.Attribute("ElementID").Value);
+                    }
                 }
-                AnimatedElement elem = Elements.Find(el => el.ID == inst.Attribute("ElementID").Value);
-                AnimatedElementInstruction elemInst = inst.Name.LocalName switch
+                AnimatedElementInstruction elemInst = null;
+                switch(inst.Name.LocalName)
                 {
-                    "Translate" => new TranslateElementInstruction(elem, inst),
-                    "Rotate" => new RotateElementInstruction(elem, inst),
-                    "Resize" => new ResizeElementInstruction(elem, inst),
-                    "Fade" => new FadeElementInstruction(elem, inst),
-                    _ => throw new FormatException(
-                                                string.Format("Invalid animated element instruction -- instruction {0} not recognized. " +
-                                                "(Did you misspell it? Instructions are case-sensitive!)", inst.Name)
-                                                ),
-                };
+                    case "Translate":
+                        elemInst = new TranslateElementInstruction(elem, inst);
+                        break;
+                    case "Rotate":
+                        elemInst = new RotateElementInstruction(elem, inst);
+                        break;
+                    case "Resize":
+                        elemInst = new ResizeElementInstruction(elem, inst);
+                        break;
+                    case "Fade":
+                        elemInst = new FadeElementInstruction(elem, inst);
+                        break;
+                    case "ToggleVisibility":
+                        elemInst = new ToggleVisibilityInstruction(elem, inst);
+                        break;
+                    default:
+                        continue;
+                }
                 Instructions.Add(elemInst);
             }
         }

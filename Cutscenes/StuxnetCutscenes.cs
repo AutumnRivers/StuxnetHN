@@ -1,18 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml.Linq;
 using Hacknet;
-using Hacknet.Extensions;
-
+using HarmonyLib;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Pathfinder.Event.Gameplay;
-using Stuxnet_HN.Cutscenes.Patches;
-
-using Stuxnet_HN.Extensions;
 using Stuxnet_HN.Gui;
 
 namespace Stuxnet_HN.Cutscenes
@@ -83,16 +75,16 @@ namespace Stuxnet_HN.Cutscenes
             var instructionsChild = baseElement.Element("Instructions");
             foreach (var inst in instructionsChild.Elements())
             {
-                if (!Elements.Any(el => el.ID == inst.Attribute("ElementID").Value))
+                AnimatedElement elem = null;
+                if (inst.Attributes().Any(atr => atr.Name.LocalName == "ElementID"))
                 {
-                    throw new FormatException(
-                        string.Format("Invalid animated element instruction -- no element exists with an ID of {0}",
-                        inst.Attribute("ElementID").Value)
-                        );
+                    if (Elements.Any(el => el.ID == inst.Attribute("ElementID").Value))
+                    {
+                        elem = Elements.Find(el => el.ID == inst.Attribute("ElementID").Value);
+                    }
                 }
-                AnimatedElement elem = Elements.Find(el => el.ID == inst.Attribute("ElementID").Value);
-                AnimatedElementInstruction elemInst;
-                switch(inst.Name.LocalName)
+                AnimatedElementInstruction elemInst = null;
+                switch (inst.Name.LocalName)
                 {
                     case "DelayEnd":
                         elemInst = new DelayEndInstruction(inst);
@@ -105,12 +97,25 @@ namespace Stuxnet_HN.Cutscenes
         }
     }
 
+    public static class StuxnetCutsceneIllustrator
+    {
+        [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
+        [HarmonyPatch(typeof(OS), "drawModules")]
+        public static void DrawCurrentCutsceneIfAny()
+        {
+            if (StuxnetCore.CurrentlyLoadedCutscene == null || !StuxnetCore.CutsceneIsActive) return;
+
+            StuxnetCore.CurrentlyLoadedCutscene.Draw();
+        }
+    }
+
     public static class StuxnetCutsceneUpdater
     {
         [Pathfinder.Meta.Load.Event()]
         public static void UpdateCurrentCutscene(OSUpdateEvent updateEvent)
         {
-            if (StuxnetCore.CurrentlyLoadedCutscene == null) return;
+            if (StuxnetCore.CurrentlyLoadedCutscene == null || !StuxnetCore.CutsceneIsActive) return;
 
             StuxnetCore.CurrentlyLoadedCutscene.Update(updateEvent.GameTime);
         }
@@ -118,13 +123,23 @@ namespace Stuxnet_HN.Cutscenes
 
     public class DelayEndInstruction : AnimatedElementInstruction
     {
-        public DelayEndInstruction(XElement xml) : base(null, xml) { }
+        public DelayEndInstruction(XElement xml)
+        {
+            LoadFromXml(xml);
+        }
+
+        public override bool NeedsElement => false;
 
         public override void Activate()
         {
             // The delay end instruction only exists to - you guessed it - delay the end of the cutscene.
             // Because of this, we can just return. The only thing that matters is its Duration + Delay.
             return;
+        }
+
+        public override void LoadFromXml(XElement rootElement)
+        {
+            DelayFromStart = float.Parse(rootElement.Attribute("Delay").Value);
         }
     }
 }

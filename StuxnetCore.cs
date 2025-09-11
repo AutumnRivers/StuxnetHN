@@ -86,7 +86,7 @@ namespace Stuxnet_HN
         public static VisualNovelTextData CurrentVNTextData { get; set; }
         public static bool dialogueIsActive = false;
 
-        public static StuxnetCutscene CurrentlyLoadedCutscene;
+        public static StuxnetCutscene CurrentlyLoadedCutscene { get; set; }
         public static bool CutsceneIsActive
         {
             get
@@ -95,10 +95,6 @@ namespace Stuxnet_HN
                 return CurrentlyLoadedCutscene.Active;
             }
         }
-
-        public static Dictionary<string, StuxnetCutscene> cutscenes = new();
-        public static string activeCutsceneID = "NONE";
-        public static bool cutsceneIsActive = false;
 
         public static bool XMODLoaded { get
             {
@@ -163,8 +159,6 @@ namespace Stuxnet_HN
             ExecutableManager.RegisterExecutable<WiresharkExecutable>("#WIRESHARK_EXE#");
 
             LogDebug("Registering Commands...");
-            CommandManager.RegisterCommand("logcutscenedata", CutsceneDebugCommands.LogCutsceneData, true, false);
-
             CommandManager.RegisterCommand("messenger", SMSCommands.ActivateSMS);
             CommandManager.RegisterCommand("unread", SMSCommands.CheckUnread);
 

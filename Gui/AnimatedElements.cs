@@ -75,6 +75,8 @@ namespace Stuxnet_HN.Gui
         public string ImagePath = string.Empty;
         public Color Color = Color.White;
 
+        public bool Visible { get; set; } = false;
+
         public bool NeedsRotation
         {
             get
@@ -173,6 +175,7 @@ namespace Stuxnet_HN.Gui
 
         public virtual void Draw(Rectangle bounds)
         {
+            if (!Visible) return;
             Rectangle targetRect = new()
             {
                 X = (int)Position.Current.X + bounds.X,
@@ -213,8 +216,20 @@ namespace Stuxnet_HN.Gui
             }
         }
 
+        public void OnInitiateAnything()
+        {
+            if (!Visible) Visible = true;
+        }
+
+        public void ToggleVisibility(bool visible)
+        {
+            Visible = visible;
+        }
+
         public void InitiateTranslation(Vector2 newPosition, float duration = 1.0f)
         {
+            OnInitiateAnything();
+
             if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
             {
                 StuxnetCore.Logger.LogDebug("Initiated translation on " + ID);
@@ -237,6 +252,8 @@ namespace Stuxnet_HN.Gui
 
         public void InitiateResize(Vector2 newSize, float duration = 1.0f)
         {
+            OnInitiateAnything();
+
             if (duration > 0f)
             {
                 Size.Target = newSize;
@@ -253,6 +270,8 @@ namespace Stuxnet_HN.Gui
 
         public void InitiateRotation(float newRotation, float duration = 1.0f)
         {
+            OnInitiateAnything();
+
             if (OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
             {
                 StuxnetCore.Logger.LogDebug("Initiated rotation on " + ID);
@@ -275,6 +294,8 @@ namespace Stuxnet_HN.Gui
 
         public void InitiateRotation(bool forever, float speed = 360.0f)
         {
+            OnInitiateAnything();
+
             if (speed == 0f) speed = 1.0f;
 
             RotateIndefinitely = forever;
@@ -289,7 +310,9 @@ namespace Stuxnet_HN.Gui
 
         public void InitiateFade(bool fadeIn, float duration = 1.0f)
         {
-            if(fadeIn)
+            OnInitiateAnything();
+
+            if (fadeIn)
             {
                 Opacity.Target = 1.0f;
             } else
@@ -325,6 +348,7 @@ namespace Stuxnet_HN.Gui
 
         public void Reset()
         {
+            Visible = false;
             Position.Reset();
             Size.Reset();
             Rotation.Reset();
@@ -369,17 +393,30 @@ namespace Stuxnet_HN.Gui
 
         public static Vector2 GetVec2FromString(string vec2string)
         {
-            var vec2split = vec2string.Split(',');
-            float x = float.Parse(vec2split[0]);
-            float y = float.Parse(vec2split[1]);
-            Rectangle fullscreen = OS.currentInstance.fullscreen;
-            if((x < 1.0f && x > 0) || (x > -1.0f && x < 0))
+            float x = default;
+            float y;
+            if(vec2string.Contains(","))
             {
-                x *= fullscreen.Width;
+                var vec2split = vec2string.Split(',');
+                x = float.Parse(vec2split[0]);
+                y = float.Parse(vec2split[1]);
+            } else
+            {
+                y = float.Parse(vec2string);
             }
+
+            Rectangle fullscreen = OS.currentInstance.fullscreen;
             if ((y < 1.0f && y > 0) || (y > -1.0f && y < 0))
             {
                 y *= fullscreen.Height;
+            }
+            if(x == default)
+            {
+                x = y;
+            }
+            if ((x < 1.0f && x > 0) || (x > -1.0f && x < 0))
+            {
+                x *= fullscreen.Width;
             }
             return new(x, y);
         }
@@ -387,20 +424,34 @@ namespace Stuxnet_HN.Gui
 
     public abstract class AnimatedElementInstruction
     {
-        public float Duration { get; set; }
-        public float DelayFromStart { get; set; }
+        public float Duration { get; set; } = 0f;
+        public float DelayFromStart { get; set; } = 0f;
         public bool Activated { get; set; } = false;
+
+        public virtual bool NeedsElement => true;
 
         public AnimatedElement Element;
 
+        public AnimatedElementInstruction() { }
+
         public AnimatedElementInstruction(AnimatedElement element, XElement xml)
         {
+            if(NeedsElement && element == null)
+            {
+                throw new FormatException("Instruction needs an element -- did you forget the ElementID attribute?");
+            }
+
             LoadFromXml(xml);
             Element = element;
         }
 
         public AnimatedElementInstruction(AnimatedElement element, float duration, float delay)
         {
+            if (NeedsElement && element == null)
+            {
+                throw new FormatException("Instruction needs an element!");
+            }
+
             Element = element;
             Duration = duration;
             DelayFromStart = delay;
@@ -420,14 +471,35 @@ namespace Stuxnet_HN.Gui
         }
     }
 
+    public class ToggleVisibilityInstruction : AnimatedElementInstruction
+    {
+        public bool IsVisible { get; set; } = false;
+
+        public ToggleVisibilityInstruction(AnimatedElement element, XElement xml) : base(element, xml) { }
+
+        public ToggleVisibilityInstruction(AnimatedElement element, float delay, bool visible) :
+            base(element, 0f, delay)
+        {
+            IsVisible = visible;
+        }
+
+        public override void Activate()
+        {
+            Element.ToggleVisibility(IsVisible);
+        }
+
+        public override void LoadFromXml(XElement rootElement)
+        {
+            DelayFromStart = float.Parse(rootElement.Attribute("Delay").Value);
+            IsVisible = bool.Parse(rootElement.Attribute("Visible").Value);
+        }
+    }
+
     public class TranslateElementInstruction : AnimatedElementInstruction
     {
         public Vector2 TargetPosition { get; set; }
 
-        public TranslateElementInstruction(AnimatedElement element, XElement xml) : base(element, xml)
-        {
-            LoadFromXml(xml);
-        }
+        public TranslateElementInstruction(AnimatedElement element, XElement xml) : base(element, xml) { }
 
         public TranslateElementInstruction(AnimatedElement element, float duration, float delay, Vector2 position)
             : base(element, duration, delay)

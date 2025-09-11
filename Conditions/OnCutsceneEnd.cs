@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Hacknet;
-
-using Pathfinder.Action;
+﻿using Pathfinder.Action;
 using Pathfinder.Meta.Load;
 
 namespace Stuxnet_HN.Conditions
@@ -18,22 +10,25 @@ namespace Stuxnet_HN.Conditions
 
         public override bool Check(object os_obj)
         {
-            if(StuxnetCore.activeCutsceneID == "NONE" && !hasStarted)
+            if(StuxnetCore.CurrentlyLoadedCutscene == null && !hasStarted)
             {
                 return false;
             }
 
-            if(StuxnetCore.activeCutsceneID != "NONE" && !hasStarted)
+            if(StuxnetCore.CutsceneIsActive && !hasStarted)
             {
                 hasStarted = true;
                 return false;
             }
 
-            if(StuxnetCore.activeCutsceneID != "NONE")
+            if (StuxnetCore.CurrentlyLoadedCutscene != null) return false;
+
+            if(StuxnetCore.CurrentlyLoadedCutscene == null && hasStarted)
             {
                 return true;
             }
 
+            StuxnetCore.Logger.LogWarning("Undefined action in OnCutsceneEnd conditional");
             return true;
         }
     }
