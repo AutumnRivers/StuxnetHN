@@ -46,6 +46,30 @@ Please refer to [this example file](./docs/examples/wireshark_pc_example.xml) fo
 ---
 
 ## Patches / Features
+### Gamemodes
+![Gamemode Example](./docs/images/gm_example.jpg)
+
+**New in 2.0!** Create multiple starting points for your extension. You can even have seperate Player PCs!
+
+Please refer to [the global configuration file](./docs/StuxnetConfig.md#gamemode) for more information.
+
+### `Stuxnet.Quests`
+![Quests Example](./docs/images/quests_example.jpg)
+
+**New in 2.0!** Parallel mission loading, but way cooler. Compatible with XMOD!
+
+[Read more here.](./docs/Quests.md)
+
+### Persistence
+**New in 2.0!** Hold persistent data across different save files, per-extension.
+
+[Check out its actions and conditions!](./docs/Actions.md#persistence)
+
+### Animated Themes
+**New in 2.0!** No videos, no GIFs, no gimmicks.
+
+[Read more here.](./docs/animations/README.md)
+
 ### Mission Logos
 ![Mission Logo Example](./docs/images/missionlogoexample.png)
 

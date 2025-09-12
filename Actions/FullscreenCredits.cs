@@ -1,17 +1,11 @@
 ﻿using Hacknet;
-using Hacknet.Extensions;
 using Hacknet.Gui;
-using Microsoft.Xna.Framework.Graphics;
 using Pathfinder.Action;
 using Pathfinder.Util;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Stuxnet_HN.Extensions;
+using Pathfinder.GUI;
 
 namespace Stuxnet_HN.Actions
 {
@@ -26,6 +20,9 @@ namespace Stuxnet_HN.Actions
             [XMLStorage]
             public string CreditsPath;
 
+            [XMLStorage]
+            public float ShowButtonDelay = -1;
+
             public override void Trigger(OS os)
             {
                 if (File.Exists(Utils.GetFileLoadPrefix() + CreditsPath))
@@ -37,14 +34,47 @@ namespace Stuxnet_HN.Actions
             }
         }
 
+        public class HideFullscreenCredits : DelayablePathfinderAction
+        {
+            public override void Trigger(OS os)
+            {
+                IsActive = false;
+                CreditsData = null;
+            }
+        }
+
         public const float CREDITS_LENGTH_SECONDS = 4.0f;
         public const float BASE_Y_OFFSET = 10;
         private static float YOffset = BASE_Y_OFFSET;
         private static float LastBaseYOffset = YOffset;
+        private static float _exitButtonDelay = -1;
+        private static float Lifetime = 0;
+        internal static bool IsNewCredits = true;
+
+        private static int ExitButtonID = PFButton.GetNextID();
 
         public static void DrawFullscreenCredits()
         {
             YOffset = LastBaseYOffset;
+            Rectangle fullscreen = OS.currentInstance.fullscreen;
+
+            if(Lifetime >= _exitButtonDelay)
+            {
+                int width = fullscreen.Width / 6;
+                int height = fullscreen.Height / 15;
+                bool hideScreen = Button.doButton(ExitButtonID,
+                    fullscreen.Center.X - (width / 2),
+                    fullscreen.Y + fullscreen.Height - height - 15,
+                    width, height, "Continue...",
+                    OS.currentInstance.unlockedColor);
+                if(hideScreen)
+                {
+                    IsActive = false;
+                    CreditsData = null;
+                    return;
+                }
+            }
+            Lifetime *= (float)OS.currentInstance.lastGameTime.ElapsedGameTime.TotalSeconds;
 
             for(int lineIdx = 0; lineIdx < CreditsData.Length; lineIdx++)
             {
@@ -117,6 +147,7 @@ namespace Stuxnet_HN.Actions
         public static void RegisterActions()
         {
             ActionManager.RegisterAction<ShowFullscreenCredits>("ShowFullscreenCredits");
+            ActionManager.RegisterAction<HideFullscreenCredits>("HideFullscreenCredits");
             ConditionManager.RegisterCondition<OnCreditsEnd>("OnFullscreenCreditsEnd");
         }
     }
