@@ -61,8 +61,9 @@
     <Reference Include="PathfinderAPI">
       <HintPath>$(HacknetInstall)BepInEx\plugins\PathfinderAPI.dll</HintPath>
     </Reference>
-    <Reference Include="StuxnetHN">
-      <HintPath>M:\SteamLibrary\steamapps\common\Hacknet\Extensions\TestExtensionSuite\Plugins\StuxnetHN.dll</HintPath>
+    <Reference Include="StuxnetHN, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\StuxnetHN.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">

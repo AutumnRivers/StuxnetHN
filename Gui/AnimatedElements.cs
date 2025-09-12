@@ -407,7 +407,7 @@ namespace Stuxnet_HN.Gui
                     }
                     break;
                 case "Text":
-                    attributes[2] = "StartingValue";
+                    attributes.Add("StartingValue");
                     attributes.Add("FontScale");
                     attributes.Add("Color");
                     attrValues = xml.GetAttributeValues(attributes);
@@ -415,9 +415,9 @@ namespace Stuxnet_HN.Gui
                         attrValues[0],
                         GetVec2FromString(attrValues[1]),
                         Vector2.Zero,
-                        Utils.convertStringToColor(attrValues[4]),
-                        attrValues[2],
-                        float.Parse(attrValues[3])
+                        Utils.convertStringToColor(attrValues[5]),
+                        attrValues[3],
+                        float.Parse(attrValues[4])
                         );
                     break;
                 case "GridFX":

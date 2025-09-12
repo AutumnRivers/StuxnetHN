@@ -208,6 +208,9 @@ namespace Stuxnet_HN
             ActionManager.RegisterAction<EnableAlertsIcon>("EnableAlertsIcon");
             ActionManager.RegisterAction<WriteToTerminal>("WriteToTerminal");
 
+            // Quests Actions
+            Quests.QuestActions.RegisterActions();
+
             // Persistence Actions
             Persistence.PersistenceActions.RegisterActions();
             #endregion register actions

@@ -76,6 +76,7 @@ namespace Stuxnet_HN.Cutscenes.Actions
             if(StuxnetCache.TryGetCachedCutscene(FilePath, out var cutscene))
             {
                 cutscene.LoadInCutscene();
+                cutscene.Active = true;
             } else
             {
                 try

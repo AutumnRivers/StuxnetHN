@@ -17,8 +17,6 @@ namespace Stuxnet_HN.Actions
 {
     public class FullscreenCredits
     {
-        public static string ExtensionFolder => ExtensionLoader.ActiveExtensionInfo.FolderPath + "/";
-
         public static bool IsActive { get; internal set; } = false;
 
         internal static string[] CreditsData;
@@ -30,9 +28,9 @@ namespace Stuxnet_HN.Actions
 
             public override void Trigger(OS os)
             {
-                if (File.Exists(ExtensionFolder + CreditsPath))
+                if (File.Exists(Utils.GetFileLoadPrefix() + CreditsPath))
                 {
-                    CreditsData = File.ReadAllLines(ExtensionFolder + CreditsPath);
+                    CreditsData = File.ReadAllLines(Utils.GetFileLoadPrefix() + CreditsPath);
                 }
 
                 IsActive = true;
@@ -43,14 +41,6 @@ namespace Stuxnet_HN.Actions
         public const float BASE_Y_OFFSET = 10;
         private static float YOffset = BASE_Y_OFFSET;
         private static float LastBaseYOffset = YOffset;
-
-        public static Viewport Viewport
-        {
-            get
-            {
-                return GuiData.spriteBatch.GraphicsDevice.Viewport;
-            }
-        }
 
         public static void DrawFullscreenCredits()
         {
@@ -86,7 +76,7 @@ namespace Stuxnet_HN.Actions
                 text = text.Substring(1);
 
                 var textVector = GuiData.font.MeasureString(text) * 1.25f;
-                Vector2 pos = new(Viewport.Bounds.Center.X - (textVector.X / 2), YOffset);
+                Vector2 pos = new(OS.currentInstance.fullscreen.Center.X - (textVector.X / 2), YOffset);
                 GuiData.font.DrawScaledText(text, pos, Color.White, 1.25f);
                 YOffset += textVector.Y + 5;
             }
@@ -96,7 +86,7 @@ namespace Stuxnet_HN.Actions
                 text = text.Substring(1);
 
                 var textVector = GuiData.font.MeasureString(text);
-                Vector2 pos = new(Viewport.Bounds.Center.X - (textVector.X / 2), YOffset);
+                Vector2 pos = new(OS.currentInstance.fullscreen.Center.X - (textVector.X / 2), YOffset);
                 GuiData.font.DrawScaledText(text, pos, Color.White, 1);
                 YOffset += textVector.Y + 5;
             }
@@ -106,7 +96,7 @@ namespace Stuxnet_HN.Actions
                 text = text.Substring(1);
 
                 var textVector = GuiData.smallfont.MeasureString(text);
-                Vector2 pos = new(Viewport.Bounds.Center.X - (textVector.X / 2), YOffset);
+                Vector2 pos = new(OS.currentInstance.fullscreen.Center.X - (textVector.X / 2), YOffset);
                 GuiData.smallfont.DrawScaledText(text, pos, Color.White, 1);
                 YOffset += textVector.Y + 5;
             }

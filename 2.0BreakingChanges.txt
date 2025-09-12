@@ -1,0 +1,29 @@
+--------------------------------------------
+Stuxnet 2.0 "WannaCry" Breaking Changes List
+--------------------------------------------
+
+† = If you do not follow this change, your extension WILL break!
+
+-- MULTIPLE
+* Codes, songs, any sort of configuration has been moved to a central stuxnet_config.json file.†
+    * This file is placed at the root of the extension's directory.
+    * There should be a template file included with 2.0's release.
+
+-- CUTSCENES
+The entire cutscene system has been completely rewritten, and as such, things are borked.
+
+* Stuxnet cutscenes are no longer called by ID, and are instead, called by filepath.
+* If you'd like to pre-cache a cutscene anyway, use <PreloadCutscene>
+    * <RegisterStuxnetCutscene> has been renamed to this, and will be removed in Stuxnet 2.1†
+* TriggerCutscene now has a FilePath attribute instead of a CutsceneID attribute.†
+* Cutscene layouts have been completely changed. Read the updated documentation for more information.†
+* The logcutscenedata command no longer exists.
+
+-- ACTIONS
+* <PlaceNodeOnNetMap> no longer has a StartingPosition attribute. Remove it from your actions.†
+    * The anchor is the top left of the netmap, or 0,0.
+
+-- THIRD-PARTY PLUGIN DEVELOPERS
+* The SongEntry class has been moved from the `Stuxnet_HN.Executables` namespace to just `Stuxnet_HN`.
+    * This also applies to CodeEntry and SequencerInfo.
+    * This breaks ZeroDayToolkit 1.0's Stuxnet compatibility.† This will likely be fixed in 0DTK 1.0.4

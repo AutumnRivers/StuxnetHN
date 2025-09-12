@@ -4,6 +4,19 @@
 
 ---
 
+## Table of Contents
+* [RadioV3](#radiov3-actions)
+* [Sequencer](#sequencer-actions)
+* [Saves](#save-actions)
+* [Vault Keys](#vault-actions)
+* [Dialogue](#dialogue-actions)
+* [Nodes](#node-actions)
+* [Wildcards](#custom-replacementswildcards)
+* [Misc.](#misc-actions)
+* [Persistence](#persistence)
+
+---
+
 # RadioV3 Actions
 ## Allowing/Preventing Radio Access
 ### `<PreventRadioAccess DelayHost="delay" Delay="3.0" />`
@@ -16,22 +29,26 @@ Does the opposite of above.
 ### `<AddSongToRadio SongID="song1,song2" />`
 Adds access to the song ID(s) in the radio for the player. Multiple songs can be added at once with a comma.
 
-[More information about song IDs](./StuxnetFiles.md#radio-file)
+[More information about song IDs](StuxnetConfig.md#audio)
 
 ### `<RemoveSongFromRadio SongID="song2" />`
 Removes access to the song Id in the radio for the player. Only one song can be removed at a time.
 
-[More information about song IDs](./StuxnetFiles.md#radio-file)
+[More information about song IDs](StuxnetConfig.md#audio)
+
+---
 
 # Sequencer Actions
 ### `<ChangeSequencerManually RequiredFlag="testflag1" TargetID="testseq1" SpinUpTime="5" ActionsToRun="Actions/TestSequencers/1.xml" />`
 Manually changes information for the `ESequencer`.
 
 ### `<ChangeSequencerFromID SequencerID="seq3" />`
-Changes information for the `ESequencer` as defined for the `SequencerID` in [the sequencers.json file](./StuxnetFiles.md#sequencers-file).
+Changes information for the `ESequencer` as defined for the `SequencerID` in [your global Stuxnet config file](StuxnetConfig.md#sequencers).
 
 ### `<ClearCustomSequencer DelayHost="delay" Delay="5.0" />`
 Clears any custom information for the sequencer and defaults to whatever is in `ExtensionInfo.xml`.
+
+---
 
 # Save Actions
 ## Enabling/Disabling Saves
@@ -49,6 +66,8 @@ Requires a flag in order for the user to be able to save.
 * `AvoidFlag` - Whether or not to *avoid* the above flag in order for the user to save.
     * For example, if `Flag` is set to "badflag" and `AvoidFlag` is set to "true", then the user will not be able to save so long as they have the "badflag" flag applied to them.
 
+---
+
 # Vault Actions
 For use with the [Vault Daemon](./Daemons.md#vault-daemon).
 
@@ -56,6 +75,8 @@ For use with the [Vault Daemon](./Daemons.md#vault-daemon).
 **Delayable.** Adds/removes a key for the set key name of the vault. If the user has not visited the vault yet, adding a vault key will set the key amount to 1, while removing the key will set the key amount to 0.
 
 A maximum of 10 keys can be added (unrelated to the vault daemon itself) and the user can have a minimum of 0 keys. If you go over or under these limits, nothing will happen. It just won't add/remove the key.
+
+---
 
 # Dialogue Actions
 Actions relating to dialogue / "story elements"
@@ -86,14 +107,27 @@ Shows dialogue that, when completed, will prompt the user to click the screen.
 Same as above, but for auto text. Auto text will fire end dialogue actions after the delay is finished. No user input required.
 * `ContinueDelay` - How long to wait until after the text is finished (in seconds) until `EndDialogueActions` is fired. Defaults to `0`.
 
+## Fullscreen Credits
+### `<ShowFullscreenCredits CreditsPath="string" />`
+**Delayable.** Shows fullscreen credits, automatically hiding every module.
+* `CreditsPath` - the path to the real-life `.txt` file that contains the credits data.
+    * Use the same formatting you do for credits data in vanilla.
+
+## Conditions
+### `<OnFullscreenCreditsEnd>`
+Runs a set of actions when the current fullscreen credits end.
+
+---
+
 # Node Actions
-### `<PlaceNodeOnNetMap TargetCompID="jmail" [StartingPosition="string" Offset="float,float"]>`
+### `<PlaceNodeOnNetMap TargetCompID="jmail" Offset="float,float" />`
 **Delayable.** Places the target node onto the netmap where you specify it.
 
 * `TargetCompID` - The ID of the target node.
-* `StartingPosition` - Where to start your offset from. Valid positions are `topleft,centerleft,bottomleft,topcenter,truecenter,bottomcenter,topright,centerright,bottomright`. Defaults to `truecenter`
-* `Offset` - The offset from the starting position. Percentage based. Defaults to `"0,0"`
-    * For example, a starting position of `topleft` and an offset of `0.5,0.25` will place the node halfway across the netmap, and a halfway to the center vertically.
+* `Offset` - The offset from the starting position. Percentage based. Required.
+    * For example, an offset of `0.5,0.25` will place the node halfway across the netmap, and a halfway to the center vertically.
+
+---
 
 # Custom Replacements/"Wildcards"
 Create your own wildcards with these actions. This will only affect nodes that the player is not currently connected to. To keep immersion, you probably shouldn't use any custom wildcards in the base files of the player's node. If you use the same name twice, it will overwrite that wildcard's value.
@@ -121,14 +155,43 @@ Adds the admin pass of a node as a wildcard.
     * For example, `Name="BitComp"` would be saved as `#BITCOMP_PASS#`.
 * `CompID` - Case-sensitive, the ID for the target node.
 
+---
+
 # Misc. Actions
 ### `<DisableAlertsIcon /> / <EnableAlertsIcon />`
 **Delayable.** Turns the alert icon (email, irc, etc.) off and on, respectively. And yes, that means *completely* off. Nothing will be at the top right of the user's game window. Useful for cutscenes, sequencers, blah blah blah. You get the gist of what most of these actions are for.
 
 ### `<ForceConnectPlayer TargetCompID="CompID" LikeReallyForce="bool" />`
-Forcefully connects the user to the target computer, or at least tries to.
+**Delayable.** Forcefully connects the user to the target computer, or at least tries to.
 
 Setting `LikeReallyForce` to `"true"` will constantly try to connect the player to the target computer. It's recommended **NOT** to use this unless you have some specific edge case where you *absolutely* have to.
 
 ### `<WriteToTerminal [Quietly="bool"]>string</WriteToTerminal>`
-Ported from [LunarOSPathfinder](https://github.com/AutumnRivers/LunarOSPathfinder#writetoterminal-quietlyboolmessagewritetoterminal).
+**Delayable.** Ported from [LunarOSPathfinder](https://github.com/AutumnRivers/LunarOSPathfinder#writetoterminal-quietlyboolmessagewritetoterminal).
+
+### `<ForceCloseGame />`
+**Delayable.** Does what it says on the tin. Forcibly closes the game. Use this *sparingly*!
+
+---
+
+# Persistence
+## Actions
+All the actions below are *delayable*!
+
+### `<AddPersistentFlag Flag="string" />`
+Adds the flag to persistent data. If the flag already exists, nothing happens.
+
+### `<RemovePersistentFlag Flag="string" />`
+Does the opposite of above. If the flag already doesn't exist, nothing happens.
+
+### `<ClearPersistentFlags />`
+Clears *all* flags from persistence.
+
+## Conditions
+### `<HasPersistentFlags Flags="string[,string,string...]" CheckOnce="bool">`
+Runs a set of actions if the persistent data has the set of flags.
+* `CheckOnce` - Checks once if the player does have the flags, then removes itself.
+    * Idea shamelessly taken from XMOD.
+
+### `<DoesNotHavePersistentFlags Flags="string[,string,string...]" CheckOnce="bool">`
+Opposite of above.

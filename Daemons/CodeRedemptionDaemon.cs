@@ -56,10 +56,7 @@ namespace Stuxnet_HN.Daemons
             base.initFiles();
 
             extensionLogo = ExtensionLoader.ActiveExtensionInfo.LogoImage;
-
-            Random random = new Random();
-
-            splashText = StuxnetCore.postMsg[random.Next(0, StuxnetCore.postMsg.Length)];
+            ShowNewSplash();
         }
 
         public override void draw(Rectangle bounds, SpriteBatch sb)

@@ -163,4 +163,7 @@
     <Folder Include="docs\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="AfterBuild">
+    <Copy SourceFiles="$(TargetDir)$(TargetName).dll" DestinationFolder="Stuxnet.Audio/lib/$(TargetName).dll" />
+  </Target>
 </Project>
