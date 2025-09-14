@@ -194,6 +194,13 @@ namespace Stuxnet_HN.Gui
             if (NeedsResize)
             {
                 Size.AnimationProgress += t / Size.AnimationDuration;
+                Size.Current = Vector2.Lerp(Size.Origin, Size.Target, Size.AnimationProgress);
+            }
+
+            if(Opacity.Origin != Opacity.Target)
+            {
+                Opacity.AnimationProgress += t / Opacity.AnimationDuration;
+                Opacity.Current = MathHelper.Lerp(Opacity.Origin, Opacity.Target, Opacity.AnimationProgress);
             }
         }
 
@@ -300,6 +307,13 @@ namespace Stuxnet_HN.Gui
             {
                 Opacity.Target = 0.0f;
             }
+
+            if(duration <= 0.0f)
+            {
+                Opacity.Origin = Opacity.Current = Opacity.Target;
+                return;
+            }
+
             Opacity.AnimationDuration = duration;
             Opacity.AnimationProgress = 0.0f;
         }
@@ -617,6 +631,7 @@ namespace Stuxnet_HN.Gui
 
         public override void Activate()
         {
+            Element.InitiateFade(FadeIn, Duration);
             Activated = true;
         }
 

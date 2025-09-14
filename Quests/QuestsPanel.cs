@@ -45,7 +45,7 @@ namespace Stuxnet_HN.Quests
             }
 
             GuiData.spriteBatch.Draw(Utils.white, button, Color.Black * buttonOpacity);
-            TextItem.doSmallLabel(new((textVec.X / 2) + button.X + 10,
+            TextItem.doSmallLabel(new(button.X + 10,
                 (int)((OS.TOP_BAR_HEIGHT / 2) - (textVec.Y / 2))),
                 QuestText, OS.currentInstance.topBarTextColor);
 

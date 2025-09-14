@@ -41,10 +41,3 @@ I don't have a witty phrase for this one. Sorry.
 Shows the shifting grid effect, like whats used in `MemoryForensics`.
 * This element is not affected by rotation.
 * `Color` will also have a dark and light value applied to it, so do not go pure white or pure black.
-
----
-
-## Cutscene Specific
-### Delay End
-`<DelayEnd Delay="float" />`
-Delays the ending of the cutscene. Yep, that's it. Set this as your last element.

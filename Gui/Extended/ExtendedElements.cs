@@ -55,6 +55,7 @@ namespace Stuxnet_HN.Gui
         {
             if (!Visible) return;
             if (!HasInitialized) Initialize();
+            bounds.Height += bounds.Height / 8;
             RaindropsEffect.Render(bounds, GuiData.spriteBatch, Color * Opacity.Current, MaxDropRadius, 30f);
         }
 
@@ -96,7 +97,13 @@ namespace Stuxnet_HN.Gui
             };
             Color lightColor = Color.Lerp(Color, Color.White, 0.35f);
             Color darkColor = Color.Lerp(Color, Color.Black, 0.35f);
-            GridEffect.RenderGrid(targetRect, GuiData.spriteBatch, lightColor, Color, darkColor, true);
+            GridEffect.RenderGrid(targetRect, GuiData.spriteBatch, lightColor, Color, darkColor, false);
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            base.Update(gameTime);
+            GridEffect.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
         }
     }
 
@@ -277,6 +284,7 @@ namespace Stuxnet_HN.Gui
                 StuxnetCore.Logger.LogError("Tried to use FontScaleInstruction on an element that is not " +
                     "a text element!");
             }
+            Activated = true;
         }
 
         public override void LoadFromXml(XElement rootElement)

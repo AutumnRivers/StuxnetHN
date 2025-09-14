@@ -1,7 +1,7 @@
 ## Instructions
 * `ElementID` should be the ID of the element you want to affect.
 * `Duration` is in seconds.
-* `DelayFromStart` is in seconds. This will tell the code when to call the instruction from the start of the animation.
+* `Delay` is in seconds. This will tell the code when to call the instruction from the start of the animation.
 
 ## Basic Instructions
 ### Translate
@@ -39,3 +39,10 @@ Creates a typewriter-like effect, similar to what's used with the VN system.
 ### Font Scale
 `<ChangeFontScale ElementID="string" Duration="float" Delay="float" TargetScale="float" />`
 * This *only* affects `Text` elements. You will get a non-fatal error if you register this to a non-text element.
+
+---
+
+## Cutscene Specific
+### Delay End
+`<DelayEnd Delay="float" />`
+Delays the ending of the cutscene. Yep, that's it. Set this as your last element.
