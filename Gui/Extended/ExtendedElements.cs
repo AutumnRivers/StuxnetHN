@@ -141,6 +141,16 @@ namespace Stuxnet_HN.Gui
             GuiData.spriteBatch.DrawString(Font, textToShow, new(x, y), Color * Opacity.Current);
         }
 
+        public override void Update(GameTime gameTime)
+        {
+            base.Update(gameTime);
+
+            if(Text.Origin != Text.Target)
+            {
+                Text.AnimationProgress += (float)gameTime.ElapsedGameTime.TotalSeconds / Text.AnimationDuration;
+            }
+        }
+
         public void OnTypewriterCompleted()
         {
             Text.Origin = Text.Target;
@@ -157,8 +167,10 @@ namespace Stuxnet_HN.Gui
 
         public string GetTypewriterValue()
         {
+            if (Text.Origin == Text.Target) return Text.Target;
+
             var targetChars = Text.Target.ToCharArray();
-            int charsToShow = (int)Math.Floor(MathHelper.Lerp(0, targetChars.Length, Text.AnimationProgress));
+            int charsToShow = (int)Math.Ceiling(MathHelper.Lerp(0.0f, targetChars.Length, Text.AnimationProgress));
 
             var displayChars = targetChars.Take(charsToShow).ToArray();
             return new string(displayChars);
@@ -166,7 +178,8 @@ namespace Stuxnet_HN.Gui
 
         public void InitiateTypewriter(string target, float duration)
         {
-            OnInitiateAnything();
+            Console.WriteLine("it");
+
             Text.AnimationDuration = duration;
             Text.AnimationProgress = 0.0f;
             if (duration <= 0)
@@ -228,6 +241,7 @@ namespace Stuxnet_HN.Gui
                 StuxnetCore.Logger.LogError("Tried to use TypewriterInstruction on an element that is not " +
                     "a text element!");
             }
+            Activated = true;
         }
 
         public override void LoadFromXml(XElement rootElement)

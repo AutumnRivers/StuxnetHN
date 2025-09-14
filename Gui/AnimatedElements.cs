@@ -356,7 +356,7 @@ namespace Stuxnet_HN.Gui
                 "ID", "Position", "Size"
             };
             string[] attrValues;
-            if(!CustomElements.Any(t => t.IsSubclassOf(typeof(AnimatedElement)) && t.Name == xml.Name.LocalName))
+            if(CustomElements.Any(t => t.IsSubclassOf(typeof(AnimatedElement)) && t.Name == xml.Name.LocalName))
             {
                 var customType = CustomElements.Find(t => t.BaseType.Name == "AnimatedElement" && t.Name == xml.Name.LocalName);
                 element = Activator.CreateInstance(customType, xml.GetAttributeValues(attributes)[0]) as AnimatedElement;

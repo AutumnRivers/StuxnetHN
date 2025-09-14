@@ -402,4 +402,4 @@ FodyWeavers.xsd
 
 # bleh
 /lib
-/Stuxnet.Audio/lib
+/Stuxnet.Audio/lib/*

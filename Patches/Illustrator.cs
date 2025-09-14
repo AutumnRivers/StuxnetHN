@@ -24,8 +24,8 @@ namespace Stuxnet_HN.Patches
     public class Illustrator
     {
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(OS), "drawScanlines")]
-        public static void Prefix(OS __instance)
+        [HarmonyPatch(typeof(OS), "drawModules")]
+        public static bool FullscreenCreditsIllustrator(OS __instance)
         {
             if (FullscreenCredits.IsActive)
             {
@@ -34,10 +34,16 @@ namespace Stuxnet_HN.Patches
                 DrawRectangle(fullscreen, __instance.moduleColorBacking);
 
                 FullscreenCredits.DrawFullscreenCredits();
-                __instance.drawScanlines();
-                return;
+                return false;
             }
 
+            return true;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(OS), "drawScanlines")]
+        public static void Prefix(OS __instance)
+        {
             if(StuxnetCore.CutsceneIsActive)
             {
                 StuxnetCore.CurrentlyLoadedCutscene.Draw();

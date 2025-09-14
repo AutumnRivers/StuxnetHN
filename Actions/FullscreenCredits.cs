@@ -1,11 +1,12 @@
 ﻿using Hacknet;
 using Hacknet.Gui;
-using Pathfinder.Action;
-using Pathfinder.Util;
-using System.IO;
 using Microsoft.Xna.Framework;
-using Stuxnet_HN.Extensions;
+using Pathfinder.Action;
 using Pathfinder.GUI;
+using Pathfinder.Util;
+using Stuxnet_HN.Extensions;
+using System.IO;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Stuxnet_HN.Actions
 {
@@ -28,9 +29,10 @@ namespace Stuxnet_HN.Actions
                 if (File.Exists(Utils.GetFileLoadPrefix() + CreditsPath))
                 {
                     CreditsData = File.ReadAllLines(Utils.GetFileLoadPrefix() + CreditsPath);
+                    _exitButtonDelay = ShowButtonDelay;
+                    IsActive = true;
+                    IsNewCredits = true;
                 }
-
-                IsActive = true;
             }
         }
 
@@ -43,7 +45,7 @@ namespace Stuxnet_HN.Actions
             }
         }
 
-        public const float CREDITS_LENGTH_SECONDS = 4.0f;
+        public const float CREDITS_LENGTH_SECONDS = 8.5f;
         public const float BASE_Y_OFFSET = 10;
         private static float YOffset = BASE_Y_OFFSET;
         private static float LastBaseYOffset = YOffset;
@@ -51,14 +53,42 @@ namespace Stuxnet_HN.Actions
         private static float Lifetime = 0;
         internal static bool IsNewCredits = true;
 
+        private static float CreditsSpeed
+        {
+            get
+            {
+                float minValue = CREDITS_LENGTH_SECONDS * 2;
+                float maxValue = CREDITS_LENGTH_SECONDS;
+
+                float lifetime = Lifetime / 4;
+
+                if(lifetime <= 1.0f)
+                {
+                    float value = MathHelper.Lerp(minValue, maxValue, lifetime);
+                    return value;
+                } else
+                {
+                    return maxValue;
+                }
+            }
+        }
+
         private static int ExitButtonID = PFButton.GetNextID();
 
         public static void DrawFullscreenCredits()
         {
-            YOffset = LastBaseYOffset;
             Rectangle fullscreen = OS.currentInstance.fullscreen;
+            YOffset = fullscreen.Y + fullscreen.Height + LastBaseYOffset;
 
-            if(Lifetime >= _exitButtonDelay)
+            if(IsNewCredits)
+            {
+                YOffset = BASE_Y_OFFSET;
+                LastBaseYOffset = YOffset;
+                Lifetime = 0;
+                IsNewCredits = false;
+            }
+
+            if (Lifetime >= _exitButtonDelay)
             {
                 int width = fullscreen.Width / 6;
                 int height = fullscreen.Height / 15;
@@ -74,23 +104,30 @@ namespace Stuxnet_HN.Actions
                     return;
                 }
             }
-            Lifetime *= (float)OS.currentInstance.lastGameTime.ElapsedGameTime.TotalSeconds;
+            Lifetime += (float)OS.currentInstance.lastGameTime.ElapsedGameTime.TotalSeconds;
 
             for(int lineIdx = 0; lineIdx < CreditsData.Length; lineIdx++)
             {
                 var line = CreditsData[lineIdx];
 
-                switch (line[0])
+                if (string.IsNullOrWhiteSpace(line))
                 {
-                    case '%':
-                        drawBigFont(line);
-                        break;
-                    case '^':
-                        drawSmallFont(line);
-                        break;
-                    default:
-                        drawDefaultFont(line);
-                        break;
+                    var textVector = GuiData.font.MeasureString("ABCDEFghijk");
+                    YOffset += textVector.Y;
+                } else
+                {
+                    switch (line[0])
+                    {
+                        case '%':
+                            drawBigFont(line);
+                            break;
+                        case '^':
+                            drawSmallFont(line);
+                            break;
+                        default:
+                            drawDefaultFont(line);
+                            break;
+                    }
                 }
 
                 if(lineIdx == CreditsData.Length - 1 && YOffset <= -50)
@@ -99,7 +136,8 @@ namespace Stuxnet_HN.Actions
                 }
             }
 
-            LastBaseYOffset -= (float)OS.currentInstance.lastGameTime.ElapsedGameTime.TotalSeconds * CREDITS_LENGTH_SECONDS;
+            LastBaseYOffset -= (float)OS.currentInstance.lastGameTime.ElapsedGameTime.TotalSeconds
+                * (fullscreen.Height / CreditsSpeed);
 
             void drawBigFont(string text)
             {
@@ -123,8 +161,6 @@ namespace Stuxnet_HN.Actions
 
             void drawDefaultFont(string text)
             {
-                text = text.Substring(1);
-
                 var textVector = GuiData.smallfont.MeasureString(text);
                 Vector2 pos = new(OS.currentInstance.fullscreen.Center.X - (textVector.X / 2), YOffset);
                 GuiData.smallfont.DrawScaledText(text, pos, Color.White, 1);

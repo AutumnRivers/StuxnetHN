@@ -207,6 +207,7 @@ namespace Stuxnet_HN
             ActionManager.RegisterAction<DisableAlertsIcon>("DisableAlertsIcon");
             ActionManager.RegisterAction<EnableAlertsIcon>("EnableAlertsIcon");
             ActionManager.RegisterAction<WriteToTerminal>("WriteToTerminal");
+            FullscreenCredits.RegisterActions();
 
             // Quests Actions
             Quests.QuestActions.RegisterActions();
