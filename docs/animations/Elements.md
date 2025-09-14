@@ -46,5 +46,5 @@ Shows the shifting grid effect, like whats used in `MemoryForensics`.
 
 ## Cutscene Specific
 ### Delay End
-`<DelayEnd DelayFromStart="float" />`
+`<DelayEnd Delay="float" />`
 Delays the ending of the cutscene. Yep, that's it. Set this as your last element.
