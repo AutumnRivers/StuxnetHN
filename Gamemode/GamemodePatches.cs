@@ -16,6 +16,8 @@ namespace Stuxnet_HN.Gamemode
     {
         private static SavefileLoginScreen SavescreenInstance;
 
+        private static ExtensionInfo OldExtensionInfo;
+
         public const int CONFIRM_BUTTON_ID = 16392804;
 
         [HarmonyPrefix]
@@ -23,8 +25,6 @@ namespace Stuxnet_HN.Gamemode
         public static bool DrawGamemodeMenuIfNeeded(SavefileLoginScreen __instance)
         {
             if (GamemodeMenu.VisibleEntries.Count == 0) return true;
-
-            SavescreenInstance ??= __instance;
 
             if(GamemodeMenu.State != GamemodeMenu.GamemodeMenuState.Disabled)
             {
@@ -52,9 +52,12 @@ namespace Stuxnet_HN.Gamemode
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(ExtensionsMenuScreen), "Draw")]
-        public static bool DrawGamemodeMenuOverExtensions(Rectangle dest)
+        public static bool DrawGamemodeMenuOverExtensions(ExtensionsMenuScreen __instance, Rectangle dest)
         {
             if (GamemodeMenu.State == GamemodeMenu.GamemodeMenuState.Disabled) return true;
+
+            OldExtensionInfo ??= ExtensionLoader.ActiveExtensionInfo;
+            SavescreenInstance ??= __instance.SaveScreen;
 
             GamemodeMenu.DrawGamemodeMenu(dest);
             return false;
@@ -94,51 +97,60 @@ namespace Stuxnet_HN.Gamemode
             return false;
         }
 
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(MainMenu), "CreateNewAccountForExtensionAndStart")]
-        public static void ReplaceNewExtensionAccountIfNecessary()
+        internal static void ChangeExtensionInfo()
         {
             ExtensionInfo extensionInfo = ExtensionLoader.ActiveExtensionInfo;
             var currentEntry = GamemodeMenu.SelectedEntry;
             if (currentEntry == null) return;
 
-            if(!currentEntry.StartingSongPath.IsNullOrWhiteSpace())
+            if (!currentEntry.StartingSongPath.IsNullOrWhiteSpace())
             {
                 extensionInfo.IntroStartupSong = currentEntry.StartingSongPath;
             }
 
-            if(!currentEntry.StartingActionsPath.IsNullOrWhiteSpace())
+            if (!currentEntry.StartingActionsPath.IsNullOrWhiteSpace())
             {
-                extensionInfo.StartingActionsPath = currentEntry.StartingActionsPath;
+                extensionInfo.StartingActionsPath = currentEntry.StartingActionsPath.ToLower() != "none"
+                    ? currentEntry.StartingActionsPath : null;
             }
 
-            if(!currentEntry.StartingMissionPath.IsNullOrWhiteSpace())
+            if (!currentEntry.StartingMissionPath.IsNullOrWhiteSpace())
             {
-                extensionInfo.StartingMissionPath = currentEntry.StartingMissionPath;
+                extensionInfo.StartingMissionPath = currentEntry.StartingMissionPath.ToLower() != "none"
+                    ? currentEntry.StartingMissionPath : null;
             }
 
-            if(!currentEntry.StartingThemePath.IsNullOrWhiteSpace())
+            if (!currentEntry.StartingThemePath.IsNullOrWhiteSpace())
             {
                 extensionInfo.Theme = currentEntry.StartingThemePath;
             }
 
-            if(currentEntry.DisableSavesByDefault)
+            if (currentEntry.DisableSavesByDefault)
             {
                 extensionInfo.AllowSave = currentEntry.DisableSavesByDefault;
             }
 
             ExtensionLoader.ActiveExtensionInfo = extensionInfo;
+            ActuallyStartNewGame();
         }
 
         public static void StartNewGame()
         {
+            ChangeExtensionInfo();
             GamemodeMenu.CloseMenu();
+        }
 
+        private static void ActuallyStartNewGame()
+        {
             string username = SavescreenInstance.Answers[0];
             string password = SavescreenInstance.Answers[1];
 
             SavescreenInstance.InPasswordMode = false;
+            SavescreenInstance.PreventAdvancing = true;
+            TextBox.MaskingText = false;
+
             SavescreenInstance.StartNewGameForUsernameAndPass(username, password);
+
             SavescreenInstance = null;
         }
     }
