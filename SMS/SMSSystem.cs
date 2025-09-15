@@ -35,7 +35,7 @@ namespace Stuxnet_HN.SMS
                 AuthorColors.Add(parsedAuthor, Utils.convertStringToColor(author.Value));
             }
 
-            if(!AuthorColors.ContainsKey("#PLAYERNAME#"))
+            if(!StuxnetCore.Configuration.SMS.AuthorColors.ContainsKey("#PLAYERNAME#"))
             {
                 string player = ComputerLoader.filter("#PLAYERNAME#");
                 AuthorColors.Add(player, Color.Transparent); // Transparent = theme highlight color
@@ -121,7 +121,8 @@ namespace Stuxnet_HN.SMS
             if(!message.IsPlayer || !(message.ChannelName == SMSModule.GlobalInstance.ActiveChannel &&
                 SMSModule.GlobalInstance.State == SMSModule.SMSModuleState.ViewMessageHistory))
             {
-                if(!SMSModule.GlobalInstance.visible && message.Author != SMSSystemMessage.SYSTEM_AUTHOR)
+                if(!SMSModule.GlobalInstance.visible && message.Author != SMSSystemMessage.SYSTEM_AUTHOR &&
+                    message.Author != ComputerLoader.filter("#PLAYERNAME#"))
                 {
                     string notif = "SMS ALERT: ";
                     notif += string.Format(Localizer.GetLocalized("You received a message from {0}"),

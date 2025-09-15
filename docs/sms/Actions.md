@@ -1,13 +1,27 @@
 # SMS Actions
 ---
 
-## `<SendSMSMessage Author="string" ChannelName="string" OnReadActions="string" MessageID="string" MessageDelay="float">string</SendSMSMessage>`
+## `<SendSMSMessage Author="string" ChannelName="string" OnReadActions="string" MessageID="string" MessageDelay="float">`
+```xml
+<SendSMSMessage Author="JohnDoe" ChannelName="JohnDoe" OnReadActions="Path/To/Actions.xml" MessageDelay="3.0">
+    <Message>Lorem Ipsum</Message>
+    <UserNote DisplayName="Some Note">Some text</UserNote>
+    <NodeAttachment DisplayName="JMail" NodeID="jmail" />
+</SendSMSMessage>
+```
 * **Delayable.** Sends a message to the SMS system.
 * `Author` - The author of the message. Is filtered, so can be set to `#PLAYERNAME#`.
 * `ChannelName` - The name of the channel to send this message in. *Optional* if `Author != "#PLAYERNAME#"`.
 * `OnReadActions` - *Optional.* Actions to run when the player reads the message for the first time.
 * `MessageID` - *Optional.* The unique ID of the message for use in the message queue. Useless if not using `MessageDelay`.
 * `MessageDelay` - *Optional.* Sends the message to the queue, to have it be loaded later.
+
+### Attachment Types
+#### `<UserNote DisplayName="string">string</UserNote>`
+Adds a user note. When clicked, will add to notes.exe.
+
+#### `<NodeAttachment DisplayName="string" NodeID="string" />`
+Adds a link to a node. Works similarly to IRC.
 
 ---
 
@@ -59,7 +73,7 @@
 
 ---
 
-## `<SMSAddUser UserBeingAdded="string" UserAdded="string" ChannelName="string" />`
+## `<SMSAddUser UserBeingAdded="string" UserAdding="string" ChannelName="string" />`
 * **Delayable.** Sends a system message showing that a user has been added to a chat.
 * If `UserBeingAdded` is set to `#PLAYERNAME#`, it will show alternate dialogue: `{UserAdded} added you.`
 * This is purely aesthetic, and isn't required.

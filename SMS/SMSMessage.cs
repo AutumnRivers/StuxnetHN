@@ -167,6 +167,12 @@ namespace Stuxnet_HN.SMS
                 "blockedbyplayer" => "You have blocked this user.",
                 _ => "Message Failed To Send",
             };
+            for(int idx = 0; idx < args.Length; idx++)
+            {
+                var value = args[idx];
+                if (string.IsNullOrWhiteSpace(value)) continue;
+                args[idx] = ComputerLoader.filter(value);
+            }
             return string.Format(Localizer.GetLocalized(template), args);
         }
     }

@@ -273,9 +273,9 @@ namespace Stuxnet_HN
 
         public void InitializeStuxnet(OSLoadedEvent os_event)
         {
-            
             if (disableAlerts) { os_event.Os.DisableEmailIcon = true; }
 
+            SMSSystem.Initialize();
             NodeAttachment.BipSound = os_event.Os.content.Load<SoundEffect>("SFX/Bip");
 
             RamModule ramModule = os_event.Os.ram;

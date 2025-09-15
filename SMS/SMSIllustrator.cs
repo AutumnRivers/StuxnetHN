@@ -550,6 +550,10 @@ namespace Stuxnet_HN.SMS
             {
                 authorColor = SMSSystem.AuthorColors[message.Author];
             }
+            if(authorColor == Color.Transparent)
+            {
+                authorColor = os.defaultHighlightColor;
+            }
 
             GuiData.spriteBatch.DrawString(GuiData.font, message.Author,
                 new Vector2(xOffset + MESSAGE_PADDING,
