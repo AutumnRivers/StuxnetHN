@@ -131,25 +131,14 @@ namespace Stuxnet_HN.Executables
 
         public void UpdateSongList()
         {
-            songs.Clear();
-
-            string extensionFolder = ExtensionLoader.ActiveExtensionInfo.FolderPath;
-            string expectedRadioFilePath = extensionFolder + "/radio.json";
-
-            if (!File.Exists(expectedRadioFilePath)) { return; }
-
-            StreamReader radioFileStream = new StreamReader(expectedRadioFilePath);
-            string radioFile = radioFileStream.ReadToEnd();
-            radioFileStream.Close();
-
-            var radioJSON = JsonConvert.DeserializeObject<Dictionary<string, SongEntry>>(radioFile);
+            var songsList = StuxnetCore.Configuration.Audio.Songs;
 
             foreach (string unlockedSongID in StuxnetCore.unlockedRadio)
             {
-                if (!radioJSON.ContainsKey(unlockedSongID)
-                    || songs.Contains(radioJSON[unlockedSongID])) { continue; }
+                if (!songsList.ContainsKey(unlockedSongID) ||
+                    songs.Contains(songsList[unlockedSongID])) continue;
 
-                SongEntry song = radioJSON[unlockedSongID];
+                SongEntry song = songsList[unlockedSongID];
 
                 song.songId = unlockedSongID;
 

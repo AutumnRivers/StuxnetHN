@@ -8,6 +8,7 @@ Stuxnet 2.0 "WannaCry" Breaking Changes List
 * Codes, songs, any sort of configuration has been moved to a central stuxnet_config.json file.†
     * This file is placed at the root of the extension's directory.
     * There should be a template file included with 2.0's release.
+* Paths in Stuxnet no longer start with a forward slash (`/`). Update this in your configs.
 
 -- CUTSCENES
 The entire cutscene system has been completely rewritten, and as such, things are borked.

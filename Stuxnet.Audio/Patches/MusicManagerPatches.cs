@@ -121,11 +121,23 @@ namespace StuxnetHN.Audio.Patches
         }
 
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(MediaPlayer), "Play", new System.Type[] { typeof(Song) })]
+        [HarmonyPatch(typeof(MediaPlayer), "Play", new Type[] { typeof(Song) })]
         public static bool ReplaceMediaPlayerPlay()
         {
             if (!ReplaceManager) return true;
             if (IsBaseGameSong) return true;
+
+            if (StuxnetMusicManager.CurrentSongEntry == null)
+            {
+                StuxnetMusicManager.PlaySong(MusicManager.currentSongName);
+                return false;
+            }
+
+            if (MusicManager.currentSongName.EndsWith(CurrentSongEntry.path))
+            {
+                StuxnetMusicManager.LoopBegin = CurrentSongEntry.BeginLoop;
+                StuxnetMusicManager.LoopEnd = CurrentSongEntry.EndLoop;
+            }
 
             MediaPlayer.Stop();
             StuxnetMusicManager.PlaySong(MusicManager.currentSongName);

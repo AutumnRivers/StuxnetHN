@@ -95,6 +95,11 @@ namespace StuxnetHN.Audio.Replacements
             }
             Player.Volume = MediaPlayer.Volume;
             Player.Play();
+
+            if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
+            {
+                StuxnetAudioCore.Logger.LogDebug("Playing song with SMM: " + filePath);
+            }
         }
 
         public static void StopSong()
@@ -201,6 +206,10 @@ namespace StuxnetHN.Audio.Replacements
                 {
                     reader.TimePosition = LoopStart;
                     samplesRead = reader.ReadSamples(floatBuffer, 0, floatBuffer.Length);
+                    if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
+                    {
+                        StuxnetAudioCore.Logger.LogDebug("SMM hit loop point - restarting");
+                    }
                 }
             }
 

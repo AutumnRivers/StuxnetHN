@@ -331,6 +331,8 @@ namespace Stuxnet_HN
 
             LogDebug("Saving data...");
 
+            Persistence.PersistenceManager.SavePersistentData();
+
             XAttribute stuxCodes = new XAttribute("RedeemedCodes", string.Join(" ", redeemedCodes));
             XAttribute stuxRadio = new XAttribute("UnlockedRadioIDs", string.Join(",", unlockedRadio));
             XAttribute stuxSeqID = new XAttribute("SetSequencerID", currentSequencerID ?? "NONE");
