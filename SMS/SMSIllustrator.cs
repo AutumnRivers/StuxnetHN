@@ -287,11 +287,6 @@ namespace Stuxnet_HN.SMS
                 lastMessageContent = lastMessage.Author + ": " + lastMessageContent;
             }
 
-            if (!lastMessage.HasBeenRead)
-            {
-                channel += " (!)";
-            }
-
             if(activeChannels.First() == channel)
             {
                 Rectangle borderTop = new()
@@ -302,6 +297,11 @@ namespace Stuxnet_HN.SMS
                     Height = 1
                 };
                 spriteBatch.Draw(Utils.white, borderTop, os.lightGray);
+            }
+
+            if (!lastMessage.HasBeenRead)
+            {
+                channel += " (!)";
             }
 
             var userVector = GuiData.font.MeasureString(channel) * USER_TITLE_SCALE;
@@ -324,6 +324,8 @@ namespace Stuxnet_HN.SMS
                     State = SMSModuleState.ViewMessageHistory;
                 }
             }
+
+            lastMessageContent = ComputerLoader.filter(lastMessageContent);
 
             spriteBatch.DrawString(GuiData.font, channel,
                 new Vector2(MessageListBounds.X + 13, MessageListBounds.Y + 10 + startingOffset), Color.White,
@@ -491,7 +493,7 @@ namespace Stuxnet_HN.SMS
         {
             if(message is SMSSystemMessage systemMessage)
             {
-                DrawSystemMessage(systemMessage);
+                DrawSystemMessage(systemMessage, needsScroll);
                 return;
             }
 
@@ -580,15 +582,23 @@ namespace Stuxnet_HN.SMS
             lastMessageOffset += messageHeight;
         }
 
-        private void DrawSystemMessage(SMSSystemMessage systemMessage)
+        private void DrawSystemMessage(SMSSystemMessage systemMessage, bool needsScroll)
         {
             string content = string.Format("- {0} -", systemMessage.Content);
             Vector2 contentSize = GuiData.smallfont.MeasureString(content);
 
+            int xOffset = MessageHistoryBounds.X;
+            int baseYOffset = MessageHistoryBounds.Y;
+            if (needsScroll)
+            {
+                xOffset = 0;
+                baseYOffset = 0;
+            }
+
             Rectangle textDest = new()
             {
-                X = MessageHistoryBounds.X,
-                Y = MessageHistoryBounds.Y + lastMessageOffset,
+                X = xOffset,
+                Y = baseYOffset + lastMessageOffset,
                 Width = MessageHistoryBounds.Width,
                 Height = (int)contentSize.Y * 5
             };
@@ -648,6 +658,11 @@ namespace Stuxnet_HN.SMS
 
         private Vector2 MeasureMessage(SMSMessage message)
         {
+            if(message is SMSSystemMessage systemMessage)
+            {
+                return MeasureSystemMessage(systemMessage);
+            }
+
             Vector2 measurement = Vector2.Zero;
 
             measurement.X = Bounds.Width;
@@ -669,6 +684,18 @@ namespace Stuxnet_HN.SMS
             {
                 measurement.Y += (int)GuiData.smallfont.MeasureString(atch.DisplayName).Y + MESSAGE_PADDING;
             }
+
+            return measurement;
+        }
+
+        private Vector2 MeasureSystemMessage(SMSSystemMessage systemMessage)
+        {
+            Vector2 measurement = Vector2.Zero;
+
+            measurement.X = Bounds.Width;
+
+            string content = string.Format("- {0} -", systemMessage.Content);
+            measurement.Y = GuiData.smallfont.MeasureString(content).Y * 5;
 
             return measurement;
         }

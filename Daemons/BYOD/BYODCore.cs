@@ -58,7 +58,7 @@ namespace Stuxnet_HN.Daemons.BYOD
             Vector2 result = new();
             if(sizePercentage.Y < 0)
             {
-                result.X = result.Y = Bounds.Height * sizePercentage.X;
+                result.X = result.Y = Bounds.Width * sizePercentage.X;
             } else
             {
                 result.X = Bounds.Width * sizePercentage.X;
@@ -173,7 +173,8 @@ namespace Stuxnet_HN.Daemons.BYOD
 
         public override void Draw()
         {
-            GuiData.spriteBatch.DrawString(Font, Text, ParsedPosition, TextColor, 0f, Vector2.Zero, FontSizeMultiplier,
+            string text = Utils.SuperSmartTwimForWidth(Text, Bounds.Width - (int)Position.X, Font);
+            GuiData.spriteBatch.DrawString(Font, text, ParsedPosition, TextColor, 0f, Vector2.Zero, FontSizeMultiplier,
                 SpriteEffects.None, 1);
         }
     }
