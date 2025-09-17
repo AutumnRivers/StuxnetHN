@@ -62,6 +62,7 @@ namespace Stuxnet_HN.Daemons
         public override XElement GetSaveElement()
         {
             XElement saveElem = base.GetSaveElement();
+            saveElem.Add(new XAttribute("Name", name));
 
             foreach(var elem in Elements)
             {

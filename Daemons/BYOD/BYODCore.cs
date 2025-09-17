@@ -173,7 +173,17 @@ namespace Stuxnet_HN.Daemons.BYOD
 
         public override void Draw()
         {
-            string text = Utils.SuperSmartTwimForWidth(Text, Bounds.Width - (int)Position.X, Font);
+            int width = Bounds.Width;
+            int offset = 0;
+            if(Position.X < 1f)
+            {
+                offset += (int)(Position.X * Bounds.Width);
+            } else
+            {
+                offset += (int)Position.X;
+            }
+            width -= offset;
+            string text = Utils.SuperSmartTwimForWidth(Text, width, Font);
             GuiData.spriteBatch.DrawString(Font, text, ParsedPosition, TextColor, 0f, Vector2.Zero, FontSizeMultiplier,
                 SpriteEffects.None, 1);
         }

@@ -34,8 +34,7 @@ namespace Stuxnet_HN.SMS
                 if (AuthorColors.ContainsKey(parsedAuthor)) continue;
                 AuthorColors.Add(parsedAuthor, Utils.convertStringToColor(author.Value));
             }
-
-            if(!StuxnetCore.Configuration.SMS.AuthorColors.ContainsKey("#PLAYERNAME#"))
+            if(!AuthorColors.ContainsKey(ComputerLoader.filter("#PLAYERNAME")))
             {
                 string player = ComputerLoader.filter("#PLAYERNAME#");
                 AuthorColors.Add(player, Color.Transparent); // Transparent = theme highlight color

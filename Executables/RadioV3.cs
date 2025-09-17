@@ -126,7 +126,7 @@ namespace Stuxnet_HN.Executables
             MusicManager.transitionToSong(extFolder + "/" + songPath);
 
             canPlay = true;
-            SongChanged.Invoke(song);
+            SongChanged?.Invoke(song);
         }
 
         public void UpdateSongList()

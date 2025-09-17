@@ -44,6 +44,7 @@ namespace Stuxnet_HN.Patches
             {
                 // We assume it's a valid vanilla theme, and unload the current animated theme
                 AnimatedThemeIllustrator.CurrentTheme = null;
+                AnimatedThemeIllustrator.LastLoadedAnimatedTheme = null;
                 return;
             }
 
@@ -69,6 +70,7 @@ namespace Stuxnet_HN.Patches
                 } else
                 {
                     AnimatedThemeIllustrator.CurrentTheme = null;
+                    AnimatedThemeIllustrator.LastLoadedAnimatedTheme = null;
                 }
                 return;
             }
@@ -77,7 +79,7 @@ namespace Stuxnet_HN.Patches
             AnimatedThemeIllustrator.LastLoadedAnimatedTheme = null;
         }
 
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         [HarmonyPriority(Priority.First)]
         [HarmonyPatch(typeof(ThemeManager), "getThemeForDataString")]
         public static void InterceptGetThemeForDataStringPatch(string data, ref OSTheme __result)
@@ -105,7 +107,11 @@ namespace Stuxnet_HN.Patches
                     return;
                 }
 
-                if (!AnimatedTheme.IsProbablyValidAnimatedTheme(themePath)) return;
+                if (!AnimatedTheme.IsProbablyValidAnimatedTheme(themePath))
+                {
+                    AnimatedThemeIllustrator.LastLoadedAnimatedTheme = null;
+                    return;
+                }
 
                 try
                 {

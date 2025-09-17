@@ -7,6 +7,7 @@ To get started, place a file titled `stuxnet_config.json` in your extension's ro
 
 ```json
 {
+    "showDebugText": true,
     "audio": {
         "replaceMusicManager": true,
         "songs": {}
@@ -30,6 +31,9 @@ To get started, place a file titled `stuxnet_config.json` in your extension's ro
     "sequencers": {}
 }
 ```
+* `showDebugText` - When set to `true`, Stuxnet will be more verbose with its logging. (Default is `true`.)
+    * You should set this to `false` when releasing your extension.
+
 ## `Audio`
 For configuration related to `RadioV3` and `Stuxnet.Audio`.
 * `replaceMusicManager` - If `true`, replaces Hacknet's built-in `MusicManager` with Stuxnet's `StuxnetMusicManager`.

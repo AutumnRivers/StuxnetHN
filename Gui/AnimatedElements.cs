@@ -284,6 +284,8 @@ namespace Stuxnet_HN.Gui
         {
             OnInitiateAnything();
 
+            if (speed == RotationSpeed && forever) return;
+
             if (speed == 0f) speed = 1.0f;
 
             RotateIndefinitely = forever;
@@ -343,7 +345,6 @@ namespace Stuxnet_HN.Gui
 
         public void Reset()
         {
-            Visible = false;
             Position.Reset();
             Size.Reset();
             Rotation.Reset();
@@ -447,6 +448,15 @@ namespace Stuxnet_HN.Gui
                 default:
                     throw new FormatException("Invalid animated element in file!");
             }
+            if (xml.Attributes().Any(attr => attr.Name == "Visible"))
+            {
+                element.Visible = bool.Parse(xml.Attribute("Visible").Value);
+            }
+            if (xml.Attributes().Any(attr => attr.Name == "Opacity"))
+            {
+                element.Opacity.Origin = element.Opacity.Current = element.Opacity.Target =
+                    float.Parse(xml.Attribute("Opacity").Value);
+            }
             return element;
         }
 
@@ -455,31 +465,41 @@ namespace Stuxnet_HN.Gui
             Vector2 result = new(vector.X, vector.Y);
 
             Rectangle fullscreen = OS.currentInstance.fullscreen;
-            if ((result.Y < 1.0f && result.Y > 0) || (result.Y > -1.0f && result.Y < 0))
+            if ((result.Y <= 1.0f && result.Y > 0) || (result.Y >= -1.0f && result.Y < 0))
             {
                 result.Y *= fullscreen.Height;
             }
-            if(result.X == default)
+            if(result.X == NULL_VEC_VALUE)
             {
                 result.X = result.Y;
             }
-            if ((result.X < 1.0f && result.X > 0) || (result.X > -1.0f && result.X < 0))
+            if ((result.X <= 1.0f && result.X > 0) || (result.X >= -1.0f && result.X < 0))
             {
                 result.X *= fullscreen.Width;
+            }
+            if(result.Y == NULL_VEC_VALUE)
+            {
+                result.Y = result.X;
             }
 
             return result;
         }
 
+        public const float NULL_VEC_VALUE = -13.982547f;
+
         public static Vector2 GetVec2FromString(string vec2string)
         {
-            float x = default;
-            float y;
-            if(vec2string.Contains(","))
+            float x = NULL_VEC_VALUE;
+            float y = NULL_VEC_VALUE;
+            if(vec2string.Contains(','))
             {
                 var vec2split = vec2string.Split(',');
                 x = float.Parse(vec2split[0]);
                 y = float.Parse(vec2split[1]);
+            } else if(vec2string.EndsWith("w"))
+            {
+                vec2string = vec2string.Remove(vec2string.Length - 1);
+                x = float.Parse(vec2string);
             } else
             {
                 y = float.Parse(vec2string);

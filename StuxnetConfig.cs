@@ -15,9 +15,18 @@ namespace Stuxnet_HN.Configuration
     {
         public static StuxnetConfig GlobalConfig;
 
+        public static string ExpectedPath
+        {
+            get
+            {
+                return Utils.GetFileLoadPrefix() + STUXNET_CONFIG_FILENAME;
+            }
+        }
+
         public bool Loaded { get; private set; } = false;
 
         public bool ShowDebugText = true;
+        public bool EnableMessageBoardFix = true;
 
         public StuxnetAudioConfig Audio = new();
         public StuxnetQuestsConfig Quests = new();
@@ -30,16 +39,44 @@ namespace Stuxnet_HN.Configuration
 
         public static StuxnetConfig LoadFromJson()
         {
-            string extensionFolder = ExtensionLoader.ActiveExtensionInfo.FolderPath + "/";
-            if(!File.Exists(extensionFolder + STUXNET_CONFIG_FILENAME))
+            if(!File.Exists(ExpectedPath))
             {
-                throw new FileNotFoundException("Stuxnet configuration file not found in extension root!");
+                GenerateTemplate();
+                GlobalConfig = new()
+                {
+                    Loaded = true
+                };
+                return GlobalConfig;
             }
 
-            var rawConfig = File.ReadAllText(extensionFolder + STUXNET_CONFIG_FILENAME);
+            var rawConfig = File.ReadAllText(ExpectedPath);
             GlobalConfig = JsonConvert.DeserializeObject<StuxnetConfig>(rawConfig);
             GlobalConfig.Loaded = true;
             return GlobalConfig;
+        }
+
+        private static void GenerateTemplate(bool warn = false)
+        {
+            if (File.Exists(ExpectedPath)) return;
+            string filedata = JsonConvert.SerializeObject(new StuxnetConfig());
+            
+            try
+            {
+                File.WriteAllText(ExpectedPath, filedata);
+                if(warn)
+                {
+                    StuxnetCore.Logger.LogWarning(
+                        "WARNING: The Stuxnet configuration file didn't exist at " + ExpectedPath + ", " +
+                        "so a blank configuration file was generated for you. It is recommended to look this over!"
+                        );
+                }
+            } catch(Exception e)
+            {
+                StuxnetCore.Logger.LogError(
+                    string.Format("Caught exception while trying to make blank configuration file: {0}\n{1}",
+                    e.Message, (e.InnerException ?? e).StackTrace)
+                    );
+            }
         }
     }
 

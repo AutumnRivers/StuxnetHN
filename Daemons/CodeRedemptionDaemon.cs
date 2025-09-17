@@ -23,7 +23,7 @@ namespace Stuxnet_HN.Daemons
 {
     public class CodeRedemptionDaemon : BaseDaemon
     {
-        public event Action<string> CodeRedeemed;
+        public static event Action<string> CodeRedeemed;
 
         public CodeRedemptionDaemon(Computer computer, string serviceName, OS os) : base(computer, serviceName, os) { }
 
@@ -177,7 +177,7 @@ namespace Stuxnet_HN.Daemons
             CodeEntry validCode = codes[code];
 
             StuxnetCore.redeemedCodes.Add(code);
-            CodeRedeemed.Invoke(code);
+            CodeRedeemed?.Invoke(code);
 
             // Add files
             if(validCode.files != null)

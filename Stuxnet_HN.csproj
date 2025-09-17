@@ -133,6 +133,7 @@
     <Compile Include="Patches\ApplyCustomReplacements.cs" />
     <Compile Include="Patches\ExtSequencerPatch.cs" />
     <Compile Include="Patches\Illustrator.cs" />
+    <Compile Include="Patches\MessageboardFixes.cs" />
     <Compile Include="Patches\MissionDisplayLogo.cs" />
     <Compile Include="Patches\Wireshark\WiresharkContents.cs" />
     <Compile Include="Patches\Wireshark\WiresharkCompExecutors.cs" />

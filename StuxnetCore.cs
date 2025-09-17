@@ -48,6 +48,8 @@ namespace Stuxnet_HN
         public const string ModVer = "2.0.0";
         public const string VersionName = "WannaCry";
 
+        public const uint CopyrightYear = 2025;
+
         public const string XMOD_ID = "tenesiss.XMOD";
 
         private readonly bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
@@ -244,7 +246,8 @@ namespace Stuxnet_HN
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("              < << <<< STUXNET >>> >> >             ");
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("              AUTUMN RIVERS   (C)  2025             ");
+            string copyrightLine = string.Format("              AUTUMN RIVERS   (C)  {0}             ", CopyrightYear);
+            Console.WriteLine(copyrightLine);
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("     This one won't destroy your PC.  Probably.     ");
             Console.ForegroundColor = ConsoleColor.White;
@@ -271,6 +274,8 @@ namespace Stuxnet_HN
             GamemodeMenu.Initialize();
         }
 
+        public const string GitLink = "https://git.gay/AutumnRivers/StuxnetHN";
+
         public void InitializeStuxnet(OSLoadedEvent os_event)
         {
             if (disableAlerts) { os_event.Os.DisableEmailIcon = true; }
@@ -293,7 +298,13 @@ namespace Stuxnet_HN
 
             Quests.QuestManager.Initialize();
 
-            if(OS.DEBUG_COMMANDS)
+            string copyright = string.Format("StuxnetHN (C) {0} Autumn Rivers", CopyrightYear);
+            UpdateCustomReplacement("STUXNET_COPYRIGHT", copyright);
+            UpdateCustomReplacement("STUXNET_URL", GitLink);
+            UpdateCustomReplacement("STUXNET_VERSION", ModVer);
+            UpdateCustomReplacement("STUXNET_VERSION_NAME", VersionName);
+
+            if(OS.DEBUG_COMMANDS && Configuration.ShowDebugText)
             {
                 os_event.Os.terminal.writeLine($"[DEBUG] Stuxnet Initialized -- StuxnetHN v{ModVer} \"{VersionName}\" (GUID:{ModGUID})");
                 os_event.Os.terminal.writeLine("[DEBUG] ( You're seeing this because debug commands are enabled. )");
@@ -493,6 +504,8 @@ namespace Stuxnet_HN
         public static void UpdateCustomReplacement(string name, string value)
         {
             name = $"#{name.ToUpper()}#";
+
+            StuxnetCore.Logger.LogDebug("adding custom replacement: " + name + " value: " + value);
 
             if(customReplacements.ContainsKey(name))
             {

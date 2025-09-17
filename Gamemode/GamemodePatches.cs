@@ -86,6 +86,7 @@ namespace Stuxnet_HN.Gamemode
                 os.netMap.nodes.Remove(os.thisComputer);
                 os.thisComputer = c;
                 c.adminIP = c.ip;
+                c.idName = "playerComp";
                 os.netMap.nodes.Remove(c);
                 os.netMap.nodes.Insert(0, c);
                 if(!os.netMap.visibleNodes.Contains(0))
