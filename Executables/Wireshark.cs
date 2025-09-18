@@ -214,8 +214,8 @@ namespace Stuxnet_HN.Executables
         public override void Draw(float t)
         {
             base.Draw(t);
-            drawTarget();
             drawOutline();
+            drawTarget();
 
             if(currentState != WiresharkState.Capturing && currentState != WiresharkState.Error)
             {

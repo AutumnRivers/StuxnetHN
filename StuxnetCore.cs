@@ -5,7 +5,6 @@ using Hacknet;
 using Hacknet.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Graphics;
 using Pathfinder.Action;
 using Pathfinder.Command;
 using Pathfinder.Daemon;
@@ -163,6 +162,7 @@ namespace Stuxnet_HN
             LogDebug("Registering Commands...");
             CommandManager.RegisterCommand("messenger", SMSCommands.ActivateSMS);
             CommandManager.RegisterCommand("unread", SMSCommands.CheckUnread);
+            DebugCommands.RegisterCommands();
 
             #region register actions
             LogDebug("Registering Actions...");
@@ -356,6 +356,16 @@ namespace Stuxnet_HN
             stuxnetElem.Add(stuxSaveFlag);
             stuxnetElem.Add(stuxDisableAlerts);
 
+            if(AnimatedThemeIllustrator.CurrentTheme != null)
+            {
+                if(!string.IsNullOrWhiteSpace(AnimatedThemeIllustrator.CurrentTheme.FilePath))
+                {
+                    XAttribute stuxnetAnimatedThemePath = new("AnimatedThemePath",
+                        AnimatedThemeIllustrator.CurrentTheme.FilePath);
+                    stuxnetElem.Add(stuxnetAnimatedThemePath);
+                }
+            }
+
             save_event.Save.FirstNode.AddBeforeSelf(stuxnetElem);
 
             // Manual sequencer info
@@ -505,7 +515,7 @@ namespace Stuxnet_HN
         {
             name = $"#{name.ToUpper()}#";
 
-            StuxnetCore.Logger.LogDebug("adding custom replacement: " + name + " value: " + value);
+            Logger.LogDebug("adding custom replacement: " + name + " value: " + value);
 
             if(customReplacements.ContainsKey(name))
             {
@@ -514,6 +524,17 @@ namespace Stuxnet_HN
             {
                 customReplacements.Add(name, value);
             }
+        }
+
+        public static void CatchAndLogException(string message, Exception exception)
+        {
+            message = string.IsNullOrWhiteSpace(message) ? "Caught an exception" : message;
+            string format = "{0}: {1}\n{2}";
+
+            var exceptionMessage = exception.Message;
+            var exceptionTrace = (exception.InnerException ?? exception).StackTrace;
+
+            Logger.LogError(string.Format(format, message, exceptionMessage, exceptionTrace));
         }
     }
 
@@ -530,6 +551,20 @@ namespace Stuxnet_HN
             StuxnetCore.currentSequencerID = seqId;
             StuxnetCore.saveFlag = sFlag;
             StuxnetCore.disableAlerts = bool.Parse(info.Attributes["DisableAlerts"] ?? "false");
+
+            if(info.Attributes.ContainsKey("AnimatedThemePath"))
+            {
+                var themePath = info.Attributes["AnimatedThemePath"];
+                AnimatedTheme theme = new();
+                try
+                {
+                    theme.LoadFromXml(themePath);
+                    AnimatedThemeIllustrator.CurrentTheme = theme;
+                } catch(Exception e)
+                {
+                    StuxnetCore.CatchAndLogException("Exception caught when attempting to load saved current animated theme", e);
+                }
+            }
         }
 
         public override void Execute(EventExecutor exec, ElementInfo info)

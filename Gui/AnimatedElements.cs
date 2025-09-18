@@ -17,7 +17,7 @@ namespace Stuxnet_HN.Gui
         private float _progress = 0.0f;
         private readonly Action _onCompleted;
 
-        public T Initial { get; private set; }
+        public T Initial { get; set; }
 
         public T Origin { get; set; }
         public T Current { get; set; }
@@ -165,7 +165,7 @@ namespace Stuxnet_HN.Gui
                 Height = (int)size.Y
             };
             float rotation = MathHelper.ToRadians(Rotation.Current);
-            DrawDynamicRectangle(targetRect, Color, rotation, Image);
+            DrawDynamicRectangle(targetRect, Color * Opacity.Current, rotation, Image);
         }
 
         public virtual void Update(GameTime gameTime)
@@ -454,8 +454,8 @@ namespace Stuxnet_HN.Gui
             }
             if (xml.Attributes().Any(attr => attr.Name == "Opacity"))
             {
-                element.Opacity.Origin = element.Opacity.Current = element.Opacity.Target =
-                    float.Parse(xml.Attribute("Opacity").Value);
+                element.Opacity.Initial = element.Opacity.Origin = element.Opacity.Current =
+                    element.Opacity.Target = float.Parse(xml.Attribute("Opacity").Value);
             }
             return element;
         }

@@ -67,8 +67,8 @@ namespace Stuxnet_HN.Executables
         {
             base.Draw(t);
 
-            drawTarget();
             drawOutline();
+            drawTarget();
 
             backdrop.Render(bounds, spriteBatch, Color.MediumPurple * 0.6f, 5f, 30f);
 

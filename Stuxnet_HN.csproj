@@ -101,6 +101,7 @@
     <Compile Include="Actions\ToggleAlertsIcon.cs" />
     <Compile Include="Actions\VaultKeyActions.cs" />
     <Compile Include="Actions\WriteToTerminal.cs" />
+    <Compile Include="Commands\DebugCommands.cs" />
     <Compile Include="Commands\SMSCommands.cs" />
     <Compile Include="Conditions\OnCutsceneEnd.cs" />
     <Compile Include="Conditions\OnSequencerKill.cs" />

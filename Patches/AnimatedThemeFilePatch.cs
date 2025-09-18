@@ -1,6 +1,8 @@
 ﻿using Hacknet;
 using Hacknet.Extensions;
 using HarmonyLib;
+using Pathfinder.Event.Saving;
+using Pathfinder.Meta.Load;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,68 +25,86 @@ namespace Stuxnet_HN.Patches
             return new string[2] { baseThemeID, themePath };
         }
 
-        [HarmonyPrefix]
-        // We load these prefixes as first because they return the vanilla theme path,
-        // which means it's basically just back to vanilla when we're done.
-        // This way, we don't butt heads with any other plugins!
-        [HarmonyPriority(Priority.First)]
-        [HarmonyPatch(typeof(ThemeManager), "switchTheme", new Type[] { typeof(object), typeof(string) })]
-        /*
-         * This patch intercepts the theme chosen by the user, then passes back
-         * the vanilla theme to it. (Assuming it's a valid animated theme file.)
-         * 
-         * The way it's done makes it so the theme still kinda gets loaded the
-         * vanilla way, and hopefully shouldn't interfere with any other theme
-         * logic.
-         */
-        public static void InterceptSwitchThemePatch(ref string customThemePath)
-        {
-            string fullPath = GetPrefixedFilepath(customThemePath);
-            if (!AnimatedTheme.IsProbablyValidAnimatedTheme(fullPath))
-            {
-                // We assume it's a valid vanilla theme, and unload the current animated theme
-                AnimatedThemeIllustrator.CurrentTheme = null;
-                AnimatedThemeIllustrator.LastLoadedAnimatedTheme = null;
-                return;
-            }
+        private static string lastAppliedFilePath;
 
-            AnimatedTheme animatedTheme = new();
-            animatedTheme.LoadFromXml(fullPath);
-            AnimatedThemeIllustrator.CurrentTheme = animatedTheme;
-            StuxnetCore.Logger.LogDebug("Loading animated theme...");
-            customThemePath = animatedTheme.ThemePath;
+        private static string lastLoadedThemeFilePath;
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ThemeChangerExe), "ApplyTheme")]
+        public static void InterceptThemeChangerForAnimatedTheme(ref string fileData)
+        {
+            if (!fileData.Contains(ThemeManager.CustomThemeIDSeperator)) return;
+
+            var themeData = GetThemeDataFromFileData(fileData);
+            var themePath = themeData[1];
+
+            if(AnimatedTheme.IsProbablyValidAnimatedTheme(themePath))
+            {
+                AnimatedTheme theme = new();
+                theme.LoadFromXml(themePath);
+                AnimatedThemeIllustrator.CurrentTheme = theme;
+                lastAppliedFilePath = themePath;
+                fileData = ThemeManager.getThemeDataStringForCustomTheme(theme.ThemePath);
+                UpdateLastSavedCustomThemePath(theme.ThemePath);
+            } else
+            {
+                if(AnimatedThemeIllustrator.CurrentTheme != null)
+                {
+                    lastLoadedThemeFilePath = AnimatedThemeIllustrator.CurrentTheme.FilePath;
+                }
+
+                AnimatedThemeIllustrator.CurrentTheme = null;
+                lastAppliedFilePath = null;
+                UpdateLastSavedCustomThemePath(null);
+            }
         }
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(ThemeManager), "switchTheme", new Type[] { typeof(object), typeof(OSTheme) })]
-        public static void InterceptOtherSwitchThemePatch(OSTheme theme)
+        [HarmonyPatch(typeof(ThemeChangerExe), "ApplyTheme")]
+        public static void ReplaceBackedUpXServer()
         {
-            if (AnimatedThemeIllustrator.LastLoadedAnimatedTheme == null) return;
+            var player = OS.currentInstance.thisComputer;
+            var sys = player.files.root.searchForFolder("sys");
+            if (sys.files.Count <= 0) return;
+            if (string.IsNullOrWhiteSpace(lastLoadedThemeFilePath)) return;
+            if (!sys.files.Any(f => f.name.StartsWith("x-server") && f.name.Contains("BACKUP"))) return; // This should Never Happen
+            var lastBackedUpXServer = sys.files.Last(f => f.name.StartsWith("x-server") && f.name.Contains("BACKUP"));
 
-            if(theme != OSTheme.Custom)
-            {
-                if(OS.currentInstance.EffectsUpdater.themeSwapTimeRemaining > 0 &&
-                    AnimatedThemeIllustrator.CurrentTheme != null)
-                {
-                    AnimatedThemeIllustrator.Visible = false;
-                } else
-                {
-                    AnimatedThemeIllustrator.CurrentTheme = null;
-                    AnimatedThemeIllustrator.LastLoadedAnimatedTheme = null;
-                }
-                return;
-            }
+            var newThemeData = ThemeManager.getThemeDataStringForCustomTheme(lastLoadedThemeFilePath);
+            lastBackedUpXServer.data = newThemeData;
 
-            AnimatedThemeIllustrator.CurrentTheme = AnimatedThemeIllustrator.LastLoadedAnimatedTheme;
-            AnimatedThemeIllustrator.LastLoadedAnimatedTheme = null;
+            lastLoadedThemeFilePath = null;
         }
 
         [HarmonyPrefix]
-        [HarmonyPriority(Priority.First)]
+        [HarmonyPatch(typeof(SASwitchToTheme), "Trigger")]
+        public static void InterceptSwitchToThemeForAnimatedTheme(SASwitchToTheme __instance)
+        {
+            if (__instance.ThemePathOrName.Contains(".xml")) return;
+            string fullPath = GetPrefixedFilepath(__instance.ThemePathOrName);
+
+            if(AnimatedTheme.IsProbablyValidAnimatedTheme(fullPath))
+            {
+                AnimatedTheme theme = new();
+                theme.LoadFromXml(fullPath);
+                AnimatedThemeIllustrator.CurrentTheme = theme;
+                lastAppliedFilePath = fullPath;
+                __instance.ThemePathOrName = theme.ThemePath;
+                UpdateLastSavedCustomThemePath(theme.ThemePath);
+            } else
+            {
+                AnimatedThemeIllustrator.CurrentTheme = null;
+                lastAppliedFilePath = null;
+                UpdateLastSavedCustomThemePath(null);
+            }
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPriority(Priority.High)]
         [HarmonyPatch(typeof(ThemeManager), "getThemeForDataString")]
         public static void InterceptGetThemeForDataStringPatch(string data, ref OSTheme __result)
         {
-            if(__result == OSTheme.TerminalOnlyBlack)
+            if (__result == OSTheme.TerminalOnlyBlack)
             {
                 // An animated theme was probably passed.
                 if (!data.Contains(ThemeManager.CustomThemeIDSeperator)) return;
@@ -95,9 +115,10 @@ namespace Stuxnet_HN.Patches
                 {
                     string[] themeData = GetThemeDataFromFileData(data);
                     themePath = GetPrefixedFilepath(themeData[1]);
-                } catch(Exception e)
+                }
+                catch (Exception e)
                 {
-                    if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
+                    if (OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
                     {
                         StuxnetCore.Logger.LogWarning("Error when trying to load possible theme " +
                             "(it's likely not actually a theme, and you can probably ignore this message): " +
@@ -107,21 +128,18 @@ namespace Stuxnet_HN.Patches
                     return;
                 }
 
-                if (!AnimatedTheme.IsProbablyValidAnimatedTheme(themePath))
-                {
-                    AnimatedThemeIllustrator.LastLoadedAnimatedTheme = null;
-                    return;
-                }
+                if (!AnimatedTheme.IsProbablyValidAnimatedTheme(themePath)) return;
 
                 try
                 {
                     AnimatedTheme animatedTheme = new();
                     animatedTheme.LoadFromXml(themePath);
                     AnimatedThemeIllustrator.LastLoadedAnimatedTheme = animatedTheme;
-                    CustomTheme vanillaTheme = CustomTheme.Deserialize(Utils.GetFileLoadPrefix() + animatedTheme.ThemePath);
+                    CustomTheme vanillaTheme = CustomTheme.Deserialize(GetPrefixedFilepath(animatedTheme.ThemePath));
                     ThemeManager.LastLoadedCustomTheme = vanillaTheme;
                     __result = OSTheme.Custom;
-                } catch(Exception e)
+                }
+                catch (Exception e)
                 {
                     StuxnetCore.Logger.LogError("Error when trying to load custom vanilla theme " +
                         "(or when trying to load animated theme): " +
@@ -130,6 +148,62 @@ namespace Stuxnet_HN.Patches
                 }
             }
             return;
+        }
+
+        private static string lastSavedCustomThemePath;
+
+        private static void UpdateLastSavedCustomThemePath(string newPath)
+        {
+            lastSavedCustomThemePath = newPath;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(CrashModule), "completeReboot")]
+        public static void CheckIfThemeWasReplaced()
+        {
+            var sys = OS.currentInstance.thisComputer.files.root.searchForFolder("sys");
+            var xserver = sys.searchForFile("x-server.sys");
+            if(xserver == null)
+            {
+                AnimatedThemeIllustrator.CurrentTheme = null;
+                lastAppliedFilePath = null;
+                lastLoadedThemeFilePath = null;
+                UpdateLastSavedCustomThemePath(null);
+                return;
+            }
+
+            var xserverPath = GetThemeDataFromFileData(xserver.data)[1];
+            if(xserverPath != lastSavedCustomThemePath)
+            {
+                var fullPath = GetPrefixedFilepath(xserverPath);
+                if(AnimatedTheme.IsProbablyValidAnimatedTheme(fullPath))
+                {
+                    AnimatedTheme theme = new();
+                    theme.LoadFromXml(xserverPath);
+                    AnimatedThemeIllustrator.CurrentTheme = theme;
+                    lastLoadedThemeFilePath = theme.ThemePath;
+                } else
+                {
+                    AnimatedThemeIllustrator.CurrentTheme = null;
+                }
+
+                lastAppliedFilePath = null;
+                UpdateLastSavedCustomThemePath(null);
+            }
+        }
+
+        [Event()]
+        public static void ReplaceSavedXServer(SaveComputerEvent saveComputerEvent)
+        {
+            var comp = saveComputerEvent.Comp;
+            if (comp.idName != "playerComp") return;
+            if (AnimatedThemeIllustrator.CurrentTheme == null) return;
+
+            var sys = comp.files.root.searchForFolder("sys");
+            var xserver = sys.searchForFile("x-server.sys");
+            var newPath = AnimatedThemeIllustrator.CurrentTheme.FilePath;
+
+            xserver.data = ThemeManager.getThemeDataStringForCustomTheme(newPath);
         }
 
         private static string GetPrefixedFilepath(string filepath)
