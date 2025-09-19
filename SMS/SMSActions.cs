@@ -172,6 +172,9 @@ namespace Stuxnet_HN.SMS
         [XMLStorage]
         public string ChannelName;
 
+        [XMLStorage]
+        public float Timer = 0.0f;
+
         public List<ElementInfo> ChildElements;
 
         public override void Trigger(OS os)
@@ -208,6 +211,12 @@ namespace Stuxnet_HN.SMS
                 if (choices.Count >= 3) break;
                 choices.Add(new SMSChoice(content, actions, ChannelName));
             }
+
+            if(Timer > 0.0f)
+            {
+                SMSSystem.ChoiceTimer = Timer;
+            }
+
             SMSSystem.ActiveChoices = choices;
         }
 

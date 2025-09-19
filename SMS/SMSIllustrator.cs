@@ -502,14 +502,36 @@ namespace Stuxnet_HN.SMS
             PFButton.GetNextID()
         };
 
+        private float ChoiceTimerLifetime = 0.0f;
+
         private void DrawChoicesIfAny()
         {
             if (SMSSystem.ActiveChoices.Count <= 0) return;
 
+            if (SMSSystem.ChoiceTimer > 0.0f && ChoiceTimerLifetime < 1.0f)
+            {
+                int width = (int)(MessageHistoryBounds.Width * MathHelper.Lerp(1f, 0f, ChoiceTimerLifetime));
+                width = (int)MathHelper.Clamp(width, 0, MessageHistoryBounds.Width);
+                RenderedRectangle.doRectangle(
+                    MessageHistoryBounds.X,
+                    MessageHistoryBounds.Y + MessageHistoryBounds.Height,
+                    width,
+                    BOTTOM_PANEL_HEIGHT,
+                    Color.White * 0.3f
+                    );
+                var gt = OS.currentInstance.lastGameTime;
+                var time = (float)gt.ElapsedGameTime.TotalSeconds / SMSSystem.ChoiceTimer;
+                ChoiceTimerLifetime += time;
+            } else if(ChoiceTimerLifetime >= 1.0f)
+            {
+                SMSSystem.ChoiceTimer = 0.0f;
+                ChoiceTimerLifetime = 0.0f;
+            }
+
             string choiceChannel = SMSSystem.ActiveChoices[0].ChannelName;
             if (ActiveChannel != choiceChannel) return;
 
-            for(int choiceIndex = 0; choiceIndex < SMSSystem.ActiveChoices.Count; choiceIndex++)
+            for (int choiceIndex = 0; choiceIndex < SMSSystem.ActiveChoices.Count; choiceIndex++)
             {
                 DrawChoiceButton(choiceIndex);
             }
@@ -534,6 +556,8 @@ namespace Stuxnet_HN.SMS
             if(chosen)
             {
                 choice.Chosen();
+                SMSSystem.ChoiceTimer = 0.0f;
+                ChoiceTimerLifetime = 0.0f;
                 SMSSystem.ActiveChoices.Clear();
             }
         }

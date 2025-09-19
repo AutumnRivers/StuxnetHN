@@ -21,6 +21,7 @@ namespace Stuxnet_HN.SMS
         public static List<SMSMessage> ActiveMessages = new();
         public static List<QueuedSMSMessage> QueuedMessages = new();
         public static List<SMSChoice> ActiveChoices = new();
+        public static float ChoiceTimer = 0.0f;
         public static Dictionary<string, Color> AuthorColors = new()
         {
 
