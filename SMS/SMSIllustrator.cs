@@ -8,6 +8,7 @@ using Hacknet.Gui;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Pathfinder.GUI;
+using Stuxnet_HN.Extensions;
 
 namespace Stuxnet_HN.SMS
 {
@@ -23,6 +24,17 @@ namespace Stuxnet_HN.SMS
         public static void DrawSMS()
         {
             OS os = OS.currentInstance;
+
+            if(Active)
+            {
+                // Hide other modules while SMS module is active
+                var nonRamModules = os.modules.Where(m => m is not RamModule);
+                foreach (var module in nonRamModules)
+                {
+                    if (!Active) break;
+                    if (module.visible) module.visible = false;
+                }
+            }
 
             if (Active && ModuleCache[0] == null)
             {
@@ -229,6 +241,9 @@ namespace Stuxnet_HN.SMS
             }
         }
 
+        private readonly int PreviewScrollID = PFButton.GetNextID();
+        private float PreviewScrollValue = 0.0f;
+
         private void DrawDisplay()
         {
             var channels = SMSSystem.ActiveChannels;
@@ -240,10 +255,25 @@ namespace Stuxnet_HN.SMS
                     {
                         TextItem.doCenteredFontLabel(MessageListBounds,
                             "No Messages :(", GuiData.font, Color.White);
+                        return;
+                    }
+                    var finalPreviewHeight = ActiveUsers.Count * MeasureChannelEntry();
+                    bool needsScroll = finalPreviewHeight > MessageListBounds.Height;
+                    if(needsScroll)
+                    {
+                        var drawbounds = MessageListBounds;
+                        drawbounds.Height = finalPreviewHeight;
+                        ScrollablePanel.beginPanel(PreviewScrollID, drawbounds, new(0, PreviewScrollValue));
                     }
                     for(int i = 0; i < channels.Count; i++)
                     {
-                        DrawChannelEntry(channels[i]);
+                        DrawChannelEntry(channels[i], needsScroll);
+                    }
+                    if(needsScroll)
+                    {
+                        var finalScroll = ScrollablePanel.endPanel(PreviewScrollID, new(0, PreviewScrollValue),
+                            MessageListBounds, finalPreviewHeight);
+                        PreviewScrollValue = finalScroll.Y;
                     }
                     break;
                 case SMSModuleState.ViewMessageHistory:
@@ -272,7 +302,17 @@ namespace Stuxnet_HN.SMS
 
         private const float USER_TITLE_SCALE = 0.7f;
 
-        private void DrawChannelEntry(string channel)
+        private int MeasureChannelEntry()
+        {
+            string channelName = "Test Channel abcdefg";
+            string lastMessage = "abcdefgHIJKLMNOP";
+
+            var userHeight = GuiData.font.GetTextHeight(channelName) * USER_TITLE_SCALE;
+            var messageHeight = GuiData.smallfont.GetTextHeight(lastMessage);
+            return (int)userHeight + messageHeight + 15;
+        }
+
+        private void DrawChannelEntry(string channel, bool needsScroll = false)
         {
             int startingOffset = lastMessageOffset;
 
@@ -287,12 +327,21 @@ namespace Stuxnet_HN.SMS
                 lastMessageContent = lastMessage.Author + ": " + lastMessageContent;
             }
 
+            int xOffset = MessageListBounds.X;
+            int yOffset = MessageListBounds.Y;
+
+            if(needsScroll)
+            {
+                xOffset = 0;
+                yOffset = 0;
+            }
+
             if(activeChannels.First() == channel)
             {
                 Rectangle borderTop = new()
                 {
-                    X = MessageListBounds.X,
-                    Y = MessageListBounds.Y + lastMessageOffset + 5,
+                    X = xOffset,
+                    Y = yOffset + lastMessageOffset + 5,
                     Width = MessageListBounds.Width,
                     Height = 1
                 };
@@ -310,8 +359,8 @@ namespace Stuxnet_HN.SMS
 
             Rectangle activeBox = new()
             {
-                X = MessageListBounds.X,
-                Y = MessageListBounds.Y + startingOffset,
+                X = xOffset,
+                Y = yOffset + startingOffset,
                 Width = MessageListBounds.Width,
                 Height = lastMessageOffset - startingOffset
             };
@@ -336,8 +385,8 @@ namespace Stuxnet_HN.SMS
 
             Rectangle borderBottom = new()
             {
-                X = MessageListBounds.X,
-                Y = MessageListBounds.Y + lastMessageOffset,
+                X = xOffset,
+                Y = yOffset + lastMessageOffset,
                 Width = MessageListBounds.Width,
                 Height = 1
             };

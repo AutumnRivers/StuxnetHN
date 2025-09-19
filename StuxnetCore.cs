@@ -44,7 +44,7 @@ namespace Stuxnet_HN
     {
         public const string ModGUID = "autumnrivers.stuxnet";
         public const string ModName = "Stuxnet";
-        public const string ModVer = "2.0.0";
+        public const string ModVer = "2.0.1";
         public const string VersionName = "WannaCry";
 
         public const uint CopyrightYear = 2025;
