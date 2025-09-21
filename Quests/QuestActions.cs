@@ -17,6 +17,7 @@ namespace Stuxnet_HN.Quests
             ActionManager.RegisterAction<SAReplaceMainMission>("ReplaceMainMission");
             ActionManager.RegisterAction<SALoadSideQuest>("LoadSideQuest");
             ActionManager.RegisterAction<SAUnloadSideQuest>("UnloadSideQuest");
+            ActionManager.RegisterAction<SAToggleQuestsButton>("ToggleQuestsButton");
         }
     }
 
@@ -65,6 +66,17 @@ namespace Stuxnet_HN.Quests
         }
     }
 
+    public class SAToggleQuestsButton : DelayablePathfinderAction
+    {
+        [XMLStorage]
+        public bool Enable = false;
+
+        public override void Trigger(OS os)
+        {
+            StuxnetCore.Configuration.Quests.DisableQuestsSystem = !Enable;
+        }
+    }
+
     [HarmonyPatch]
     public class QuestActionPatches
     {
@@ -72,6 +84,7 @@ namespace Stuxnet_HN.Quests
         [HarmonyPatch(typeof(SALoadMission), "Trigger")]
         public static bool LoadMissionAsSidequest(SALoadMission __instance)
         {
+            if (!QuestPanelIllustrator.Enabled) return true;
             if (OS.currentInstance.currentMission == null ||
                 !StuxnetCore.Configuration.Quests.ReplaceLoadMissionAction) return true;
 

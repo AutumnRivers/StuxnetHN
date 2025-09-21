@@ -324,7 +324,8 @@ namespace Stuxnet_HN.SMS
             lastMessageContent = lastMessageContent.Truncate(27, splitNewlines: true);
             if(lastMessage.Author != SMSSystemMessage.SYSTEM_AUTHOR)
             {
-                lastMessageContent = lastMessage.Author + ": " + lastMessageContent;
+                string filteredAuthor = ComputerLoader.filter(lastMessage.Author);
+                lastMessageContent = filteredAuthor + ": " + lastMessageContent;
             }
 
             int xOffset = MessageListBounds.X;
@@ -630,7 +631,7 @@ namespace Stuxnet_HN.SMS
                 authorColor = os.defaultHighlightColor;
             }
 
-            GuiData.spriteBatch.DrawString(GuiData.font, message.Author,
+            GuiData.spriteBatch.DrawString(GuiData.font, ComputerLoader.filter(message.Author),
                 new Vector2(xOffset + MESSAGE_PADDING,
                 baseYOffset + lastMessageOffset + (MESSAGE_PADDING * 2)),
                 authorColor, 0f, Vector2.Zero, 0.65f,

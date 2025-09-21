@@ -28,6 +28,8 @@ namespace Stuxnet_HN.Configuration
         public bool ShowDebugText = true;
         public bool EnableMessageBoardFix = true;
 
+        public Dictionary<string, string> CustomCompIcons = new();
+
         public StuxnetAudioConfig Audio = new();
         public StuxnetQuestsConfig Quests = new();
         public StuxnetSMSConfig SMS = new();
@@ -94,6 +96,7 @@ namespace Stuxnet_HN.Configuration
 
     public class StuxnetQuestsConfig
     {
+        public bool DisableQuestsSystem = false;
         public bool ReplaceLoadMissionAction = false;
         public bool IgnoreXMODMissions = false;
     }

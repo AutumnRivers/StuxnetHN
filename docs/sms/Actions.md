@@ -75,10 +75,10 @@ Adds a link to a node. Works similarly to IRC.
 
 ## `<SMSAddUser UserBeingAdded="string" UserAdding="string" ChannelName="string" />`
 * **Delayable.** Sends a system message showing that a user has been added to a chat.
-* If `UserBeingAdded` is set to `#PLAYERNAME#`, it will show alternate dialogue: `{UserAdded} added you.`
+* If `UserBeingAdded` is set to `#PLAYERNAME#`, and `UserAdding` is the same value as `ChannelName`, it will show alternate dialogue: `{UserAdding} added you.`
 * This is purely aesthetic, and isn't required.
 * `UserBeingAdded` - The name of the `Author` being added to the chat.
-* `BlockingUser` - The name of the `Author` that's doing the blocking.
+* `UserAdding` - The name of the `Author` that's adding the `UserBeingAdded`.
 * `ChannelName` - *Optional.* The channel where the message should be shown.
 
 ---

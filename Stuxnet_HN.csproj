@@ -88,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actions\CustomReplacements.cs" />
+    <Compile Include="Actions\DebugActions.cs" />
     <Compile Include="Actions\Dialogue\ChapterTitle.cs" />
     <Compile Include="Actions\Dialogue\VisualNovelTextActions.cs" />
     <Compile Include="Actions\ForceConnect.cs" />
@@ -132,6 +133,7 @@
     <Compile Include="Patches\AnimatedThemeFilePatch.cs" />
     <Compile Include="Patches\AnimatedThemeIllustrator.cs" />
     <Compile Include="Patches\ApplyCustomReplacements.cs" />
+    <Compile Include="Patches\ComputerIconsPatch.cs" />
     <Compile Include="Patches\ExtSequencerPatch.cs" />
     <Compile Include="Patches\Illustrator.cs" />
     <Compile Include="Patches\MessageboardFixes.cs" />
@@ -169,5 +171,6 @@
   <Target Name="AfterBuild">
     <Delete Files="Stuxnet.Audio/lib/$(TargetName).dll" />
     <Copy SourceFiles="$(TargetDir)$(TargetName).dll" DestinationFolder="Stuxnet.Audio/lib" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).dll" DestinationFolder="ReleaseFiles/" />
   </Target>
 </Project>

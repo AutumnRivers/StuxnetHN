@@ -20,7 +20,7 @@ namespace Stuxnet_HN.Executables
 
         public RaindropsEffect backdrop;
 
-        SongEntry currentSong;
+        public static SongEntry currentSong;
 
         List<SongEntry> songs = new();
 

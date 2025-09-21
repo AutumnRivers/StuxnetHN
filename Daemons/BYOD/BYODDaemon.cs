@@ -80,7 +80,7 @@ namespace Stuxnet_HN.Daemons
                 } else if(elem is BYODImage image)
                 {
                     childElem = new("Image");
-                    childElem.Add(new XAttribute("Filepath", image.Filepath));
+                    childElem.Add(new XAttribute("Path", image.Filepath));
                 } else if(elem is BYODLabel label)
                 {
                     childElem = new("Label");

@@ -403,3 +403,4 @@ FodyWeavers.xsd
 # bleh
 /lib
 /Stuxnet.Audio/lib/*
+/ReleaseFiles

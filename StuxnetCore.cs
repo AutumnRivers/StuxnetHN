@@ -44,8 +44,8 @@ namespace Stuxnet_HN
     {
         public const string ModGUID = "autumnrivers.stuxnet";
         public const string ModName = "Stuxnet";
-        public const string ModVer = "2.0.1";
-        public const string VersionName = "WannaCry";
+        public const string ModVer = "2.1.0";
+        public const string VersionName = "NotPetya";
 
         public const uint CopyrightYear = 2025;
 
@@ -216,6 +216,7 @@ namespace Stuxnet_HN
 
             // Persistence Actions
             Persistence.PersistenceActions.RegisterActions();
+            DebugActions.RegisterActions();
             #endregion register actions
 
 
@@ -349,12 +350,14 @@ namespace Stuxnet_HN
             XAttribute stuxSeqID = new XAttribute("SetSequencerID", currentSequencerID ?? "NONE");
             XAttribute stuxSaveFlag = new XAttribute("SaveFlag", saveFlag ?? "NONE");
             XAttribute stuxDisableAlerts = new XAttribute("DisableAlerts", disableAlerts);
+            XAttribute stuxVer = new("SaveVersion", ModVer);
 
             stuxnetElem.Add(stuxCodes);
             stuxnetElem.Add(stuxRadio);
             stuxnetElem.Add(stuxSeqID);
             stuxnetElem.Add(stuxSaveFlag);
             stuxnetElem.Add(stuxDisableAlerts);
+            stuxnetElem.Add(stuxVer);
 
             if(AnimatedThemeIllustrator.CurrentTheme != null)
             {
@@ -365,6 +368,9 @@ namespace Stuxnet_HN
                     stuxnetElem.Add(stuxnetAnimatedThemePath);
                 }
             }
+
+            XAttribute smsActive = new("SMSModuleActive", !SMSSystem.Disabled);
+            stuxnetElem.Add(smsActive);
 
             save_event.Save.FirstNode.AddBeforeSelf(stuxnetElem);
 
@@ -543,6 +549,17 @@ namespace Stuxnet_HN
     {
         public void LoadSaveData(ElementInfo info)
         {
+            string saveVersion = info.Attributes["SaveVersion"];
+
+            if(!CheckIfSaveIsUpToDate(saveVersion))
+            {
+                StuxnetCore.Logger.LogWarning(
+                    string.Format("Your save is out of date! Your save was made on {0} version {1}, " +
+                    "but the current version of the plugin is {2}. Your save might fail to load.",
+                    StuxnetCore.ModName, saveVersion, StuxnetCore.ModVer)
+                    );
+            }
+
             string seqId = info.Attributes["SetSequencerID"] == "NONE" ? null : info.Attributes["SetSequencerID"];
             string sFlag = info.Attributes["SaveFlag"] == "NONE" ? null : info.Attributes["SaveFlag"];
 
@@ -551,6 +568,8 @@ namespace Stuxnet_HN
             StuxnetCore.currentSequencerID = seqId;
             StuxnetCore.saveFlag = sFlag;
             StuxnetCore.disableAlerts = bool.Parse(info.Attributes["DisableAlerts"] ?? "false");
+
+            SMSSystem.Disabled = !bool.Parse(info.Attributes["SMSModuleActive"]);
 
             if(info.Attributes.ContainsKey("AnimatedThemePath"))
             {
@@ -565,6 +584,27 @@ namespace Stuxnet_HN
                     StuxnetCore.CatchAndLogException("Exception caught when attempting to load saved current animated theme", e);
                 }
             }
+        }
+
+        private static bool CheckIfSaveIsUpToDate(string saveVersion)
+        {
+            var modVersion = StuxnetCore.ModVer;
+
+            int[] savePips = new int[3];
+            int[] modPips = new int[3];
+
+            var saveSplit = saveVersion.Split('.');
+            var modSplit = modVersion.Split('.');
+
+            for(int idx = 0; idx < savePips.Length; idx++)
+            {
+                savePips[idx] = int.Parse(saveSplit[idx]);
+                modPips[idx] = int.Parse(modSplit[idx]);
+
+                if (savePips[idx] < modPips[idx]) return false;
+            }
+
+            return true;
         }
 
         public override void Execute(EventExecutor exec, ElementInfo info)

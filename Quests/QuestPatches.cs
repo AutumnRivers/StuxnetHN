@@ -8,6 +8,8 @@ namespace Stuxnet_HN.Quests
         [Event()]
         public static void CheckQuestsOnUpdate(OSUpdateEvent updateEvent)
         {
+            if (!QuestPanelIllustrator.Enabled) return;
+
             if(StuxnetCore.XMODLoaded
                 && !StuxnetCore.Configuration.Quests.IgnoreXMODMissions)
             {

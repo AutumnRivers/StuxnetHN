@@ -35,10 +35,9 @@ namespace Stuxnet_HN.SMS
                 if (AuthorColors.ContainsKey(parsedAuthor)) continue;
                 AuthorColors.Add(parsedAuthor, Utils.convertStringToColor(author.Value));
             }
-            if(!AuthorColors.ContainsKey(ComputerLoader.filter("#PLAYERNAME")))
+            if(!AuthorColors.ContainsKey("#PLAYERNAME#"))
             {
-                string player = ComputerLoader.filter("#PLAYERNAME#");
-                AuthorColors.Add(player, Color.Transparent); // Transparent = theme highlight color
+                AuthorColors.Add("#PLAYERNAME#", Color.Transparent); // Transparent = theme highlight color
             }
         }
 
@@ -118,27 +117,28 @@ namespace Stuxnet_HN.SMS
         {
             OS os = OS.currentInstance;
 
+            if (message == null)
+            {
+                throw new ArgumentNullException("Failed to send SMS message: message cannot be null!");
+            }
+            if (string.IsNullOrWhiteSpace(message.Author)) message.Author = "UNKNOWN";
+
             if(!message.IsPlayer || !(message.ChannelName == SMSModule.GlobalInstance.ActiveChannel &&
                 SMSModule.GlobalInstance.State == SMSModule.SMSModuleState.ViewMessageHistory))
             {
-                if(!SMSModule.GlobalInstance.visible && message.Author != SMSSystemMessage.SYSTEM_AUTHOR &&
-                    message.Author != ComputerLoader.filter("#PLAYERNAME#"))
+                if(!SMSModule.GlobalInstance.visible && message.Author != SMSSystemMessage.SYSTEM_AUTHOR && message.Author != "#PLAYERNAME#")
                 {
                     string notif = "SMS ALERT: ";
                     notif += string.Format(Localizer.GetLocalized("You received a message from {0}"),
                         message.Author);
                     os.write("--- !");
                     os.write(notif);
-                }
-
-                if(SMSModule.GlobalInstance.ActiveChannel != message.ChannelName)
-                {
                     os.beepSound.Play();
                 }
             }
 
             ActiveMessages.Add(message);
-            NewMessageReceived.Invoke(message.ChannelName);
+            NewMessageReceived?.Invoke(message.ChannelName);
         }
 
         public static List<SMSMessage> GetActiveMessagesByAuthor(string author)

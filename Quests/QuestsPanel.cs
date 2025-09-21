@@ -19,11 +19,15 @@ namespace Stuxnet_HN.Quests
 
         public static readonly string QuestText = Localizer.GetLocalized("Quests");
 
+        public static bool Enabled => !StuxnetCore.Configuration.Quests.DisableQuestsSystem;
+
         [HarmonyPrefix]
         [HarmonyPriority(Priority.Last)]
         [HarmonyPatch(typeof(OS), "drawScanlines")]
         public static void DrawQuestPanelButton()
         {
+            if (!Enabled) return;
+
             if(Opened || TweenAmount > 0.0f)
             {
                 DrawQuestPanel();
@@ -71,6 +75,8 @@ namespace Stuxnet_HN.Quests
 
         public static void DrawQuestPanel()
         {
+            if (!Enabled) return;
+
             var os = OS.currentInstance;
             int width = (int)(os.topBar.Width * 0.75f);
             int height = (int)MathHelper.Max(os.display.bounds.Height, os.terminal.bounds.Height) - 50;

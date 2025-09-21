@@ -8,6 +8,8 @@ To get started, place a file titled `stuxnet_config.json` in your extension's ro
 ```json
 {
     "showDebugText": true,
+    "enableMessageBoardFix": true,
+    "customCompIcons": {},
     "audio": {
         "replaceMusicManager": true,
         "songs": {}
@@ -33,6 +35,14 @@ To get started, place a file titled `stuxnet_config.json` in your extension's ro
 ```
 * `showDebugText` - When set to `true`, Stuxnet will be more verbose with its logging. (Default is `true`.)
     * You should set this to `false` when releasing your extension.
+* `enableMessageBoardFix` - When set to `true`, enables a fix where every message board thread automatically has a unique ID, regardless of how it's formatted.
+    * There's no real reason to disable this, but it does mess with vanilla behavior, so I made it toggleable.
+* `customCompIcons` - You can define custom icons to use in `<Computer>`s here.
+    * Images should not be bigger than 256x256 pixels.
+    * Images should not be bigger than 1MB.
+    * Images bigger than 10MB will be skipped entirely.
+    * `{ "string iconName": "string pathToImage" }`
+    * e.g., `{ "lunarOS": "Images/CompLogos/LunarOSLogo.png" }` will then be used as `icon="lunarOS"`
 
 ## `Audio`
 For configuration related to `RadioV3` and `Stuxnet.Audio`.

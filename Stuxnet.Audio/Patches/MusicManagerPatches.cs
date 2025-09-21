@@ -9,6 +9,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Pathfinder.Event.Gameplay;
 using Stuxnet_HN;
+using Stuxnet_HN.Executables;
 using StuxnetHN.Audio.Replacements;
 using System;
 using System.Collections.Generic;
@@ -126,6 +127,11 @@ namespace StuxnetHN.Audio.Patches
         {
             if (!ReplaceManager) return true;
             if (IsBaseGameSong) return true;
+
+            if(!MusicManager.currentSongName.EndsWith(CurrentSongEntry.path))
+            {
+                StuxnetMusicManager.CurrentSongEntry = null;
+            }
 
             if (StuxnetMusicManager.CurrentSongEntry == null)
             {

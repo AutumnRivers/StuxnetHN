@@ -141,5 +141,6 @@
     <Exec Command="ilrepack /parallel /internalize /lib:&quot;$(TargetDir)MergeLib&quot; /out:&quot;$(TargetDir)$(TargetName).Merged.dll&quot; @(MergeAssemblies->'&quot;%(FullPath)&quot;', ' ')" />
     <Move ContinueOnError="false" SourceFiles="$(TargetDir)$(TargetName).dll" DestinationFiles="$(TargetDir)$(TargetName).Standalone.dll" />
     <Move ContinueOnError="false" SourceFiles="$(TargetDir)$(TargetName).Merged.dll" DestinationFiles="$(TargetDir)$(TargetName).dll" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).dll" DestinationFolder="../ReleaseFiles" />
   </Target>
 </Project>
