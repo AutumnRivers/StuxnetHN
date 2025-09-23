@@ -124,6 +124,9 @@ namespace Stuxnet_HN.Configuration
         public string StartingSong = null;
         public string PlayerCompID = "playerComp";
         public List<string> StartingFlags = new();
+        public List<string> StartingVisibleNodes = new();
+        public bool HasIntroStartup = false;
+        public string IntroText = string.Empty;
 
         public string RequiredFlagForSelection = null;
         public string RequiredFlagForVisibility = null;
@@ -178,6 +181,10 @@ namespace Stuxnet_HN
         public string RequiredFlagForVisibility;
 
         public List<string> StartingFlags;
+        public List<string> StartingVisibleNodes = new();
+        public bool HasIntroStartup = false;
+
+        public string IntroTextOverride = string.Empty;
 
         internal int GuiID;
 

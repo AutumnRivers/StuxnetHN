@@ -630,7 +630,7 @@ namespace Stuxnet_HN
         }
     }
 
-    [SaveExecutor("HacknetSave.StuxnetWildcards")]
+    [SaveExecutor("HacknetSave.StuxnetWildcards", ParseOption.ParseInterior)]
     public class ReadStuxnetSavedWildcards : SaveLoader.SaveExecutor
     {
         public override void Execute(EventExecutor exec, ElementInfo info)
@@ -651,6 +651,7 @@ namespace Stuxnet_HN
         public static string? Truncate(this string? value, int maxLength, string truncationSuffix = "...",
             bool splitNewlines = false)
         {
+            if (string.IsNullOrWhiteSpace(value)) return value;
             if(splitNewlines && value.Contains("\n"))
             {
                 value = value.Split('\n')[0];

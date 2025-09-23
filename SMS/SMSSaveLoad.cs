@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Pathfinder.Meta.Load;
+﻿using Pathfinder.Meta.Load;
 using Pathfinder.Event.Saving;
-using Hacknet;
-using HarmonyLib;
 using System.Xml.Linq;
 using Pathfinder.Replacements;
 using Pathfinder.Util.XML;
@@ -55,10 +47,11 @@ namespace Stuxnet_HN.SMS
             smsSaveElem.Add(activeChoices);
 
             save.AddAfterSelf(smsSaveElem);
+            StuxnetCore.Logger.LogDebug("Saved SMS data");
         }
     }
 
-    [SaveExecutor(SMSSaveConstants.SMS_MESSAGES_ELEMENT)]
+    [SaveExecutor(SMSSaveConstants.SMS_MESSAGES_ELEMENT, ParseOption.ParseInterior)]
     public class LoadActiveMessages : SaveLoader.SaveExecutor
     {
         public override void Execute(EventExecutor exec, ElementInfo info)
@@ -72,7 +65,7 @@ namespace Stuxnet_HN.SMS
         }
     }
 
-    [SaveExecutor(SMSSaveConstants.QSMS_MESSAGES_ELEMENT)]
+    [SaveExecutor(SMSSaveConstants.QSMS_MESSAGES_ELEMENT, ParseOption.ParseInterior)]
     public class LoadQueuedMessages : SaveLoader.SaveExecutor
     {
         public override void Execute(EventExecutor exec, ElementInfo info)
@@ -86,7 +79,7 @@ namespace Stuxnet_HN.SMS
         }
     }
 
-    [SaveExecutor(SMSSaveConstants.CHOICES_ELEMENT)]
+    [SaveExecutor(SMSSaveConstants.CHOICES_ELEMENT, ParseOption.ParseInterior)]
     public class LoadActiveChoices : SaveLoader.SaveExecutor
     {
         public override void Execute(EventExecutor exec, ElementInfo info)

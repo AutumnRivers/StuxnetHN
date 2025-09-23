@@ -62,7 +62,6 @@ namespace Stuxnet_HN.SMS
                 OnReadActionsFilepath = OnReadActions,
                 ChannelName = ChannelName
             };
-            Console.WriteLine(message.ChannelName);
 
             foreach(var child in MainElement.Children)
             {

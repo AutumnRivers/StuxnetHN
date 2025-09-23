@@ -143,7 +143,12 @@ namespace Stuxnet_HN.SMS
 
             if(message.Author == SMSSystemMessage.SYSTEM_AUTHOR)
             {
-                message = (SMSSystemMessage)message;
+                message = new SMSSystemMessage()
+                {
+                    Author = SMSSystemMessage.SYSTEM_AUTHOR,
+                    Content = message.Content,
+                    ChannelName = message.ChannelName
+                };
             }
 
             return message;

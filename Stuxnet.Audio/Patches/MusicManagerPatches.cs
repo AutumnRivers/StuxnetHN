@@ -153,14 +153,17 @@ namespace StuxnetHN.Audio.Patches
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(MediaPlayer), "Volume", MethodType.Setter)]
-        public static bool SetSMMVolume(float value)
+        public static void SetSMMVolume(float value)
         {
-            if (!ReplaceManager) return true;
-            if (IsBaseGameSong || !StuxnetMusicManager.PlayerHasMusic) return true;
+            if (!ReplaceManager) return;
+            if (IsBaseGameSong || !StuxnetMusicManager.PlayerHasMusic) return;
 
             StuxnetMusicManager.Volume = value;
 
-            return false;
+            if(value <= 0.05)
+            {
+                MediaPlayer.Stop();
+            }
         }
 
         private static readonly FieldInfo SampListField = AccessTools.Field(typeof(VisualizationData), "sampList");

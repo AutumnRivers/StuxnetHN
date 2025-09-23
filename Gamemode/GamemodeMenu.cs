@@ -312,13 +312,13 @@ namespace Stuxnet_HN.Gamemode
             string errorText = "An error occurred with Stuxnet.Gamemode.\n";
             errorText += "For a more detailed error, check your BepInEx logs.\n\n";
             errorText += Utils.SuperSmartTwimForWidth(LastError, bounds.Width - 20, GuiData.font);
-            TextItem.doLabel(new(bounds.X + 10, bounds.Y + 10), errorText, Color.Red);
+            TextItem.doLabel(new(bounds.X + 10, bounds.Y + ENTRY_PANEL_MARGIN), errorText, Color.Red);
 
             bool goBack = Button.doButton(GoBackButtonID,
                 bounds.X + 10,
                 bounds.Y + bounds.Height - 110,
                 bounds.Width / 6,
-                100, "Go Back", Color.DarkRed);
+                50, "Go Back", Color.DarkRed);
             if(goBack)
             {
                 State = GamemodeMenuState.ListEntries;
@@ -375,6 +375,7 @@ namespace Stuxnet_HN.Gamemode
         private static void CatchError(Exception e)
         {
             LastError = e.ToString();
+            StuxnetCore.Logger.LogError(LastError);
             State = GamemodeMenuState.Error;
         }
     }

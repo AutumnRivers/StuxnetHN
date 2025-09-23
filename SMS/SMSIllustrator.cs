@@ -242,7 +242,8 @@ namespace Stuxnet_HN.SMS
         }
 
         private readonly int PreviewScrollID = PFButton.GetNextID();
-        private float PreviewScrollValue = 0.0f;
+
+        private Vector2 PreviewScrollPosition = Vector2.Zero;
 
         private void DrawDisplay()
         {
@@ -257,13 +258,13 @@ namespace Stuxnet_HN.SMS
                             "No Messages :(", GuiData.font, Color.White);
                         return;
                     }
-                    var finalPreviewHeight = ActiveUsers.Count * MeasureChannelEntry();
+                    var finalPreviewHeight = channels.Count * MeasureChannelEntry();
                     bool needsScroll = finalPreviewHeight > MessageListBounds.Height;
                     if(needsScroll)
                     {
                         var drawbounds = MessageListBounds;
                         drawbounds.Height = finalPreviewHeight;
-                        ScrollablePanel.beginPanel(PreviewScrollID, drawbounds, new(0, PreviewScrollValue));
+                        ScrollablePanel.beginPanel(PreviewScrollID, drawbounds, PreviewScrollPosition);
                     }
                     for(int i = 0; i < channels.Count; i++)
                     {
@@ -271,33 +272,14 @@ namespace Stuxnet_HN.SMS
                     }
                     if(needsScroll)
                     {
-                        var finalScroll = ScrollablePanel.endPanel(PreviewScrollID, new(0, PreviewScrollValue),
+                        PreviewScrollPosition = ScrollablePanel.endPanel(PreviewScrollID, PreviewScrollPosition,
                             MessageListBounds, finalPreviewHeight);
-                        PreviewScrollValue = finalScroll.Y;
                     }
                     break;
                 case SMSModuleState.ViewMessageHistory:
                     DrawMessageView();
                     break;
             }
-        }
-
-        private List<string> GetUsers()
-        {
-            List<string> users = new();
-            foreach(var msg in SMSSystem.ActiveMessages)
-            {
-                if(!users.Contains(msg.Author))
-                {
-                    users.Add(msg.Author);
-                }
-            }
-            return users;
-        }
-
-        public List<string> ActiveUsers
-        {
-            get { return GetUsers(); }
         }
 
         private const float USER_TITLE_SCALE = 0.7f;
@@ -307,9 +289,9 @@ namespace Stuxnet_HN.SMS
             string channelName = "Test Channel abcdefg";
             string lastMessage = "abcdefgHIJKLMNOP";
 
-            var userHeight = GuiData.font.GetTextHeight(channelName) * USER_TITLE_SCALE;
-            var messageHeight = GuiData.smallfont.GetTextHeight(lastMessage);
-            return (int)userHeight + messageHeight + 15;
+            var userHeight = GuiData.font.MeasureString(channelName).Y * USER_TITLE_SCALE;
+            var messageHeight = GuiData.smallfont.MeasureString(lastMessage).Y;
+            return (int)(userHeight + messageHeight + 15);
         }
 
         private void DrawChannelEntry(string channel, bool needsScroll = false)
@@ -378,10 +360,10 @@ namespace Stuxnet_HN.SMS
             lastMessageContent = ComputerLoader.filter(lastMessageContent);
 
             spriteBatch.DrawString(GuiData.font, channel,
-                new Vector2(MessageListBounds.X + 13, MessageListBounds.Y + 10 + startingOffset), Color.White,
+                new Vector2(MessageListBounds.X + 13, yOffset + 10 + startingOffset), Color.White,
                 0f, Vector2.Zero, USER_TITLE_SCALE, Microsoft.Xna.Framework.Graphics.SpriteEffects.None, 1f);
             TextItem.doSmallLabel(new Vector2(MessageListBounds.X + 13,
-                MessageListBounds.Y + userVector.Y + 5 + startingOffset), lastMessageContent,
+                yOffset + userVector.Y + 5 + startingOffset), lastMessageContent,
                 os.lightGray);
 
             Rectangle borderBottom = new()

@@ -18,18 +18,8 @@ namespace Stuxnet_HN.Actions.Nodes
         [XMLStorage]
         public string Offset;
 
-        [XMLStorage]
-        public string StartingPosition = string.Empty;
-
         public override void Trigger(OS os)
         {
-            if(!StartingPosition.IsNullOrWhiteSpace())
-            {
-                StuxnetCore.Logger.LogWarning("The StartingPosition attribute for PlaceNodeOnNetMap is " +
-                    "deprecated, and will be removed in Stuxnet 2.1.0, which will break your extension.\n" +
-                    "Please remove the attribute ASAP!");
-            }
-
             string[] offsetSplit = Offset.Split(',');
             Vector2 offsetVector = new(
                 float.Parse(offsetSplit[0]),

@@ -98,6 +98,26 @@ namespace Stuxnet_HN.Gamemode
             return false;
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(IntroTextModule), "Update")]
+        public static void ReplaceIntroText(IntroTextModule __instance)
+        {
+            if (GamemodeMenu.SelectedEntry == null) return;
+            var currentEntry = GamemodeMenu.SelectedEntry;
+
+            if (currentEntry.IntroTextOverride.IsNullOrWhiteSpace()) return;
+            if(currentEntry.IntroTextOverride.ToLower() == "none")
+            {
+                __instance.text = new string[0];
+                return;
+            }
+
+            string[] splitText = currentEntry.IntroTextOverride.Split('\n');
+            __instance.text = splitText;
+        }
+
+
+
         internal static void ChangeExtensionInfo()
         {
             ExtensionInfo extensionInfo = ExtensionLoader.ActiveExtensionInfo;
@@ -126,10 +146,24 @@ namespace Stuxnet_HN.Gamemode
                 extensionInfo.Theme = currentEntry.StartingThemePath;
             }
 
-            if (currentEntry.DisableSavesByDefault)
+            extensionInfo.AllowSave = !currentEntry.DisableSavesByDefault;
+
+            if(currentEntry.StartingVisibleNodes.Count > 0)
             {
-                extensionInfo.AllowSave = currentEntry.DisableSavesByDefault;
+                if (currentEntry.StartingVisibleNodes[0].ToLower() == "none")
+                {
+                    extensionInfo.StartingVisibleNodes = new string[1] { "playerComp" };
+                } else
+                {
+                    if(!currentEntry.StartingVisibleNodes.Contains("playerComp"))
+                    {
+                        currentEntry.StartingVisibleNodes.Add("playerComp");
+                    }
+                    extensionInfo.StartingVisibleNodes = currentEntry.StartingVisibleNodes.ToArray();
+                }
             }
+
+            extensionInfo.HasIntroStartup = currentEntry.HasIntroStartup;
 
             ExtensionLoader.ActiveExtensionInfo = extensionInfo;
             ActuallyStartNewGame();

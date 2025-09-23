@@ -65,6 +65,11 @@ namespace Stuxnet_HN.Quests
             {
                 Quests.Add(quest);
             }
+
+            if(quest.Mission.startFunctionName != null)
+            {
+                MissionFunctions.runCommand(quest.Mission.startFunctionValue, quest.Mission.startFunctionName);
+            }
         }
 
         public static void RemoveQuest(StuxnetQuest quest)

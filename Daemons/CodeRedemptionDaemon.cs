@@ -245,7 +245,7 @@ namespace Stuxnet_HN.Daemons
             // Load conditional actions (if any)
             if(!validCode.action.IsNullOrWhiteSpace())
             {
-                RunnableConditionalActions.LoadIntoOS("/" + validCode.action, os);
+                RunnableConditionalActions.LoadIntoOS(validCode.action, os);
             }
 
             return true;

@@ -13,10 +13,8 @@ namespace Stuxnet_HN.Patches
         [Event()]
         public static void ApplyReplacements(TextReplaceEvent textReplaceEvent)
         {
-            Console.WriteLine(textReplaceEvent.Replacement);
             StuxnetCore.customReplacements.Aggregate(textReplaceEvent.Replacement,
                 (current, value) => current.Replace(value.Key, value.Value));
-            Console.WriteLine(textReplaceEvent.Replacement);
         }
 
         public static string CustomFilter(string s)
