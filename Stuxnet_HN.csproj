@@ -138,6 +138,9 @@
     <Compile Include="Patches\Illustrator.cs" />
     <Compile Include="Patches\MessageboardFixes.cs" />
     <Compile Include="Patches\MissionDisplayLogo.cs" />
+    <Compile Include="Patches\SavePatch.cs" />
+    <Compile Include="Patches\SettingsMenu\StuxnetMenuButtons.cs" />
+    <Compile Include="Patches\SettingsMenu\StuxnetSettingsMenu.cs" />
     <Compile Include="Patches\Wireshark\WiresharkContents.cs" />
     <Compile Include="Patches\Wireshark\WiresharkCompExecutors.cs" />
     <Compile Include="Persistence\PersistenceActions.cs" />

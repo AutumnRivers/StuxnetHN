@@ -1,8 +1,14 @@
 ﻿using BepInEx;
 using Hacknet;
+using Pathfinder.Event.Saving;
 using Pathfinder.GUI;
+using Pathfinder.Meta.Load;
+using Pathfinder.Replacements;
+using Pathfinder.Util.XML;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace Stuxnet_HN.Quests
 {
@@ -97,6 +103,35 @@ namespace Stuxnet_HN.Quests
         public static int IndexOfQuest(StuxnetQuest quest)
         {
             return Quests.IndexOf(quest);
+        }
+
+        [Pathfinder.Meta.Load.Event()]
+        public static void SaveQuests(SaveEvent saveEvent)
+        {
+            var save = saveEvent.Save;
+            XElement questsElem = new("StuxnetQuests");
+            foreach(var quest in Quests)
+            {
+                if (quest.IsXMission) continue;
+                XElement missionElem = XElement.Parse(quest.Mission.getSaveString());
+                questsElem.Add(missionElem);
+            }
+            save.FirstNode.AddAfterSelf(questsElem);
+        }
+
+        [SaveExecutor("HacknetSave.StuxnetQuests", ParseOption.ParseInterior)]
+        public class QuestsSaveLoader : SaveLoader.SaveExecutor
+        {
+            public override void Execute(EventExecutor exec, ElementInfo info)
+            {
+                foreach(var child in info.Children)
+                {
+                    var x = child.ConvertToXElement();
+                    XmlReader reader = x.CreateReader();
+                    var mission = (ActiveMission)ActiveMission.load(reader);
+                    AddQuest(mission);
+                }
+            }
         }
     }
 

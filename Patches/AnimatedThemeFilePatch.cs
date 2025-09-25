@@ -1,12 +1,9 @@
 ﻿using Hacknet;
-using Hacknet.Extensions;
 using HarmonyLib;
 using Pathfinder.Event.Saving;
 using Pathfinder.Meta.Load;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using static Pathfinder.Event.Menu.DrawMainMenuTitlesEvent;
 
 namespace Stuxnet_HN.Patches
 {
@@ -25,8 +22,6 @@ namespace Stuxnet_HN.Patches
             return new string[2] { baseThemeID, themePath };
         }
 
-        private static string lastAppliedFilePath;
-
         private static string lastLoadedThemeFilePath;
 
         [HarmonyPrefix]
@@ -43,7 +38,6 @@ namespace Stuxnet_HN.Patches
                 AnimatedTheme theme = new();
                 theme.LoadFromXml(themePath);
                 AnimatedThemeIllustrator.CurrentTheme = theme;
-                lastAppliedFilePath = themePath;
                 fileData = ThemeManager.getThemeDataStringForCustomTheme(theme.ThemePath);
                 UpdateLastSavedCustomThemePath(theme.ThemePath);
             } else
@@ -54,7 +48,6 @@ namespace Stuxnet_HN.Patches
                 }
 
                 AnimatedThemeIllustrator.CurrentTheme = null;
-                lastAppliedFilePath = null;
                 UpdateLastSavedCustomThemePath(null);
             }
         }
@@ -88,13 +81,11 @@ namespace Stuxnet_HN.Patches
                 AnimatedTheme theme = new();
                 theme.LoadFromXml(fullPath);
                 AnimatedThemeIllustrator.CurrentTheme = theme;
-                lastAppliedFilePath = fullPath;
                 __instance.ThemePathOrName = theme.ThemePath;
                 UpdateLastSavedCustomThemePath(theme.ThemePath);
             } else
             {
                 AnimatedThemeIllustrator.CurrentTheme = null;
-                lastAppliedFilePath = null;
                 UpdateLastSavedCustomThemePath(null);
             }
         }
@@ -166,7 +157,6 @@ namespace Stuxnet_HN.Patches
             if(xserver == null)
             {
                 AnimatedThemeIllustrator.CurrentTheme = null;
-                lastAppliedFilePath = null;
                 lastLoadedThemeFilePath = null;
                 UpdateLastSavedCustomThemePath(null);
                 return;
@@ -187,7 +177,6 @@ namespace Stuxnet_HN.Patches
                     AnimatedThemeIllustrator.CurrentTheme = null;
                 }
 
-                lastAppliedFilePath = null;
                 UpdateLastSavedCustomThemePath(null);
             }
         }

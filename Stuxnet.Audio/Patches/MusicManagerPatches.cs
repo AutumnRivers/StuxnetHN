@@ -126,7 +126,12 @@ namespace StuxnetHN.Audio.Patches
         public static bool ReplaceMediaPlayerPlay()
         {
             if (!ReplaceManager) return true;
-            if (IsBaseGameSong) return true;
+            if (string.IsNullOrWhiteSpace(MusicManager.currentSongName)) return true;
+            if (IsBaseGameSong)
+            {
+                StuxnetMusicManager.StopSong();
+                return true;
+            }
 
             if(!MusicManager.currentSongName.EndsWith(CurrentSongEntry.path))
             {
@@ -160,7 +165,7 @@ namespace StuxnetHN.Audio.Patches
 
             StuxnetMusicManager.Volume = value;
 
-            if(value <= 0.05)
+            if(value <= 0.1)
             {
                 MediaPlayer.Stop();
             }

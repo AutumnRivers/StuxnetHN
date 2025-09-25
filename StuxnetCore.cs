@@ -51,7 +51,7 @@ namespace Stuxnet_HN
 
         public const string XMOD_ID = "tenesiss.XMOD";
 
-        private readonly bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
+        internal static bool defaultSave = ExtensionLoader.ActiveExtensionInfo.AllowSave;
 
         public static ManualLogSource Logger;
 
@@ -100,6 +100,30 @@ namespace Stuxnet_HN
         public static bool XMODLoaded { get
             {
                 return HacknetChainloader.Instance.Plugins.ContainsKey(XMOD_ID);
+            }
+        }
+
+        public static bool CanSave
+        {
+            get
+            {
+                if (OS.currentInstance == null) return false;
+
+                if(!string.IsNullOrWhiteSpace(saveFlag))
+                {
+                    bool avoid = saveFlag[0] == '!';
+                    if(avoid)
+                    {
+                        string flag = saveFlag.Substring(1);
+                        return !OS.currentInstance.Flags.HasFlag(flag);
+                    } else
+                    {
+                        return OS.currentInstance.Flags.HasFlag(saveFlag);
+                    }
+                } else
+                {
+                    return ExtensionLoader.ActiveExtensionInfo.AllowSave;
+                }
             }
         }
 

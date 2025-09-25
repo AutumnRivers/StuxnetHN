@@ -147,6 +147,7 @@ namespace Stuxnet_HN.Gamemode
             }
 
             extensionInfo.AllowSave = !currentEntry.DisableSavesByDefault;
+            StuxnetCore.defaultSave = !currentEntry.DisableSavesByDefault;
 
             if(currentEntry.StartingVisibleNodes.Count > 0)
             {
