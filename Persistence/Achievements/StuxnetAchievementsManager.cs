@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Stuxnet_HN.Persistence.Achievements
 {
-    public static class AchievementsManager
+    public static class StuxnetAchievementsManager
     {
         public static List<StuxnetAchievement> ValidAchievements = new();
         public static List<StuxnetAchievement> CollectedAchievements = new();
@@ -34,6 +34,17 @@ namespace Stuxnet_HN.Persistence.Achievements
                 validAchv.IsHidden = achv.Hidden;
                 ValidAchievements.Add(validAchv);
             }
+        }
+
+        public static List<string> GetCollectedAchievementNames()
+        {
+            if (CollectedAchievements.Count <= 0) return new List<string>();
+            List<string> achvNames = new();
+            foreach (var achv in CollectedAchievements)
+            {
+                achvNames.Add(achv.Name);
+            }
+            return achvNames;
         }
 
         public static void CollectAchievement(string achievementName)
@@ -83,6 +94,11 @@ namespace Stuxnet_HN.Persistence.Achievements
             Name = name;
             Description = description;
             IconPath = imageFilepath;
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
 
         public void Load()

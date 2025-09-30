@@ -15,14 +15,14 @@ namespace Stuxnet_HN.Persistence.Achievements
 
         public static List<StuxnetAchievement> Achievements
         {
-            get { return AchievementsManager.ValidAchievements; }
+            get { return StuxnetAchievementsManager.ValidAchievements; }
         }
 
         public static List<StuxnetAchievement> VisibleAchievements { get; private set; } = new();
 
         public static List<StuxnetAchievement> CollectedAchievements
         {
-            get { return AchievementsManager.CollectedAchievements; }
+            get { return StuxnetAchievementsManager.CollectedAchievements; }
         }
 
         public static int TopMargin
@@ -35,7 +35,7 @@ namespace Stuxnet_HN.Persistence.Achievements
 
         public static void Open()
         {
-            VisibleAchievements = Achievements.Where(a => !a.IsHidden || AchievementsManager.HasCollectedAchievement(a.Name))
+            VisibleAchievements = Achievements.Where(a => !a.IsHidden || StuxnetAchievementsManager.HasCollectedAchievement(a.Name))
                 .ToList();
             LoadAllAchievements();
             Active = true;
@@ -76,7 +76,7 @@ namespace Stuxnet_HN.Persistence.Achievements
 
         public static void DrawAchievementEntry(StuxnetAchievement achievement, Vector2 position, int width, int height)
         {
-            if(achievement.IsHidden && !AchievementsManager.HasCollectedAchievement(achievement.Name))
+            if(achievement.IsHidden && !StuxnetAchievementsManager.HasCollectedAchievement(achievement.Name))
             {
                 return;
             }
@@ -89,7 +89,7 @@ namespace Stuxnet_HN.Persistence.Achievements
                 width, height, 1, Color.LightGray);
 
             int xOffset = height + 5;
-            bool collected = AchievementsManager.HasCollectedAchievement(achievement.Name);
+            bool collected = StuxnetAchievementsManager.HasCollectedAchievement(achievement.Name);
             float opacity = collected ? 1.0f : 0.5f;
             achievement.DrawIcon(position, height, opacity);
 
@@ -104,7 +104,7 @@ namespace Stuxnet_HN.Persistence.Achievements
                 Color.White * opacity, true);
 
             string description = achievement.Description.Truncate(64, "...", true);
-            if(achievement.IsSecret && !AchievementsManager.HasCollectedAchievement(achievement.Name))
+            if(achievement.IsSecret && !StuxnetAchievementsManager.HasCollectedAchievement(achievement.Name))
             {
                 description = "???";
             }

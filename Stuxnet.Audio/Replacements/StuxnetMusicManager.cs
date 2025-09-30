@@ -76,6 +76,7 @@ namespace StuxnetHN.Audio.Replacements
 
             IsLoaded = false;
             Player.Dispose();
+            Player = null;
         }
 
         public static async void PlaySong(string filePath)
@@ -90,7 +91,6 @@ namespace StuxnetHN.Audio.Replacements
             }
             if(Player.loadedFilePath != filePath)
             {
-                //Player.Load(filePath, LoopBegin, LoopEnd);
                 await Player.LoadAsync(filePath, LoopBegin, LoopEnd);
             }
             Player.Volume = MediaPlayer.Volume;
@@ -223,7 +223,6 @@ namespace StuxnetHN.Audio.Replacements
                 Array.Copy(newSamples, TargetVisualizerData, newSamples.Length);
 
                 float gain = IsMuted ? 0.0f : Volume;
-                int ch = reader.Channels;
 
                 for (int i = 0; i < samplesRead; i++)
                 {
@@ -314,7 +313,7 @@ namespace StuxnetHN.Audio.Replacements
 
     public class CircularBuffer<T>
     {
-        private T[] buffer;
+        private readonly T[] buffer;
         private int head;
         private int tail;
         private int size;

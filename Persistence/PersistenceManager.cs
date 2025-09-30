@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.IO;
 using Hacknet;
+using Stuxnet_HN.Persistence.Achievements;
 
 namespace Stuxnet_HN.Persistence
 {
@@ -15,6 +16,7 @@ namespace Stuxnet_HN.Persistence
 
         public static async void Initialize()
         {
+            StuxnetAchievementsManager.Initialize();
             if (!SaveFileManager.StorageMethods[0].FileExists(PERSISTENT_FILE_NAME))
             {
                 string jsonContent = JsonConvert.SerializeObject(new PersistentFileData());
@@ -45,6 +47,13 @@ namespace Stuxnet_HN.Persistence
         public static void LoadPersistentData(PersistentFileData fileData)
         {
             PersistentFlags = fileData.Flags;
+            if(fileData.CollectedAchievements.Count > 0)
+            {
+                foreach(var achvName in fileData.CollectedAchievements)
+                {
+                    StuxnetAchievementsManager.CollectAchievement(achvName);
+                }
+            }
         }
 
         public static void SavePersistentData()
@@ -108,12 +117,14 @@ namespace Stuxnet_HN.Persistence
     public class PersistentFileData
     {
         public List<string> Flags = new();
+        public List<string> CollectedAchievements = new();
 
         public static PersistentFileData FromGlobalData()
         {
             PersistentFileData persistentFileData = new()
             {
-                Flags = PersistenceManager.PersistentFlags
+                Flags = PersistenceManager.PersistentFlags,
+                CollectedAchievements = StuxnetAchievementsManager.GetCollectedAchievementNames()
             };
             return persistentFileData;
         }
