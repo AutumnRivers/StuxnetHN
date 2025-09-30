@@ -36,6 +36,7 @@ namespace Stuxnet_HN.Configuration
         public StuxnetGamemodeConfig Gamemode = new();
         public StuxnetCodesConfig CodeRedemption = new();
         public Dictionary<string, SequencerInfo> Sequencers = new();
+        public List<AchievementConfig> Achievements = new();
 
         public const string STUXNET_CONFIG_FILENAME = "stuxnet_config.json";
 
@@ -130,6 +131,15 @@ namespace Stuxnet_HN.Configuration
 
         public string RequiredFlagForSelection = null;
         public string RequiredFlagForVisibility = null;
+    }
+
+    public class AchievementConfig
+    {
+        public string Name;
+        public string Description;
+        public string IconPath = null;
+        public bool Secret = false;
+        public bool Hidden = false;
     }
 }
 

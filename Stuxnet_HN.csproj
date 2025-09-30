@@ -143,6 +143,8 @@
     <Compile Include="Patches\SettingsMenu\StuxnetSettingsMenu.cs" />
     <Compile Include="Patches\Wireshark\WiresharkContents.cs" />
     <Compile Include="Patches\Wireshark\WiresharkCompExecutors.cs" />
+    <Compile Include="Persistence\Achievements\AchievementsManager.cs" />
+    <Compile Include="Persistence\Achievements\AchievementsScreen.cs" />
     <Compile Include="Persistence\PersistenceActions.cs" />
     <Compile Include="Persistence\PersistenceManager.cs" />
     <Compile Include="Quests\QuestActions.cs" />

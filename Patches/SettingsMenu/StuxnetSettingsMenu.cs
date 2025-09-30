@@ -60,6 +60,7 @@ namespace Stuxnet_HN.Patches.SettingsMenu
             if(exit)
             {
                 Active = false;
+                ResultText = null;
             }
         }
 

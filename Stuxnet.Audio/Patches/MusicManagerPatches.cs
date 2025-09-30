@@ -54,6 +54,7 @@ namespace StuxnetHN.Audio.Patches
                 StuxnetMusicManager.LoopEnd = CurrentSongEntry.EndLoop;
             }
 
+            MediaPlayer.Stop();
             StuxnetMusicManager.PlaySong(MusicManager.currentSongName);
 
             return false;
@@ -123,35 +124,36 @@ namespace StuxnetHN.Audio.Patches
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(MediaPlayer), "Play", new Type[] { typeof(Song) })]
-        public static bool ReplaceMediaPlayerPlay()
+        public static bool ReplaceMediaPlayerPlay(Song song)
         {
             if (!ReplaceManager) return true;
-            if (string.IsNullOrWhiteSpace(MusicManager.currentSongName)) return true;
+            if (song == null) return true;
+            if (string.IsNullOrWhiteSpace(song.Name)) return true;
             if (IsBaseGameSong)
             {
                 StuxnetMusicManager.StopSong();
                 return true;
             }
 
-            if(!MusicManager.currentSongName.EndsWith(CurrentSongEntry.path))
+            if(!song.Name.EndsWith(CurrentSongEntry.path))
             {
                 StuxnetMusicManager.CurrentSongEntry = null;
             }
 
             if (StuxnetMusicManager.CurrentSongEntry == null)
             {
-                StuxnetMusicManager.PlaySong(MusicManager.currentSongName);
+                StuxnetMusicManager.PlaySong(song.Name);
                 return false;
             }
 
-            if (MusicManager.currentSongName.EndsWith(CurrentSongEntry.path))
+            if (song.Name.EndsWith(CurrentSongEntry.path))
             {
                 StuxnetMusicManager.LoopBegin = CurrentSongEntry.BeginLoop;
                 StuxnetMusicManager.LoopEnd = CurrentSongEntry.EndLoop;
             }
 
             MediaPlayer.Stop();
-            StuxnetMusicManager.PlaySong(MusicManager.currentSongName);
+            StuxnetMusicManager.PlaySong(song.Name);
 
             return false;
         }

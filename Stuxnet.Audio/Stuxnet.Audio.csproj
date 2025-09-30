@@ -98,6 +98,7 @@
   <ItemGroup>
     <Compile Include="Actions\MusicActions.cs" />
     <Compile Include="Actions\Sounds\PlaySFX.cs" />
+    <Compile Include="AudioSaveLoader.cs" />
     <Compile Include="OGGSoundEffectLoader.cs" />
     <Compile Include="Patches\MusicManagerPatches.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
