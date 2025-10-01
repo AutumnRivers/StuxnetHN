@@ -65,13 +65,25 @@ namespace Stuxnet_HN.Persistence.Achievements
             int height = (int)(drawbounds.Height * HEIGHT_SCALE);
             int fullHeight = (height + 5) * VisibleAchievements.Count;
 
+            var remainingHiddenAchievements = Achievements.Count - VisibleAchievements.Count;
+
             Rectangle scrollbounds = drawbounds;
             scrollbounds.Height = fullHeight + 1;
+            if(remainingHiddenAchievements > 0)
+            {
+                scrollbounds.Height += GuiData.font.GetTextHeight("+123 Hidden Achievements") + 10;
+            }
             ScrollablePanel.beginPanel(ScrollPanelID, scrollbounds, ScrollPanelValue);
 
             foreach(var achv in VisibleAchievements)
             {
                 DrawAchievementEntry(achv, new(0, LastYOffset), drawbounds.Width - 12, height);
+            }
+            if(remainingHiddenAchievements > 0)
+            {
+                TextItem.doLabel(new(0, LastYOffset + 5),
+                    string.Format("+{0} Hidden Achievement(s)", remainingHiddenAchievements),
+                    Color.White * 0.75f);
             }
 
             ScrollPanelValue = ScrollablePanel.endPanel(ScrollPanelID,

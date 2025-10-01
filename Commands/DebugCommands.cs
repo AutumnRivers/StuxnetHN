@@ -1,6 +1,7 @@
 ﻿using Hacknet;
 using Pathfinder.Command;
 using Stuxnet_HN.Patches;
+using Stuxnet_HN.Persistence.Achievements;
 
 namespace Stuxnet_HN.Commands
 {
@@ -11,6 +12,7 @@ namespace Stuxnet_HN.Commands
             if (!OS.DEBUG_COMMANDS) return;
             CommandManager.RegisterCommand("decrypttheme", DecryptThemeFile);
             CommandManager.RegisterCommand("getbasetheme", GetBaseThemeForAnimatedTheme);
+            CommandManager.RegisterCommand("unlocktestachv", CollectTestAchievement);
         }
 
         public static void DecryptThemeFile(OS os, string[] args)
@@ -55,6 +57,13 @@ namespace Stuxnet_HN.Commands
             }
 
             os.write(AnimatedThemeIllustrator.CurrentTheme.ThemePath);
+        }
+
+        public static void CollectTestAchievement(OS os, string[] args)
+        {
+            StuxnetAchievement testAchv = new("Hello, World!", "This is a test achievement!");
+            AchievementPatches.QueueAchievement(testAchv);
+            os.write("Test achievement should've been shown");
         }
     }
 }

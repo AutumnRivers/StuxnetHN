@@ -57,6 +57,10 @@ namespace Stuxnet_HN.Persistence.Achievements
                     StuxnetCore.Logger.LogDebug(string.Format("Collected achievement: {0}", achievementName));
                 }
                 CollectedAchievements.Add(achv);
+                if(CollectedAchievements.Count == ValidAchievements.Count)
+                {
+                    PersistenceManager.AddFlag("collected_all_achievements");
+                }
             } else if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
             {
                 StuxnetCore.Logger.LogWarning(
@@ -78,6 +82,7 @@ namespace Stuxnet_HN.Persistence.Achievements
         public static void Reset()
         {
             CollectedAchievements.Clear();
+            PersistenceManager.TakeFlag("collected_all_achievements");
             PersistenceManager.SavePersistentData();
             StuxnetCore.Logger.LogDebug("Reset achievements.");
         }
@@ -90,6 +95,8 @@ namespace Stuxnet_HN.Persistence.Achievements
         public string IconPath;
         public bool IsSecret = false;
         public bool IsHidden = false;
+
+        public bool HasStartedLoading = false;
 
         private Texture2D _icon;
         public Texture2D Icon
@@ -119,7 +126,8 @@ namespace Stuxnet_HN.Persistence.Achievements
 
         public void Load()
         {
-            if (FullyLoaded) return;
+            if (FullyLoaded || HasStartedLoading) return;
+            HasStartedLoading = true;
             string fullFilePath = Utils.GetFileLoadPrefix() + IconPath;
             if (!File.Exists(fullFilePath))
             {
@@ -137,6 +145,7 @@ namespace Stuxnet_HN.Persistence.Achievements
         public void Unload()
         {
             FullyLoaded = false;
+            HasStartedLoading = false;
             _icon = null;
         }
 

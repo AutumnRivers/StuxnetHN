@@ -144,6 +144,7 @@
     <Compile Include="Patches\Wireshark\WiresharkContents.cs" />
     <Compile Include="Patches\Wireshark\WiresharkCompExecutors.cs" />
     <Compile Include="Persistence\Achievements\AchievementActions.cs" />
+    <Compile Include="Persistence\Achievements\AchievementPatches.cs" />
     <Compile Include="Persistence\Achievements\StuxnetAchievementsManager.cs" />
     <Compile Include="Persistence\Achievements\AchievementsScreen.cs" />
     <Compile Include="Persistence\PersistenceActions.cs" />
