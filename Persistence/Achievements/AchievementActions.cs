@@ -35,6 +35,7 @@ namespace Stuxnet_HN.Persistence.Achievements
                     "Remember that names are CASE-SENSITIVE!", Name));
                 return;
             }
+            if (StuxnetAchievementsManager.HasCollectedAchievement(Name)) return;
             StuxnetAchievementsManager.CollectAchievement(Name);
 
             if(!Quietly)
