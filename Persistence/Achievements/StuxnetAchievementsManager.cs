@@ -52,7 +52,16 @@ namespace Stuxnet_HN.Persistence.Achievements
             var achv = GetAchievement(achievementName);
             if(achv != null && !HasCollectedAchievement(achievementName))
             {
+                if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
+                {
+                    StuxnetCore.Logger.LogDebug(string.Format("Collected achievement: {0}", achievementName));
+                }
                 CollectedAchievements.Add(achv);
+            } else if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
+            {
+                StuxnetCore.Logger.LogWarning(
+                    string.Format("Unable to collect achievement: {0}\nIt's either already been collected," +
+                    " or it doesn't exist.", achievementName));
             }
         }
 
@@ -64,6 +73,13 @@ namespace Stuxnet_HN.Persistence.Achievements
         public static bool HasCollectedAchievement(string achievementName)
         {
             return CollectedAchievements.Any(a => a.Name == achievementName);
+        }
+
+        public static void Reset()
+        {
+            CollectedAchievements.Clear();
+            PersistenceManager.SavePersistentData();
+            StuxnetCore.Logger.LogDebug("Reset achievements.");
         }
     }
 
@@ -121,7 +137,6 @@ namespace Stuxnet_HN.Persistence.Achievements
         public void Unload()
         {
             FullyLoaded = false;
-            _icon.Dispose();
             _icon = null;
         }
 

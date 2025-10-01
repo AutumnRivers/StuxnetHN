@@ -5,6 +5,7 @@ using HarmonyLib;
 using Hacknet.Screens;
 using Hacknet.Gui;
 using Microsoft.Xna.Framework;
+using Stuxnet_HN.Persistence.Achievements;
 
 namespace Stuxnet_HN.Patches.SettingsMenu
 {
@@ -14,7 +15,9 @@ namespace Stuxnet_HN.Patches.SettingsMenu
         internal static readonly Dictionary<string, int> SettingsButtonIDs = new()
         {
             { "OpenSettings", PFButton.GetNextID() },
-            { "CloseSettings", PFButton.GetNextID() }
+            { "CloseSettings", PFButton.GetNextID() },
+            { "OpenAchievements", PFButton.GetNextID() },
+            { "CloseAchievements", PFButton.GetNextID() }
         };
 
         public const int BUTTON_MARGIN = 5;
@@ -35,15 +38,36 @@ namespace Stuxnet_HN.Patches.SettingsMenu
             {
                 StuxnetSettingsMenu.Active = true;
             }
+
+            buttonPos.Y += BUTTON_MARGIN + SMALL_BUTTON_HEIGHT;
+
+            bool openAchvs = Button.doButton(SettingsButtonIDs["OpenAchievements"],
+                (int)buttonPos.X, (int)buttonPos.Y, BUTTON_WIDTH, SMALL_BUTTON_HEIGHT,
+                "Achievements", MainMenu.buttonColor);
+
+            if(openAchvs)
+            {
+                AchievementsScreen.Open();
+            }
         }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(ExtensionsMenuScreen), "Draw")]
         public static bool DrawStuxnetSettingsMenu(Rectangle dest)
         {
-            if (!StuxnetSettingsMenu.Active) return true;
+            if (!StuxnetSettingsMenu.Active && !AchievementsScreen.Active) return true;
 
-            StuxnetSettingsMenu.Draw(dest);
+            if(StuxnetSettingsMenu.Active)
+            {
+                StuxnetSettingsMenu.Draw(dest);
+            } else if(AchievementsScreen.Active)
+            {
+                AchievementsScreen.Draw(dest);
+            } else
+            {
+                return true;
+            }
+
             return false;
         }
 

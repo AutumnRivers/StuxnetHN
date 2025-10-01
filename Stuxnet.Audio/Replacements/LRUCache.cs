@@ -30,6 +30,11 @@ namespace StuxnetHN.Audio.Replacements
             return false;
         }
 
+        public bool ContainsKey(TKey key)
+        {
+            return dictionary.ContainsKey(key);
+        }
+
         public void Add(TKey key, TValue value)
         {
             if (dictionary.ContainsKey(key))

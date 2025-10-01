@@ -75,12 +75,13 @@ namespace StuxnetHN.Audio.Replacements
             }
 
             IsLoaded = false;
-            Player.Dispose();
             Player = null;
         }
 
         public static async void PlaySong(string filePath)
         {
+            Player.Stop();
+            MediaPlayer.Stop();
             if(!filePath.EndsWith(".ogg"))
             {
                 filePath += ".ogg";
@@ -111,7 +112,7 @@ namespace StuxnetHN.Audio.Replacements
         }
     }
 
-    public class OggMusicPlayer : IDisposable
+    public class OggMusicPlayer
     {
         private readonly DynamicSoundEffectInstance instance;
         private VorbisReader reader;
@@ -122,6 +123,7 @@ namespace StuxnetHN.Audio.Replacements
 
         // This will hold the entire song's audio data.
         private float[] fullAudioBuffer;
+
 
         public TimeSpan Position => reader.TimePosition;
         public TimeSpan Length => reader.TotalTime;
@@ -144,7 +146,7 @@ namespace StuxnetHN.Audio.Replacements
         private const int VISUALIZER_BUFFER_SIZE = 512;
         public float[] TargetVisualizerData { get; private set; }
 
-        private static readonly LruCache<string, float[]> AudioCache = new LruCache<string, float[]>(5);
+        private static readonly LruCache<string, float[]> AudioCache = new(5);
 
         private float visualizerHead;
 
@@ -158,6 +160,22 @@ namespace StuxnetHN.Audio.Replacements
             TargetVisualizerData = new float[256];
         }
 
+        public async Task PreloadAsync(string filePath)
+        {
+            if (AudioCache.ContainsKey(filePath)) return;
+
+            VorbisReader tempReader;
+            await Task.Run(() =>
+            {
+                tempReader = new(filePath);
+                long totalSamples = tempReader.TotalSamples * tempReader.Channels;
+                float[] fullBuffer = new float[totalSamples];
+                tempReader.ReadSamples(fullBuffer, 0, (int)totalSamples);
+                AudioCache.Add(filePath, fullBuffer);
+                tempReader.Dispose();
+            });
+        }
+
         public async Task LoadAsync(string filePath, int loopStart = -1, int loopEnd = -1)
         {
             if (AudioCache.TryGetValue(filePath, out var cachedData))
@@ -166,7 +184,6 @@ namespace StuxnetHN.Audio.Replacements
 
                 await Task.Run(() =>
                 {
-                    reader?.Dispose();
                     reader = new VorbisReader(filePath);
                 });
             }
@@ -174,7 +191,6 @@ namespace StuxnetHN.Audio.Replacements
             {
                 await Task.Run(() =>
                 {
-                    reader?.Dispose();
                     reader = new VorbisReader(filePath);
 
                     long totalSamples = reader.TotalSamples * reader.Channels;
@@ -302,12 +318,6 @@ namespace StuxnetHN.Audio.Replacements
         public void Seek(TimeSpan position)
         {
             reader.TimePosition = position;
-        }
-
-        public void Dispose()
-        {
-            instance?.Dispose();
-            reader?.Dispose();
         }
     }
 

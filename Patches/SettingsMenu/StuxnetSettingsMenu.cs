@@ -19,7 +19,9 @@ namespace Stuxnet_HN.Patches.SettingsMenu
         {
             new("ClearPersistence", "Clear Persistent Data", ClearPersistentData,
                 "WARNING: This will also delete ALL of your save files for this extension.",
-                Color.Red)
+                Color.Red),
+            new("ResetAchvs", "Reset Achievements", Persistence.Achievements.StuxnetAchievementsManager.Reset,
+                null, MainMenu.exitButtonColor)
         };
 
         public static ReadOnlyCollection<StuxnetSettingsButton> Buttons
@@ -72,9 +74,12 @@ namespace Stuxnet_HN.Patches.SettingsMenu
             int offset = StuxnetMenuButtonsPatch.BIG_BUTTON_HEIGHT + StuxnetMenuButtonsPatch.BUTTON_MARGIN;
             LastButtonOffset += offset;
 
-            string trimmedText = Utils.SuperSmartTwimForWidth(subText, StuxnetMenuButtonsPatch.BUTTON_WIDTH, GuiData.smallfont);
-            TextItem.doSmallLabel(new(buttonPos.X, buttonPos.Y + offset), trimmedText, Color.White);
-            LastButtonOffset += GuiData.smallfont.GetTextHeight(trimmedText) + (StuxnetMenuButtonsPatch.BUTTON_MARGIN * 2);
+            if(!string.IsNullOrWhiteSpace(subText))
+            {
+                string trimmedText = Utils.SuperSmartTwimForWidth(subText, StuxnetMenuButtonsPatch.BUTTON_WIDTH, GuiData.smallfont);
+                TextItem.doSmallLabel(new(buttonPos.X, buttonPos.Y + offset), trimmedText, Color.White);
+                LastButtonOffset += GuiData.smallfont.GetTextHeight(trimmedText) + (StuxnetMenuButtonsPatch.BUTTON_MARGIN * 2);
+            }
 
             return buttonHit;
         }

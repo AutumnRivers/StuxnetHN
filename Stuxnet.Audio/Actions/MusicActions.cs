@@ -53,4 +53,18 @@ namespace StuxnetHN.Audio.Actions
             }
         }
     }
+
+    [Pathfinder.Meta.Load.Action("PreloadSong")]
+    public class SAPreloadSong : DelayablePathfinderAction
+    {
+        [XMLStorage]
+        public string SongFile;
+
+        public override void Trigger(OS os)
+        {
+            if (!Stuxnet_HN.StuxnetCore.Configuration.Audio.ReplaceMusicManager) return;
+
+            StuxnetMusicManager.Player.PreloadAsync(SongFile);
+        }
+    }
 }

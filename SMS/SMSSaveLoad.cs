@@ -8,10 +8,10 @@ namespace Stuxnet_HN.SMS
 {
     public static class SMSSaveConstants
     {
-        public const string BASE_SMS_SAVE_ELEMENT = "HacknetSave.StuxnetSMS.";
-        public const string SMS_MESSAGES_ELEMENT = BASE_SMS_SAVE_ELEMENT + "ActiveMessages";
-        public const string QSMS_MESSAGES_ELEMENT = BASE_SMS_SAVE_ELEMENT + "QueuedMessages";
-        public const string CHOICES_ELEMENT = BASE_SMS_SAVE_ELEMENT + "ActiveChoices";
+        public const string BASE_SMS_SAVE_ELEMENT = "HacknetSave.StuxnetSMS";
+        public const string SMS_MESSAGES_ELEMENT = BASE_SMS_SAVE_ELEMENT + ".ActiveMessages";
+        public const string QSMS_MESSAGES_ELEMENT = BASE_SMS_SAVE_ELEMENT + ".QueuedMessages";
+        public const string CHOICES_ELEMENT = BASE_SMS_SAVE_ELEMENT + ".ActiveChoices";
     }
 
     public class SMSSavePatch
@@ -21,6 +21,9 @@ namespace Stuxnet_HN.SMS
         {
             var save = saveEvent.Save.FirstNode;
             XElement smsSaveElem = new("StuxnetSMS");
+
+            XAttribute smsStatus = new("Disabled", SMSSystem.Disabled);
+            smsSaveElem.Add(smsStatus);
 
             XElement activeMessages = new("ActiveMessages");
             foreach(var message in SMSSystem.ActiveMessages)
@@ -48,6 +51,15 @@ namespace Stuxnet_HN.SMS
 
             save.AddAfterSelf(smsSaveElem);
             StuxnetCore.Logger.LogDebug("Saved SMS data");
+        }
+    }
+
+    [SaveExecutor(SMSSaveConstants.BASE_SMS_SAVE_ELEMENT)]
+    public class LoadSavedSMSConfig : SaveLoader.SaveExecutor
+    {
+        public override void Execute(EventExecutor exec, ElementInfo info)
+        {
+            SMSSystem.Disabled = bool.Parse(info.Attributes["Disabled"]);
         }
     }
 

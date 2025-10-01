@@ -137,7 +137,7 @@ namespace Stuxnet_HN.Configuration
     {
         public string Name;
         public string Description;
-        public string IconPath = null;
+        public string IconPath = string.Empty;
         public bool Secret = false;
         public bool Hidden = false;
     }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Hacknet;
 using Hacknet.Gui;
@@ -50,13 +51,18 @@ namespace Stuxnet_HN.Persistence.Achievements
 
         private static float LastYOffset = 0.0f;
 
+        public const float HEIGHT_SCALE = 0.25f;
+
         public static void Draw(Rectangle drawbounds)
         {
             LastYOffset = 0.0f;
 
-            drawbounds.Height -= 30;
+            var topOffset = GuiData.titlefont.GetTextHeight("Hacknet", 0.5f);
+            drawbounds.Y += topOffset;
+            drawbounds.Height -= 30 + topOffset;
+            drawbounds.Width += 10;
 
-            int height = (int)(drawbounds.Height * 0.3f);
+            int height = (int)(drawbounds.Height * HEIGHT_SCALE);
             int fullHeight = (height + 5) * VisibleAchievements.Count;
 
             Rectangle scrollbounds = drawbounds;
@@ -65,7 +71,7 @@ namespace Stuxnet_HN.Persistence.Achievements
 
             foreach(var achv in VisibleAchievements)
             {
-                DrawAchievementEntry(achv, new(0, LastYOffset), drawbounds.Width, height);
+                DrawAchievementEntry(achv, new(0, LastYOffset), drawbounds.Width - 12, height);
             }
 
             ScrollPanelValue = ScrollablePanel.endPanel(ScrollPanelID,
@@ -101,23 +107,24 @@ namespace Stuxnet_HN.Persistence.Achievements
                 Height = (int)(height * 0.75f)
             };
             TextItem.doFontLabelToSize(topTextBounds, achievement.Name, GuiData.font,
-                Color.White * opacity, true);
+                Color.White * opacity, true, true);
 
             string description = achievement.Description.Truncate(64, "...", true);
             if(achievement.IsSecret && !StuxnetAchievementsManager.HasCollectedAchievement(achievement.Name))
             {
                 description = "???";
             }
+            var regScaleHeight = GuiData.font.GetTextHeight(achievement.Name);
 
             Rectangle bottomTextBounds = new()
             {
                 X = xOffset,
-                Y = (int)(position.Y + (height * 0.75f) + 5),
+                Y = (int)(position.Y + Math.Min(regScaleHeight, topTextBounds.Height) + 5),
                 Width = width - height - 5,
                 Height = (int)(height * 0.245f)
             };
             TextItem.doFontLabelToSize(bottomTextBounds, description,
-                GuiData.smallfont, Color.White * opacity, true);
+                GuiData.smallfont, Color.White * opacity, true, true);
 
             LastYOffset += height + 5;
         }
@@ -127,7 +134,7 @@ namespace Stuxnet_HN.Persistence.Achievements
         private static void DrawExitButton(Rectangle drawbounds)
         {
             bool exit = Button.doButton(ExitButtonID, drawbounds.X,
-                drawbounds.Y + drawbounds.Height - 25 - 10,
+                drawbounds.Y + drawbounds.Height + 30,
                 450, 25, "Exit...", Color.Red);
             if(exit)
             {

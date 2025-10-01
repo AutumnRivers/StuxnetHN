@@ -190,6 +190,8 @@ namespace Stuxnet_HN
 
             #region register actions
             LogDebug("Registering Actions...");
+            Persistence.Achievements.AchievementActions.RegisterActions();
+
             // Radio Actions
             ActionManager.RegisterAction<RadioActions.AddSong>("AddSongToRadio");
             ActionManager.RegisterAction<RadioActions.RemoveSong>("RemoveSongFromRadio");
