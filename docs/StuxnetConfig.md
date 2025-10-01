@@ -30,7 +30,8 @@ To get started, place a file titled `stuxnet_config.json` in your extension's ro
         "codes": {},
         "customSplashText": []
     },
-    "sequencers": {}
+    "sequencers": {},
+    "achievements": []
 }
 ```
 * `showDebugText` - When set to `true`, Stuxnet will be more verbose with its logging. (Default is `true`.)
@@ -109,3 +110,21 @@ For configuration related to `Stuxnet.Quests`.
 
 ## `Sequencers`
 [See here.](StuxnetFiles.md#sequencers)
+
+## `Achievements`
+```json
+{
+    "name": "",
+    "description": "",
+    "iconPath": "",
+    "secret": false,
+    "hidden": false
+}
+```
+* `name` - The name of the achievement. This is case-sensitive, and must be unique.
+* `description` - The description of the achievement.
+    * This can technically be of any length, but try to keep it brief.
+* `iconPath` - The relative path to an icon for this achievement.
+    * If left blank, the extension's logo will be used.
+* `secret` - If `true`, then the description will be hidden until this achievement is unlocked.
+* `hidden` - If `true`, then this achievement will not show in the achievement list at *all* until it's unlocked.

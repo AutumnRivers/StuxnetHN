@@ -187,6 +187,13 @@ Does the opposite of above. If the flag already doesn't exist, nothing happens.
 ### `<ClearPersistentFlags />`
 Clears *all* flags from persistence.
 
+## Achievements
+### `<CollectAchievement Name="string" Quietly="bool(default=false)" />`
+Collects an achievement with name of `Name`.
+* If `Quietly` is `true`, then the "Achievement Unlocked!" pop-up will not show.
+
+Unlike flags, you cannot take away achievements, you can only unlock them. There are also no conditions for detecting what achievements a player has. This is by design - achievements are purely aesthetic. Give the player a sense of pride and accomplishment. However, when all achievements are unlocked, the persistent flag `collected_all_achievements` will automatically be added.
+
 ## Conditions
 ### `<HasPersistentFlags Flags="string[,string,string...]" CheckOnce="bool">`
 Runs a set of actions if the persistent data has the set of flags.

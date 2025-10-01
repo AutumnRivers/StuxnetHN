@@ -40,3 +40,8 @@ Action-ized version of `playCustomSong` mission function. Works the same.
 
 ## `<StopMusic FadeOut="bool(default=true)" />`
 Stops the music, similar to `stopMusic` via HackerScripts, but without the stinger. When `FadeOut` is true, it will first fade the music out (a la `playCustomSong`) before going quiet.
+
+---
+
+## `<PreloadSong SongFile="string" />`
+Preloads the song file into the cache.
