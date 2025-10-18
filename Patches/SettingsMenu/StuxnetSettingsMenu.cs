@@ -94,20 +94,25 @@ namespace Stuxnet_HN.Patches.SettingsMenu
         private static void ClearSaveFiles()
         {
             bool success = true;
-            foreach(var account in SaveFileManager.Accounts)
+            if(SaveFileManager.Accounts.Count > 0)
             {
-                try
+                for(int idx = 0; idx < SaveFileManager.Accounts.Count; idx++)
                 {
-                    SaveFileManager.DeleteUser(account.Username);
-                } catch(Exception e)
-                {
-                    success = false;
-                    StuxnetCore.Logger.LogError(
-                        string.Format("Failed to delete savefile '{0}': {1}",
-                        account.Username, e.ToString())
-                        );
-                    ResultText = "Error(s) Occurred.";
-                    continue;
+                    var account = SaveFileManager.Accounts[idx];
+                    try
+                    {
+                        SaveFileManager.DeleteUser(account.Username);
+                    }
+                    catch (Exception e)
+                    {
+                        success = false;
+                        StuxnetCore.Logger.LogError(
+                            string.Format("Failed to delete savefile '{0}': {1}",
+                            account.Username, e.ToString())
+                            );
+                        ResultText = "Error(s) Occurred.";
+                        continue;
+                    }
                 }
             }
             if(success) { ResultText = "Success."; }

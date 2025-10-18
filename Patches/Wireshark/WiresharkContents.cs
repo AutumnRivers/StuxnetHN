@@ -76,7 +76,11 @@ namespace Stuxnet_HN.Patches
                 if (child.Attributes.ContainsKey("source"))
                 {
                     source = child.Attributes["source"];
+                } else if(child.Attributes.ContainsKey("from"))
+                {
+                    source = child.Attributes["from"];
                 }
+
                 if (child.Attributes.ContainsKey("method"))
                 {
                     method = child.Attributes["method"];
@@ -95,7 +99,7 @@ namespace Stuxnet_HN.Patches
                     destination = child.Attributes["dest"];
                 }
 
-                WiresharkEntry entry = new(id, destination, isSecure, method, protocol);
+                WiresharkEntry entry = new(id, source, destination, child.Content, isSecure, method, protocol);
                 contents.entries.Add(entry);
             }
 
@@ -163,6 +167,9 @@ namespace Stuxnet_HN.Patches
                     if (xml.MoveToAttribute("from"))
                     {
                         Console.WriteLine($"from: {xml.ReadContentAsString()}");
+                        source = xml.ReadContentAsString();
+                    } else if(xml.MoveToAttribute("source"))
+                    {
                         source = xml.ReadContentAsString();
                     }
 

@@ -38,13 +38,11 @@ namespace Stuxnet_HN
 {
     [BepInPlugin(ModGUID, ModName, ModVer)]
     [BepInDependency(XMOD_ID, BepInDependency.DependencyFlags.SoftDependency)]
-    [Updater("https://git.gay/AutumnRivers/StuxnetHN/releases/download/latest/Stuxnet_HN.dll",
-        "StuxnetHN.dll")]
     public class StuxnetCore : HacknetPlugin
     {
         public const string ModGUID = "autumnrivers.stuxnet";
         public const string ModName = "Stuxnet";
-        public const string ModVer = "2.1.0";
+        public const string ModVer = "2.1.1";
         public const string VersionName = "NotPetya";
 
         public const uint CopyrightYear = 2025;

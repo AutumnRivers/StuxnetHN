@@ -2,6 +2,7 @@
 using Hacknet.Extensions;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Stuxnet_HN.Patches.SettingsMenu;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -129,7 +130,7 @@ namespace Stuxnet_HN.Persistence.Achievements
             if (FullyLoaded || HasStartedLoading) return;
             HasStartedLoading = true;
             string fullFilePath = Utils.GetFileLoadPrefix() + IconPath;
-            if (!File.Exists(fullFilePath))
+            if (!File.Exists(fullFilePath) || string.IsNullOrWhiteSpace(IconPath))
             {
                 _icon = ExtensionLoader.ActiveExtensionInfo.LogoImage;
                 return;
@@ -151,7 +152,11 @@ namespace Stuxnet_HN.Persistence.Achievements
 
         public void DrawIcon(Rectangle dest, float opacity = 1.0f)
         {
-            if (!FullyLoaded) return;
+            if (!FullyLoaded)
+            {
+                if (!HasStartedLoading) Load();
+                return;
+            }
             GuiData.spriteBatch.Draw(Icon, dest, Color.White * opacity);
         }
 

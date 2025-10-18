@@ -20,7 +20,7 @@ namespace StuxnetHN.Audio
     {
         public const string ModGUID = "autumnrivers.stuxnet.audio";
         public const string ModNamae = "Stuxnet.Audio";
-        public const string ModVer = "0.1.1";
+        public const string ModVer = "0.2.0";
 
         internal static ManualLogSource Logger;
 

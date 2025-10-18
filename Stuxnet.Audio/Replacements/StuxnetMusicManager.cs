@@ -1,7 +1,9 @@
 ﻿using BepInEx;
+using BepInEx.Logging;
 using Hacknet;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 using NVorbis;
 using Stuxnet_HN;
@@ -9,7 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Runtime.Remoting.Channels;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace StuxnetHN.Audio.Replacements
 {
@@ -62,7 +66,9 @@ namespace StuxnetHN.Audio.Replacements
                 return;
             }
 
+            var cachedVolume = MediaPlayer.Volume;
             Player = new();
+            Player.Volume = cachedVolume;
             IsLoaded = true;
         }
 
@@ -94,17 +100,17 @@ namespace StuxnetHN.Audio.Replacements
             {
                 await Player.LoadAsync(filePath, LoopBegin, LoopEnd);
             }
-            Player.Volume = MediaPlayer.Volume;
-            Player.Play();
 
             if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
             {
                 StuxnetAudioCore.Logger.LogDebug("Playing song with SMM: " + filePath);
             }
+            Player.Play();
         }
 
         public static void StopSong()
         {
+            if (Player == null) return;
             if(Player.IsPlaying)
             {
                 Player.Stop();
@@ -115,18 +121,14 @@ namespace StuxnetHN.Audio.Replacements
     public class OggMusicPlayer
     {
         private readonly DynamicSoundEffectInstance instance;
-        private VorbisReader reader;
+        //private VorbisReader reader;
         private float[] floatBuffer;
-        private byte[] byteBuffer;
+        //private byte[] byteBuffer;
 
         internal string loadedFilePath;
 
         // This will hold the entire song's audio data.
         private float[] fullAudioBuffer;
-
-
-        public TimeSpan Position => reader.TimePosition;
-        public TimeSpan Length => reader.TotalTime;
 
         private const int BUFFER_MS = 250; // ~0.25s buffer
         private int samplesPerBuffer;
@@ -138,7 +140,11 @@ namespace StuxnetHN.Audio.Replacements
 
         public TimeSpan LoopEnd { get; set; }
 
-        public float Volume { get; set; } = 1.0f;
+        public float Volume
+        {
+            get { return instance == null ? -1.0f : instance.Volume; }
+            set { if(instance != null) { instance.Volume = value; } }
+        }
 
         public bool IsMuted { get; set; } = false;
 
@@ -146,144 +152,196 @@ namespace StuxnetHN.Audio.Replacements
         private const int VISUALIZER_BUFFER_SIZE = 512;
         public float[] TargetVisualizerData { get; private set; }
 
-        private static readonly LruCache<string, float[]> AudioCache = new(5);
+        private static readonly LruCache<string, CachedSongData> SongCache = new(5);
+
+        private CachedSongData CurrentSongData;
 
         private float visualizerHead;
-
-        public int SampleRate => reader?.SampleRate ?? 44100;
 
         public OggMusicPlayer()
         {
             instance = new DynamicSoundEffectInstance(44100, AudioChannels.Stereo);
-            instance.BufferNeeded += OnBufferNeeded;
+            instance.BufferNeeded += OnBufferNeededRewrite;
             visualizerBuffer = new CircularBuffer<float>(VISUALIZER_BUFFER_SIZE);
             TargetVisualizerData = new float[256];
         }
 
         public async Task PreloadAsync(string filePath)
         {
-            if (AudioCache.ContainsKey(filePath)) return;
+            if (SongCache.ContainsKey(filePath)) return;
+
+            filePath = Utils.GetFileLoadPrefix() + filePath;
+            if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
+            {
+                StuxnetAudioCore.Logger.LogDebug(
+                    string.Format("Preloading song file at path {0}", filePath)
+                    );
+            }
+            if(!System.IO.File.Exists(filePath))
+            {
+                StuxnetAudioCore.Logger.LogError(
+                    string.Format("File at {0} doesn't exist - can't preload", filePath)
+                    );
+                return;
+            }
 
             VorbisReader tempReader;
             await Task.Run(() =>
             {
-                tempReader = new(filePath);
+                tempReader = new VorbisReader(filePath);
                 long totalSamples = tempReader.TotalSamples * tempReader.Channels;
                 float[] fullBuffer = new float[totalSamples];
                 tempReader.ReadSamples(fullBuffer, 0, (int)totalSamples);
-                AudioCache.Add(filePath, fullBuffer);
-                tempReader.Dispose();
+                CacheSongData(filePath, fullBuffer, tempReader);
             });
+        }
+
+        private void CacheSongData(string filePath, float[] audioBuffer, VorbisReader reader)
+        {
+            CachedSongData songData = new(audioBuffer, reader.SampleRate, reader.TotalSamples);
+            SongCache.Add(filePath, songData);
+        }
+
+        private void CacheSongData(string filePath, CachedSongData cachedSongData)
+        {
+            SongCache.Add(filePath, cachedSongData);
         }
 
         public async Task LoadAsync(string filePath, int loopStart = -1, int loopEnd = -1)
         {
-            if (AudioCache.TryGetValue(filePath, out var cachedData))
+            if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
             {
-                fullAudioBuffer = cachedData;
-
-                await Task.Run(() =>
-                {
-                    reader = new VorbisReader(filePath);
-                });
+                StuxnetAudioCore.Logger.LogDebug(
+                    string.Format("Loading song with filepath of {0}", filePath));
             }
-            else
+
+            if(SongCache.TryGetValue(filePath, out var cachedSongData))
+            {
+                if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
+                {
+                    StuxnetAudioCore.Logger.LogDebug("Loading cached song data");
+                }
+                CurrentSongData = cachedSongData;
+            } else
             {
                 await Task.Run(() =>
                 {
-                    reader = new VorbisReader(filePath);
+                    var reader = new VorbisReader(filePath);
 
                     long totalSamples = reader.TotalSamples * reader.Channels;
                     fullAudioBuffer = new float[totalSamples];
 
                     reader.ReadSamples(fullAudioBuffer, 0, (int)totalSamples);
 
-                    AudioCache.Add(filePath, fullAudioBuffer);
+                    CurrentSongData = new(fullAudioBuffer, reader.SampleRate, reader.TotalSamples, reader.Channels);
+                    CacheSongData(filePath, CurrentSongData);
                 });
             }
 
-            reader.TimePosition = TimeSpan.Zero;
-            samplesPerBuffer = reader.SampleRate * reader.Channels * BUFFER_MS / 1000;
+            samplesPerBuffer = CurrentSongData.SampleRate * CurrentSongData.Channels * BUFFER_MS / 1000;
             floatBuffer = new float[samplesPerBuffer];
-            byteBuffer = new byte[samplesPerBuffer * sizeof(short)];
 
             LoopStart = loopStart > -1 ? TimeSpan.FromMilliseconds(loopStart) : TimeSpan.Zero;
-            LoopEnd = loopEnd > -1 ? TimeSpan.FromMilliseconds(loopEnd) : reader.TotalTime;
+            LoopEnd = loopEnd > -1 ? TimeSpan.FromMilliseconds(loopEnd) : TimeSpan.Zero;
             loadedFilePath = filePath;
-        }
 
-        private void OnBufferNeeded(object sender, EventArgs e)
-        {
-            int samplesRead = reader.ReadSamples(floatBuffer, 0, floatBuffer.Length);
-
-            if (samplesRead == 0 || reader.TimePosition >= LoopEnd)
+            float[] decoded = CurrentSongData.AudioBuffer;
+            pcmData = new byte[decoded.Length * 2];
+            for (int i = 0; i < decoded.Length; i++)
             {
-                if (IsLooping)
-                {
-                    reader.TimePosition = LoopStart;
-                    samplesRead = reader.ReadSamples(floatBuffer, 0, floatBuffer.Length);
-                    if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
-                    {
-                        StuxnetAudioCore.Logger.LogDebug("SMM hit loop point - restarting");
-                    }
-                }
+                short sample = (short)MathHelper.Clamp(decoded[i] * short.MaxValue, short.MinValue, short.MaxValue);
+                pcmData[i * 2] = (byte)(sample & 0xFF);
+                pcmData[i * 2 + 1] = (byte)((sample >> 8) & 0xFF);
             }
 
-            if (samplesRead > 0)
+            if (OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
             {
-                visualizerBuffer.Write(floatBuffer, 0, samplesRead);
+                StuxnetAudioCore.Logger.LogDebug(
+                    string.Format("SMM: Loaded song at {0}\nLoop Begin: {1}\nLoop End: {2}", filePath,
+                    loopStart, loopEnd));
+            }
+        }
 
-                // Directly update the target visualizer data with the new samples.
-                float[] newSamples = GetVisualizerData(256);
+        private int samplesPlayed = 0;
+        private byte[] pcmData;
+        private int channels => CurrentSongData.Channels;
+        private int bytesPerSampleFrame => 2 * channels;
 
-                Array.Copy(newSamples, TargetVisualizerData, newSamples.Length);
+        private void OnBufferNeededRewrite(object sender, EventArgs e)
+        {
+            int sampleFramesToRead = 1024;
+            byte[] buffer = new byte[sampleFramesToRead * bytesPerSampleFrame];
 
-                float gain = IsMuted ? 0.0f : Volume;
+            int loopStartFrames = (int)(LoopStart.TotalSeconds * CurrentSongData.SampleRate);
+            int loopEndFrames = (LoopEnd == TimeSpan.Zero)
+                ? pcmData.Length / bytesPerSampleFrame
+                : (int)(LoopEnd.TotalSeconds * CurrentSongData.SampleRate);
 
-                for (int i = 0; i < samplesRead; i++)
-                {
-                    float scaled = floatBuffer[i] * gain;
+            int remainingFrames = loopEndFrames - samplesPlayed;
 
-                    short sample = (short)MathHelper.Clamp(
-                        scaled * short.MaxValue,
-                        short.MinValue,
-                        short.MaxValue
-                    );
+            if (sampleFramesToRead > remainingFrames)
+            {
+                int framesFirstPart = remainingFrames;
+                int framesSecondPart = sampleFramesToRead - framesFirstPart;
 
-                    byteBuffer[i * 2] = (byte)(sample & 0xFF);
-                    byteBuffer[i * 2 + 1] = (byte)((sample >> 8) & 0xFF);
-                }
+                CopyPcmFrames(pcmData, samplesPlayed, framesFirstPart, buffer, 0);
+                CopyPcmFrames(pcmData, loopStartFrames, framesSecondPart, buffer, framesFirstPart * bytesPerSampleFrame);
 
-                instance.SubmitBuffer(byteBuffer, 0, samplesRead * sizeof(short));
+                samplesPlayed = loopStartFrames + framesSecondPart;
+            }
+            else
+            {
+                CopyPcmFrames(pcmData, samplesPlayed, sampleFramesToRead, buffer, 0);
+                samplesPlayed += sampleFramesToRead;
+            }
+
+            instance.SubmitBuffer(buffer);
+        }
+
+        private void CopyPcmFrames(byte[] source, int startFrame, int frameCount, byte[] output, int outputOffset)
+        {
+            int startByte = startFrame * bytesPerSampleFrame;
+            int bytesToCopy = frameCount * bytesPerSampleFrame;
+
+            for (int i = 0; i < bytesToCopy && i < output.Length; i++)
+            {
+                int srcIndex = (startByte + i) % source.Length;
+                output[outputOffset + i] = source[srcIndex];
             }
         }
 
         public void UpdateVisualizer(GameTime gameTime)
         {
-            float samplesPerFrame = (float)(gameTime.ElapsedGameTime.TotalSeconds * reader.SampleRate);
+            float samplesPerFrame = (float)(gameTime.ElapsedGameTime.TotalSeconds * CurrentSongData.SampleRate);
             visualizerHead += samplesPerFrame;
 
-            float loopEndInSamples = (float)LoopEnd.TotalSeconds * reader.SampleRate;
+            float totalSamples = CurrentSongData.TotalSamples;
+            float loopEndInSamples = LoopEnd != TimeSpan.Zero ?
+                (float)LoopEnd.TotalSeconds * CurrentSongData.SampleRate :
+                totalSamples;
+            int loopStartSamples = (int)(LoopStart.TotalSeconds * CurrentSongData.SampleRate);
 
             if (visualizerHead >= loopEndInSamples)
             {
-                visualizerHead = reader.SamplePosition;
+                visualizerHead = loopStartSamples;
             }
+
+            visualizerHead = MathHelper.Clamp(visualizerHead, 0, totalSamples - 1);
         }
 
         public float[] GetVisualizerData(int count)
         {
             float[] visualizerData = new float[count];
 
-            int startIndex = (int)visualizerHead * reader.Channels;
+            int startIndex = (int)visualizerHead * CurrentSongData.Channels;
 
             for (int i = 0; i < count; i++)
             {
-                int sourceIndex = startIndex + (i * reader.Channels);
+                int sourceIndex = startIndex + (i * CurrentSongData.Channels);
 
-                if (sourceIndex < fullAudioBuffer.Length)
+                if (sourceIndex < CurrentSongData.AudioBuffer.Length)
                 {
-                    visualizerData[i] = fullAudioBuffer[sourceIndex];
+                    visualizerData[i] = CurrentSongData.AudioBuffer[sourceIndex];
                 }
                 else
                 {
@@ -294,13 +352,17 @@ namespace StuxnetHN.Audio.Replacements
             return visualizerData;
         }
 
-        public void Play()
+        public async void Play()
         {
             if (!IsPlaying && instance != null)
             {
+                for(int i = 0; i < 5; i++)
+                {
+                    OnBufferNeededRewrite(null, EventArgs.Empty);
+                }
+                samplesPlayed = 0;
+                await Task.Delay(BUFFER_MS + 25);
                 visualizerHead = 0;
-                OnBufferNeeded(null, EventArgs.Empty);
-                OnBufferNeeded(null, EventArgs.Empty);
                 instance.Play();
             }
         }
@@ -309,15 +371,36 @@ namespace StuxnetHN.Audio.Replacements
 
         public void Stop()
         {
-            if (instance == null || reader == null) return;
+            if (instance == null) return;
 
             instance.Stop();
-            reader.TimePosition = TimeSpan.Zero;
+            loadedFilePath = string.Empty;
         }
 
-        public void Seek(TimeSpan position)
+        public bool HasCachedSong(string songName)
         {
-            reader.TimePosition = position;
+            bool result = SongCache.ContainsKey(songName);
+            if(!result)
+            {
+                result = SongCache.ContainsKey(Utils.GetFileLoadPrefix() + songName);
+            }
+            return result;
+        }
+    }
+
+    public class CachedSongData
+    {
+        public float[] AudioBuffer;
+        public int SampleRate;
+        public float TotalSamples;
+        public int Channels = 2;
+
+        public CachedSongData(float[] audioBuffer, int sampleRate, float totalSamples, int channels = 2)
+        {
+            AudioBuffer = audioBuffer;
+            SampleRate = sampleRate;
+            TotalSamples = totalSamples;
+            Channels = channels;
         }
     }
 

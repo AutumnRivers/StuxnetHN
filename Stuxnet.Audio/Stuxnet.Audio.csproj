@@ -97,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actions\MusicActions.cs" />
+    <Compile Include="Actions\SMMConditions.cs" />
     <Compile Include="Actions\Sounds\PlaySFX.cs" />
     <Compile Include="AudioSaveLoader.cs" />
     <Compile Include="OGGSoundEffectLoader.cs" />

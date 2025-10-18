@@ -6,6 +6,7 @@ using Hacknet.Screens;
 using Hacknet.Gui;
 using Microsoft.Xna.Framework;
 using Stuxnet_HN.Persistence.Achievements;
+using Hacknet.Extensions;
 
 namespace Stuxnet_HN.Patches.SettingsMenu
 {

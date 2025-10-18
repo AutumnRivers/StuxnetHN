@@ -2,6 +2,7 @@ using Pathfinder.Action;
 using Hacknet;
 using Pathfinder.Util;
 using StuxnetHN.Audio.Replacements;
+using StuxnetHN.Audio.Patches;
 
 namespace StuxnetHN.Audio.Actions
 {
@@ -32,6 +33,7 @@ namespace StuxnetHN.Audio.Actions
             StuxnetMusicManager.LoopEnd = EndLoop;
 
             StuxnetMusicManager.CurrentSongEntry = null;
+            MusicManagerPatches.ActivatedFromAction = true;
         }
     }
 

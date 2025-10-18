@@ -9,7 +9,6 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using Pathfinder.Event.Gameplay;
 using Stuxnet_HN;
-using Stuxnet_HN.Executables;
 using StuxnetHN.Audio.Replacements;
 using System;
 using System.Collections.Generic;
@@ -31,6 +30,7 @@ namespace StuxnetHN.Audio.Patches
         [HarmonyPatch(typeof(MusicManager), "playSong")]
         public static bool ReplaceMusicManagerPlaySong()
         {
+            lastTransitionedSong = string.Empty;
             if (!ReplaceManager) return true;
             if (IsBaseGameSong) return true;
 
@@ -94,13 +94,14 @@ namespace StuxnetHN.Audio.Patches
             if (IsBaseGameSong) return true;
 
             StuxnetMusicManager.StopSong();
+            MediaPlayer.Stop();
 
             return false;
         }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(MusicManager), "getVolume")]
-        public static bool ReplaceMusicManagerGetVolume(float __result)
+        public static bool ReplaceMusicManagerGetVolume(ref float __result)
         {
             if (!ReplaceManager) return true;
             if (IsBaseGameSong) return true;
@@ -119,7 +120,18 @@ namespace StuxnetHN.Audio.Patches
 
             StuxnetMusicManager.Volume = volume;
 
-            return false;
+            return true;
+        }
+
+        private static string lastTransitionedSong = string.Empty;
+
+        internal static bool ActivatedFromAction = false;
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MusicManager), nameof(MusicManager.transitionToSong))]
+        public static void CacheLastTransitioned(string songName)
+        {
+            lastTransitionedSong = songName;
         }
 
         [HarmonyPrefix]
@@ -129,31 +141,58 @@ namespace StuxnetHN.Audio.Patches
             if (!ReplaceManager) return true;
             if (song == null) return true;
             if (string.IsNullOrWhiteSpace(song.Name)) return true;
-            if (IsBaseGameSong)
+            if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
+            {
+                StuxnetAudioCore.Logger.LogDebug(
+                    string.Format("Intercepted MediaPlayer.Play with value of {0} (lts:{1})",
+                    song.Name, lastTransitionedSong)
+                    );
+            }
+            if (lastTransitionedSong.IsNullOrWhiteSpace())
             {
                 StuxnetMusicManager.StopSong();
                 return true;
-            }
-
-            if(!song.Name.EndsWith(CurrentSongEntry.path))
+            } else if(!lastTransitionedSong.Contains(song.Name))
             {
-                StuxnetMusicManager.CurrentSongEntry = null;
+                StuxnetMusicManager.StopSong();
+                lastTransitionedSong = string.Empty;
+                return true;
             }
 
             if (StuxnetMusicManager.CurrentSongEntry == null)
             {
-                StuxnetMusicManager.PlaySong(song.Name);
+                if(!ActivatedFromAction)
+                {
+                    StuxnetMusicManager.LoopBegin = -1;
+                    StuxnetMusicManager.LoopEnd = -1;
+                } else
+                {
+                    ActivatedFromAction = false;
+                }
+
+                StuxnetMusicManager.PlaySong(lastTransitionedSong);
+                lastTransitionedSong = string.Empty;
                 return false;
             }
 
-            if (song.Name.EndsWith(CurrentSongEntry.path))
+            if (!CurrentSongEntry.path.Contains(song.Name))
+            {
+                StuxnetMusicManager.CurrentSongEntry = null;
+            }
+
+            if (CurrentSongEntry != null && lastTransitionedSong.EndsWith(CurrentSongEntry.path))
             {
                 StuxnetMusicManager.LoopBegin = CurrentSongEntry.BeginLoop;
                 StuxnetMusicManager.LoopEnd = CurrentSongEntry.EndLoop;
+            } else
+            {
+                StuxnetMusicManager.LoopBegin = -1;
+                StuxnetMusicManager.LoopEnd = -1;
             }
 
             MediaPlayer.Stop();
-            StuxnetMusicManager.PlaySong(song.Name);
+            StuxnetMusicManager.PlaySong(lastTransitionedSong);
+            lastTransitionedSong = string.Empty;
 
             return false;
         }
@@ -173,6 +212,25 @@ namespace StuxnetHN.Audio.Patches
             }
         }
 
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(OS), "LoadContent")]
+        public static void PreloadStartingSong()
+        {
+            if (!ReplaceManager || StuxnetMusicManager.Player == null) return;
+            var ext = ExtensionLoader.ActiveExtensionInfo;
+            if (!ext.IntroStartupSong.EndsWith(".ogg")) return;
+            StuxnetMusicManager.Player.PreloadAsync(ext.IntroStartupSong);
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(OS), "quitGame")]
+        public static void ResetSMMOnQuit()
+        {
+            if (!ReplaceManager || StuxnetMusicManager.Player == null) return;
+            StuxnetMusicManager.StopSong();
+            StuxnetMusicManager.OnUnload();
+        }
+
         private static readonly FieldInfo SampListField = AccessTools.Field(typeof(VisualizationData), "sampList");
         private static readonly FieldInfo FreqListField = AccessTools.Field(typeof(VisualizationData), "freqList");
 
@@ -181,7 +239,7 @@ namespace StuxnetHN.Audio.Patches
         public static bool ReplaceVisDataForVisualizer(VisualizationData __instance)
         {
             if (!ReplaceManager) return true;
-            if (IsBaseGameSong || !StuxnetMusicManager.PlayerHasMusic) return true;
+            if (IsBaseGameSong || !StuxnetMusicManager.Playing) return true;
 
             List<float> sampList = (List<float>)SampListField.GetValue(__instance);
             List<float> freqList = (List<float>)FreqListField.GetValue(__instance);
@@ -207,6 +265,8 @@ namespace StuxnetHN.Audio.Patches
         [HarmonyPatch(typeof(AudioVisualizer), "Draw")]
         public static void LoadDataIfSMMIsPlaying(ILContext il)
         {
+            if (!ReplaceManager) return;
+
             MethodBase getStateFunc = typeof(MediaPlayer)
                 .GetMethod("get_State");
 
@@ -240,8 +300,8 @@ namespace StuxnetHN.Audio.Patches
 
             insertCursor.EmitDelegate<Func<bool>>(() =>
             {
-                return !(MediaPlayer.State == MediaState.Playing ||
-                       (StuxnetMusicManager.PlayerHasMusic && StuxnetMusicManager.Playing));
+                if (!ReplaceManager || StuxnetMusicManager.Player == null) return MediaPlayer.State != MediaState.Playing;
+                return !(MediaPlayer.State == MediaState.Playing || StuxnetMusicManager.Playing);
             });
         }
 
@@ -258,7 +318,7 @@ namespace StuxnetHN.Audio.Patches
         [Pathfinder.Meta.Load.Event()]
         public static void UpdateVisualizerData(OSUpdateEvent updateEvent)
         {
-            if (!StuxnetMusicManager.PlayerHasMusic || !ReplaceManager) return;
+            if (!ReplaceManager || !StuxnetMusicManager.Playing) return;
 
             StuxnetMusicManager.Player.UpdateVisualizer(updateEvent.GameTime);
         }
