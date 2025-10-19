@@ -12,6 +12,7 @@ To get started, place a file titled `stuxnet_config.json` in your extension's ro
     "customCompIcons": {},
     "audio": {
         "replaceMusicManager": true,
+        "offsetLoopPoints": true,
         "songs": {}
     },
     "quests": {
@@ -49,6 +50,9 @@ To get started, place a file titled `stuxnet_config.json` in your extension's ro
 For configuration related to `RadioV3` and `Stuxnet.Audio`.
 * `replaceMusicManager` - If `true`, replaces Hacknet's built-in `MusicManager` with Stuxnet's `StuxnetMusicManager`.
     * For more information, [read here](../Stuxnet.Audio/docs/StuxnetMusicManager.md).
+    * If `Stuxnet.Audio` is not installed, this option is ignored.
+* `offsetLoopPoints` - If `true`, offsets the end loop point by -250ms, to compensate for the buffer.
+    * Unless you are SURE you know what you are doing, you should leave this set to `true`.
     * If `Stuxnet.Audio` is not installed, this option is ignored.
 * `songs` - [Song Configuration](StuxnetFiles.md#radio)
 

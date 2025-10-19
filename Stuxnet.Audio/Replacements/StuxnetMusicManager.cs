@@ -241,9 +241,19 @@ namespace StuxnetHN.Audio.Replacements
             samplesPerBuffer = CurrentSongData.SampleRate * CurrentSongData.Channels * BUFFER_MS / 1000;
             floatBuffer = new float[samplesPerBuffer];
 
+            int offset = 0;
+
+            if(StuxnetCore.Configuration.Audio.OffsetLoopPoints)
+            {
+                offset = BUFFER_MS;
+            }
+
             LoopStart = loopStart > -1 ? TimeSpan.FromMilliseconds(loopStart) : TimeSpan.Zero;
-            LoopEnd = loopEnd > -1 ? TimeSpan.FromMilliseconds(loopEnd) : TimeSpan.Zero;
+            LoopEnd = loopEnd > -1 ? TimeSpan.FromMilliseconds(loopEnd - offset) : TimeSpan.Zero;
+
             loadedFilePath = filePath;
+
+            samplesPlayed = 0;
 
             float[] decoded = CurrentSongData.AudioBuffer;
             pcmData = new byte[decoded.Length * 2];
@@ -267,6 +277,8 @@ namespace StuxnetHN.Audio.Replacements
         private int channels => CurrentSongData.Channels;
         private int bytesPerSampleFrame => 2 * channels;
 
+        private bool forceReLoop = false;
+
         private void OnBufferNeededRewrite(object sender, EventArgs e)
         {
             int sampleFramesToRead = 1024;
@@ -279,7 +291,7 @@ namespace StuxnetHN.Audio.Replacements
 
             int remainingFrames = loopEndFrames - samplesPlayed;
 
-            if (sampleFramesToRead > remainingFrames)
+            if (sampleFramesToRead > remainingFrames || forceReLoop)
             {
                 int framesFirstPart = remainingFrames;
                 int framesSecondPart = sampleFramesToRead - framesFirstPart;
@@ -288,6 +300,12 @@ namespace StuxnetHN.Audio.Replacements
                 CopyPcmFrames(pcmData, loopStartFrames, framesSecondPart, buffer, framesFirstPart * bytesPerSampleFrame);
 
                 samplesPlayed = loopStartFrames + framesSecondPart;
+                forceReLoop = false;
+
+                if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
+                {
+                    StuxnetAudioCore.Logger.LogDebug("SMM: Hit loop point, restarting at loop start");
+                }
             }
             else
             {
@@ -303,10 +321,45 @@ namespace StuxnetHN.Audio.Replacements
             int startByte = startFrame * bytesPerSampleFrame;
             int bytesToCopy = frameCount * bytesPerSampleFrame;
 
-            for (int i = 0; i < bytesToCopy && i < output.Length; i++)
+            if (outputOffset + bytesToCopy > output.Length)
+                bytesToCopy = output.Length - outputOffset;
+
+            if(bytesToCopy <= 0)
             {
-                int srcIndex = (startByte + i) % source.Length;
-                output[outputOffset + i] = source[srcIndex];
+                if(StuxnetCore.Configuration.ShowDebugText)
+                {
+                    StuxnetAudioCore.Logger.LogWarning(
+                        "SMM: bytesToCopy is <= 0. If there are no audio glitches, then you can " +
+                        "safely ignore this warning."
+                        );
+                }
+                forceReLoop = true;
+                return;
+            }
+
+            int srcEnd = startByte + bytesToCopy;
+            try
+            {
+                if (srcEnd <= source.Length)
+                {
+                    Buffer.BlockCopy(source, startByte, output, outputOffset, bytesToCopy);
+                }
+                else
+                {
+                    int firstChunk = source.Length - startByte;
+                    Buffer.BlockCopy(source, startByte, output, outputOffset, firstChunk);
+                    int secondChunk = bytesToCopy - firstChunk;
+                    Buffer.BlockCopy(source, 0, output, outputOffset + firstChunk, secondChunk);
+                }
+            } catch(Exception e)
+            {
+                Stop();
+                StuxnetAudioCore.Logger.LogError(
+                    string.Format("CopyPcmFrames messed up again, please report to Autumn\n{0}",
+                    e.ToString())
+                    );
+                OS.currentInstance.warningFlash();
+                OS.currentInstance.write("Issue with Stuxnet.Audio - SMM has been stopped - read terminal and report to Autumn");
             }
         }
 

@@ -93,6 +93,7 @@ namespace Stuxnet_HN.Configuration
     {
         public Dictionary<string, SongEntry> Songs;
         public bool ReplaceMusicManager = true;
+        public bool OffsetLoopPoints = true;
     }
 
     public class StuxnetQuestsConfig
