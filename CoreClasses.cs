@@ -91,7 +91,7 @@ namespace Stuxnet_HN
         {
             get
             {
-                return TopBarTextColor != default && TopBarColor != default;
+                return TopBarTextColor != default || TopBarColor != default;
             }
         }
 
