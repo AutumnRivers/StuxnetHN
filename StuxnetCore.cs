@@ -21,6 +21,7 @@ using Stuxnet_HN.Actions;
 using Stuxnet_HN.Actions.Dialogue;
 using Stuxnet_HN.Actions.Nodes;
 using Stuxnet_HN.Commands;
+using Stuxnet_HN.Conditions;
 using Stuxnet_HN.Configuration;
 using Stuxnet_HN.Cutscenes;
 using Stuxnet_HN.Daemons;
@@ -242,6 +243,8 @@ namespace Stuxnet_HN
             Persistence.PersistenceActions.RegisterActions();
             DebugActions.RegisterActions();
             NetMapSaveLoadActions.RegisterActions();
+            ConditionManager.RegisterCondition<SCOnForkbombComplete>("OnForkbombComplete");
+            HasFlagsReplacements.RegisterConditions();
             #endregion register actions
 
 

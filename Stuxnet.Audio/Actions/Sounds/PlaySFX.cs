@@ -73,6 +73,11 @@ namespace StuxnetHN.Audio.Actions
                 case "8":
                     OS.currentInstance.IncConnectionOverlay.sound1.Play();
                     break;
+                case "irc":
+                case "notification":
+                case "9":
+                    OS.currentInstance.hubServerAlertsIcon.alertSound.Play();
+                    break;
             }
         }
     }

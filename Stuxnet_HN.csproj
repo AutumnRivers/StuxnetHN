@@ -105,7 +105,9 @@
     <Compile Include="Actions\WriteToTerminal.cs" />
     <Compile Include="Commands\DebugCommands.cs" />
     <Compile Include="Commands\SMSCommands.cs" />
+    <Compile Include="Conditions\HasFlagsReplacements.cs" />
     <Compile Include="Conditions\OnCutsceneEnd.cs" />
+    <Compile Include="Conditions\OnForkbombComplete.cs" />
     <Compile Include="Conditions\OnSequencerKill.cs" />
     <Compile Include="CoreClasses.cs" />
     <Compile Include="Cutscenes\Actions\CutsceneActions.cs" />

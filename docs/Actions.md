@@ -181,6 +181,20 @@ Setting `LikeReallyForce` to `"true"` will constantly try to connect the player 
 ### `<ForceCloseGame />`
 **Delayable.** Does what it says on the tin. Forcibly closes the game. Use this *sparingly*!
 
+# Misc. Conditions
+### `<OnForkbombComplete [PreventCrash="bool" DiscardOnKilled="bool"]>`
+A condition that runs a set of actions when a forkbomb completes on the player PC.
+* `PreventCrash` - If `true`, then the forkbomb will be killed on completion without crashing the player's PC.
+    * The action set will stil run regardless of this value.
+* `DiscardOnKilled` - If `true`, then the action set will be discarded the next time the player kills a forkbomb.
+
+## Replacements
+### `<HasFlagsStx requiredFlags="string,string" [CheckOnce="bool"]>`
+Drop-in replacement for `HasFlags` that adds `CheckOnce` functionality.
+
+### `<DoesNotHaveFlagsStx Flags="string,string" [CheckOnce="bool"]>`
+Same as above, but for `DoesNotHaveFlags`.
+
 ---
 
 # Persistence

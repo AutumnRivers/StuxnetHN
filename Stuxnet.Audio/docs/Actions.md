@@ -23,6 +23,8 @@ Valid IDs (case-insensitive):
     * Impact SFX from when the Emergency Trace Aversion fallback kicks in
 * `bang` / `gunshot` / `8`
     * Gunshot SFX from Tutorial / the incoming connection overlay.
+* `irc` / `notification` / `9`
+    * IRC alert icon notification SFX
 
 ---
 

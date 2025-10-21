@@ -1,29 +1,33 @@
-# Stuxnet 2.1
-## NotPetya
+# Stuxnet 2.2
+## Loveletter
 
 ---
 
-## Custom Computer Icons
-Can you believe it was this easy?
+## Saving/Loading Netmap State
+This new feature allows you to save the current state of the netmap (visible nodes + sorting algorithm), to be loaded later. You can clear the netmap, and load back the player's visible nodes.
 
-You can now define custom computer icons in your Stuxnet configuration file. Please [read the documentation](./docs/StuxnetConfig.md) carefully, as there are a few limits in place for memory reasons!
+---
 
-Additionally, all icons that were only available via security levels are now also available as regular icons:
-* `sec0` = `Sec0Computer`
-* `sec1` = `Sec1Computer`
-* `computer` = `Computer`
-* `oldServer` = `OldServer`
-* `sec2` = `Sec2Computer`
+## New Conditions
+* `<OnForkbombComplete>` - Runs a set of actions when a forkbomb on the player completes.
+* `<HasFlagsStx>` - Drop-in replacement for `HasFlags` that adds `CheckOnce` functionality.
+* `<DoesNotHaveFlagsStx>`
+* `<OnSongInCache>` - **Stuxnet.Audio** - Runs a set of actions when a song loaded with SMM is successfully cached.
 
-Seriously, why wasn't the latter in vanilla?
+---
+
+## StuxnetMusicManager Upgrade
+**Stuxnet.Audio** - SMM has been completely rewritten to be much smoother and more reliable. As always, report any bugs you find.
+
+---
+
+## New SFX
+**Stuxnet.Audio** - Two new built-in SFX were added:
+* `bang` / `gunshot` / `8` - Tutorial / incoming connection SFX
+* `irc` / `notification` / `9` - IRC alert icon notification SFX
 
 ---
 
 ## New Configuration Values
-### Quests
-You can now disable the Quests feature entirely, by setting `quests.disableQuestsSystem` to `true`.
-
-You can also do this conditionally via actions, with `<ToggleQuestsButton Enabled="bool" />`
-
-### Message Board Fix
-Stuxnet 2.1 comes with a patch to `MessageBoardDaemon`s that automatically assign a unique ID to every thread, even if one wasn't set in its text content. You can disable this by setting `enableMessageBoardFix` to `false`.
+### Audio Offset
+Added `audio.offsetLoopPoints`, which, when set to `true` (default), will offset your end loop point by -250ms, to compensate for the buffer.
