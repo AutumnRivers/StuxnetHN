@@ -37,10 +37,11 @@ namespace Stuxnet_HN.Conditions
         [HarmonyPatch(typeof(ForkBombExe), "Completed")]
         public static bool PreventForkbombCompletion(ForkBombExe __instance)
         {
-            if(SCOnForkbombComplete.PreventForkbombCompletion)
+            SCOnForkbombComplete.ForkbombCompleted = true;
+
+            if (SCOnForkbombComplete.PreventForkbombCompletion)
             {
                 __instance.needsRemoval = true;
-                SCOnForkbombComplete.ForkbombCompleted = true;
                 SCOnForkbombComplete.PreventForkbombCompletion = false;
                 return false;
             }
