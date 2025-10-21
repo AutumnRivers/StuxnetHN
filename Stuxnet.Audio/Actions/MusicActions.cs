@@ -3,6 +3,7 @@ using Hacknet;
 using Pathfinder.Util;
 using StuxnetHN.Audio.Replacements;
 using StuxnetHN.Audio.Patches;
+using System;
 
 namespace StuxnetHN.Audio.Actions
 {
@@ -27,32 +28,22 @@ namespace StuxnetHN.Audio.Actions
             if (Immediately) command += "Immediatley";
             command += ":" + SongFile;
 
-            MissionFunctions.runCommand(0, command);
-
-            StuxnetMusicManager.LoopBegin = BeginLoop;
-            StuxnetMusicManager.LoopEnd = EndLoop;
+            MusicManagerPatches.BeginLoop = BeginLoop;
+            MusicManagerPatches.EndLoop = EndLoop;
 
             StuxnetMusicManager.CurrentSongEntry = null;
             MusicManagerPatches.ActivatedFromAction = true;
+
+            MissionFunctions.runCommand(0, command);
         }
     }
 
     [Pathfinder.Meta.Load.Action("StopMusic")]
     public class StopMusicAction : DelayablePathfinderAction
     {
-        [XMLStorage]
-        public bool FadeOut = true;
-
         public override void Trigger(OS os)
         {
-            if(FadeOut)
-            {
-                MusicManager.nextSong = null;
-                MusicManager.state = 1;
-            } else
-            {
-                MusicManager.stop();
-            }
+            MusicManager.stop();
         }
     }
 

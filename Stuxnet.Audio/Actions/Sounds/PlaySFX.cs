@@ -68,6 +68,11 @@ namespace StuxnetHN.Audio.Actions
                 case "7":
                     OS.currentInstance.TraceDangerSequence.impactSound.Play();
                     break;
+                case "bang":
+                case "gunshot":
+                case "8":
+                    OS.currentInstance.IncConnectionOverlay.sound1.Play();
+                    break;
             }
         }
     }

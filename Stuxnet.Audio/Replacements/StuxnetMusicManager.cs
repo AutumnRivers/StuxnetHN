@@ -319,6 +319,7 @@ namespace StuxnetHN.Audio.Replacements
         private void CopyPcmFrames(byte[] source, int startFrame, int frameCount, byte[] output, int outputOffset)
         {
             int startByte = startFrame * bytesPerSampleFrame;
+            if (startByte >= source.Length) startByte = 0;
             int bytesToCopy = frameCount * bytesPerSampleFrame;
 
             if (outputOffset + bytesToCopy > output.Length)
@@ -347,8 +348,10 @@ namespace StuxnetHN.Audio.Replacements
                 else
                 {
                     int firstChunk = source.Length - startByte;
+                    firstChunk = Math.Max(firstChunk, 0);
                     Buffer.BlockCopy(source, startByte, output, outputOffset, firstChunk);
                     int secondChunk = bytesToCopy - firstChunk;
+                    secondChunk = Math.Max(secondChunk, 0);
                     Buffer.BlockCopy(source, 0, output, outputOffset + firstChunk, secondChunk);
                 }
             } catch(Exception e)

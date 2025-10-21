@@ -26,6 +26,9 @@ namespace StuxnetHN.Audio.Patches
         public static bool IsBaseGameSong => 
             !MusicManager.currentSongName.Contains(ExtensionLoader.ActiveExtensionInfo.FolderPath);
 
+        internal static int BeginLoop = -1;
+        internal static int EndLoop = -1;
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(MusicManager), "playSong")]
         public static bool ReplaceMusicManagerPlaySong()
@@ -37,9 +40,16 @@ namespace StuxnetHN.Audio.Patches
             if(OS.DEBUG_COMMANDS)
             {
                 StuxnetAudioCore.Logger.LogDebug(
-                    string.Format("Intercepted playSong with value of {0}",
-                    MusicManager.currentSongName)
+                    string.Format("Intercepted playSong with value of {0}\n{1}-{2}",
+                    MusicManager.currentSongName, BeginLoop, EndLoop)
                     );
+            }
+
+            if(ActivatedFromAction)
+            {
+                StuxnetMusicManager.LoopBegin = BeginLoop;
+                StuxnetMusicManager.LoopEnd = EndLoop;
+                ActivatedFromAction = false;
             }
 
             if(StuxnetMusicManager.CurrentSongEntry == null)
@@ -48,7 +58,7 @@ namespace StuxnetHN.Audio.Patches
                 return false;
             }
 
-            if(MusicManager.currentSongName.EndsWith(CurrentSongEntry.path))
+            if(MusicManager.currentSongName.EndsWith(CurrentSongEntry.path) && !ActivatedFromAction)
             {
                 StuxnetMusicManager.LoopBegin = CurrentSongEntry.BeginLoop;
                 StuxnetMusicManager.LoopEnd = CurrentSongEntry.EndLoop;
@@ -167,6 +177,8 @@ namespace StuxnetHN.Audio.Patches
                     StuxnetMusicManager.LoopEnd = -1;
                 } else
                 {
+                    StuxnetMusicManager.LoopBegin = BeginLoop;
+                    StuxnetMusicManager.LoopEnd = EndLoop;
                     ActivatedFromAction = false;
                 }
 
@@ -197,7 +209,7 @@ namespace StuxnetHN.Audio.Patches
             return false;
         }
 
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(MediaPlayer), "Volume", MethodType.Setter)]
         public static void SetSMMVolume(float value)
         {

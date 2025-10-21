@@ -94,6 +94,7 @@
     <Compile Include="Actions\ForceConnect.cs" />
     <Compile Include="Actions\FullscreenCredits.cs" />
     <Compile Include="Actions\MiscActions.cs" />
+    <Compile Include="Actions\Nodes\NetMapSaveLoad.cs" />
     <Compile Include="Actions\Nodes\PlaceOnNetMap.cs" />
     <Compile Include="Actions\RadioActions.cs" />
     <Compile Include="Actions\SaveActions.cs" />

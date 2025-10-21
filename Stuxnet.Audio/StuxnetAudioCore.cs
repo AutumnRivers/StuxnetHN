@@ -31,8 +31,6 @@ namespace StuxnetHN.Audio
             Logger = Log;
 
             Log.LogInfo("[))) SASS < Stuxnet Audio SubSystem > Loading... (((]");
-            Log.LogInfo("SASS IS STILL IN ALPHA! REPORT ANY BREAKAGE!");
-            Log.LogInfo("<( YOU ACCEPT EVERYTHING THAT WILL HAPPEN FROM NOW ON. )");
             Log.LogDebug(string.Format("--> v{0}", ModVer));
 
             Log.LogInfo("[))) Loading Harmony Patches (((]");

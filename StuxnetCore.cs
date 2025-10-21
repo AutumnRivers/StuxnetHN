@@ -42,8 +42,8 @@ namespace Stuxnet_HN
     {
         public const string ModGUID = "autumnrivers.stuxnet";
         public const string ModName = "Stuxnet";
-        public const string ModVer = "2.1.1";
-        public const string VersionName = "NotPetya";
+        public const string ModVer = "2.2.0";
+        public const string VersionName = "Loveletter";
 
         public const uint CopyrightYear = 2025;
 
@@ -241,6 +241,7 @@ namespace Stuxnet_HN
             // Persistence Actions
             Persistence.PersistenceActions.RegisterActions();
             DebugActions.RegisterActions();
+            NetMapSaveLoadActions.RegisterActions();
             #endregion register actions
 
 

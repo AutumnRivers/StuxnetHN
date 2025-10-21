@@ -21,6 +21,8 @@ Valid IDs (case-insensitive):
     * Spin-up SFX from when the Emergency Trace Aversion Sequence starts
 * `etasimpact` / `impact` / `etas3` / `7`
     * Impact SFX from when the Emergency Trace Aversion fallback kicks in
+* `bang` / `gunshot` / `8`
+    * Gunshot SFX from Tutorial / the incoming connection overlay.
 
 ---
 
@@ -31,10 +33,10 @@ Allows you to play a custom OGG file (or WAV, though this is not fully supported
 
 ---
 
-## `<PlayCustomSong SongFile="string" Immediately="bool(default=false)" LoopBegin="int(default=-1)" LoopEnd="int(default=-1)" />`
+## `<PlayCustomSong SongFile="string" Immediately="bool(default=false)" BeginLoop="int(default=-1)" EndLoop="int(default=-1)" />`
 Action-ized version of `playCustomSong` mission function. Works the same.
-* `LoopBegin` - Where to begin the loop when SMM reaches `LoopEnd`. Value in milliseconds.
-* `LoopEnd` - Where to end the loop, in milliseconds.
+* `BeginLoop` - Where to begin the loop when SMM reaches `EndLoop`. Value in milliseconds.
+* `EndLoop` - Where to end the loop, in milliseconds.
 
 ---
 
@@ -45,3 +47,10 @@ Stops the music, similar to `stopMusic` via HackerScripts, but without the sting
 
 ## `<PreloadSong SongFile="string" />`
 Preloads the song file into the cache.
+
+---
+# Conditions
+## `<OnSongInCache SongFile="string" [CacheIfNotExists="bool"]>`
+Runs a set of actions when the `SongFile` has been successfully cached by SMM.
+* If SMM is disabled, this will always return true.
+* `CacheIfNotExists` - If `true`, will cache the song if it's not in the cache when this runs.

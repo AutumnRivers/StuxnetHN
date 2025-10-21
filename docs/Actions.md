@@ -122,10 +122,19 @@ Runs a set of actions when the current fullscreen credits end.
 # Node Actions
 ### `<PlaceNodeOnNetMap TargetCompID="jmail" Offset="float,float" />`
 **Delayable.** Places the target node onto the netmap where you specify it.
-
 * `TargetCompID` - The ID of the target node.
 * `Offset` - The offset from the starting position. Percentage based. Required.
     * For example, an offset of `0.5,0.25` will place the node halfway across the netmap, and a halfway to the center vertically.
+
+### `<SaveNetMap [Overwrite="bool" AutoClear="bool"] />`
+**Delayable.** Saves the current netmap state to a cache.
+* `Overwrite` - If `true`, then the current netmap cache will be overwritten.
+* `AutoClear` - If `true`, the current list of visible netmap nodes will be cleared.
+
+### `<LoadNetMap [Append="bool"] />`
+**Delayable.** Loads the cached netmap. (Warning: this WILL throw an exception if you didn't run SaveNetMap first!)
+* `Append` - If `true`, it will append the currently visible nodes to the cached list. If `false`, the netmap's list will be replaced with the cache.
+* Note: Running this will also clear the cache.
 
 ---
 
