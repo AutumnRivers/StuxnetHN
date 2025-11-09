@@ -1,19 +1,12 @@
 ﻿using BepInEx;
-using BepInEx.Logging;
 using Hacknet;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 using NVorbis;
 using Stuxnet_HN;
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Runtime.Remoting.Channels;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace StuxnetHN.Audio.Replacements
 {
@@ -121,9 +114,6 @@ namespace StuxnetHN.Audio.Replacements
     public class OggMusicPlayer
     {
         private readonly DynamicSoundEffectInstance instance;
-        //private VorbisReader reader;
-        private float[] floatBuffer;
-        //private byte[] byteBuffer;
 
         internal string loadedFilePath;
 
@@ -135,6 +125,8 @@ namespace StuxnetHN.Audio.Replacements
 
         public bool IsPlaying => instance.State == SoundState.Playing;
         public bool IsLooping { get; set; } = true;
+
+        public static int CacheLimit = 5;
 
         public TimeSpan LoopStart { get; set; } = TimeSpan.Zero;
 
@@ -152,7 +144,7 @@ namespace StuxnetHN.Audio.Replacements
         private const int VISUALIZER_BUFFER_SIZE = 512;
         public float[] TargetVisualizerData { get; private set; }
 
-        private static readonly LruCache<string, CachedSongData> SongCache = new(5);
+        private static LruCache<string, CachedSongData> SongCache;
 
         private CachedSongData CurrentSongData;
 
@@ -164,10 +156,12 @@ namespace StuxnetHN.Audio.Replacements
             instance.BufferNeeded += OnBufferNeededRewrite;
             visualizerBuffer = new CircularBuffer<float>(VISUALIZER_BUFFER_SIZE);
             TargetVisualizerData = new float[256];
+            SongCache = CacheLimit > 0 ? new LruCache<string, CachedSongData>(CacheLimit) : null;
         }
 
         public async Task PreloadAsync(string filePath)
         {
+            if (CacheLimit == 0) return;
             if (SongCache.ContainsKey(filePath)) return;
 
             filePath = Utils.GetFileLoadPrefix() + filePath;
@@ -198,6 +192,7 @@ namespace StuxnetHN.Audio.Replacements
 
         private void CacheSongData(string filePath, float[] audioBuffer, VorbisReader reader)
         {
+            if (CacheLimit == 0) return;
             CachedSongData songData = new(audioBuffer, reader.SampleRate, reader.TotalSamples);
             SongCache.Add(filePath, songData);
         }
@@ -215,7 +210,7 @@ namespace StuxnetHN.Audio.Replacements
                     string.Format("Loading song with filepath of {0}", filePath));
             }
 
-            if(SongCache.TryGetValue(filePath, out var cachedSongData))
+            if(CacheLimit > 0 && SongCache.TryGetValue(filePath, out var cachedSongData))
             {
                 if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
                 {
@@ -239,7 +234,6 @@ namespace StuxnetHN.Audio.Replacements
             }
 
             samplesPerBuffer = CurrentSongData.SampleRate * CurrentSongData.Channels * BUFFER_MS / 1000;
-            floatBuffer = new float[samplesPerBuffer];
 
             int offset = 0;
 
@@ -281,6 +275,12 @@ namespace StuxnetHN.Audio.Replacements
 
         private void OnBufferNeededRewrite(object sender, EventArgs e)
         {
+            if(CurrentSongData == null)
+            {
+                Stop();
+                return;
+            }
+
             int sampleFramesToRead = 1024;
             byte[] buffer = new byte[sampleFramesToRead * bytesPerSampleFrame];
 
@@ -430,6 +430,7 @@ namespace StuxnetHN.Audio.Replacements
             if (instance == null) return;
 
             instance.Stop();
+            CurrentSongData = null;
             loadedFilePath = string.Empty;
         }
 

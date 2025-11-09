@@ -101,6 +101,8 @@
     <Compile Include="Actions\Sounds\PlaySFX.cs" />
     <Compile Include="AudioSaveLoader.cs" />
     <Compile Include="OGGSoundEffectLoader.cs" />
+    <Compile Include="Option\AudioOptions.cs" />
+    <Compile Include="Option\OptionSlider.cs" />
     <Compile Include="Patches\MusicManagerPatches.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>

@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Hacknet;
 using BepInEx.Logging;
+using BepInEx.Configuration;
 using Hacknet;
 using Microsoft.Xna.Framework.Audio;
 using Pathfinder.Command;
@@ -11,6 +12,8 @@ using Stuxnet_HN.Executables;
 using StuxnetHN.Audio.Actions;
 using StuxnetHN.Audio.Replacements;
 using System.Collections.Generic;
+using StuxnetHN.Audio.Options;
+using Pathfinder.GUI;
 
 namespace StuxnetHN.Audio
 {
@@ -20,15 +23,19 @@ namespace StuxnetHN.Audio
     {
         public const string ModGUID = "autumnrivers.stuxnet.audio";
         public const string ModNamae = "Stuxnet.Audio";
-        public const string ModVer = "0.2.0";
+        public const string ModVer = "0.3.0";
 
         internal static ManualLogSource Logger;
+
+        public static ConfigFile UserConfig;
 
         public static Dictionary<string, SoundEffectInstance> SFXCache { get; set; } = new();
 
         public override bool Load()
         {
             Logger = Log;
+
+            UserConfig = Config;
 
             Log.LogInfo("[))) SASS < Stuxnet Audio SubSystem > Loading... (((]");
             Log.LogDebug(string.Format("--> v{0}", ModVer));
@@ -62,6 +69,7 @@ namespace StuxnetHN.Audio
             }
 
             StuxnetMusicManager.OnUnload();
+            PFButton.ReturnID(AudioOptions.CacheSizeLimit.ButtonID);
 
             return base.Unload();
         }
@@ -72,6 +80,8 @@ namespace StuxnetHN.Audio
             RadioV3.SongChanged += OnRadioSongChanged;
             Logger.LogInfo("[))) Initializing StuxnetMusicManager (((]");
             StuxnetMusicManager.Initialize();
+            Logger.LogInfo("[))) Loading up options (((]");
+            AudioOptions.Initialize();
         }
 
         public static void InitializeSASS(OSLoadedEvent oSLoadedEvent)

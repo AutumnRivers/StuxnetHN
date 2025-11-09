@@ -30,47 +30,6 @@ namespace StuxnetHN.Audio.Patches
         internal static int EndLoop = -1;
 
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(MusicManager), "playSong")]
-        public static bool ReplaceMusicManagerPlaySong()
-        {
-            lastTransitionedSong = string.Empty;
-            if (!ReplaceManager) return true;
-            if (IsBaseGameSong) return true;
-
-            if(OS.DEBUG_COMMANDS)
-            {
-                StuxnetAudioCore.Logger.LogDebug(
-                    string.Format("Intercepted playSong with value of {0}\n{1}-{2}",
-                    MusicManager.currentSongName, BeginLoop, EndLoop)
-                    );
-            }
-
-            if(ActivatedFromAction)
-            {
-                StuxnetMusicManager.LoopBegin = BeginLoop;
-                StuxnetMusicManager.LoopEnd = EndLoop;
-                ActivatedFromAction = false;
-            }
-
-            if(StuxnetMusicManager.CurrentSongEntry == null)
-            {
-                StuxnetMusicManager.PlaySong(MusicManager.currentSongName);
-                return false;
-            }
-
-            if(MusicManager.currentSongName.EndsWith(CurrentSongEntry.path) && !ActivatedFromAction)
-            {
-                StuxnetMusicManager.LoopBegin = CurrentSongEntry.BeginLoop;
-                StuxnetMusicManager.LoopEnd = CurrentSongEntry.EndLoop;
-            }
-
-            MediaPlayer.Stop();
-            StuxnetMusicManager.PlaySong(MusicManager.currentSongName);
-
-            return false;
-        }
-
-        [HarmonyPrefix]
         [HarmonyPatch(typeof(MusicManager), "toggleMute")]
         public static bool ReplaceMusicManagerToggleMute()
         {
@@ -144,13 +103,23 @@ namespace StuxnetHN.Audio.Patches
             lastTransitionedSong = songName;
         }
 
+        private static void StopPlayer()
+        {
+            StuxnetMusicManager.StopSong();
+        }
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(MediaPlayer), "Play", new Type[] { typeof(Song) })]
         public static bool ReplaceMediaPlayerPlay(Song song)
         {
-            if (!ReplaceManager) return true;
-            if (song == null) return true;
-            if (string.IsNullOrWhiteSpace(song.Name)) return true;
+            if (!ReplaceManager || song == null ||
+                !MusicManager.currentSongName.StartsWith("../") ||
+                string.IsNullOrWhiteSpace(song.Name))
+            {
+                StopPlayer();
+                return true;
+            }
+
             if(OS.DEBUG_COMMANDS && StuxnetCore.Configuration.ShowDebugText)
             {
                 StuxnetAudioCore.Logger.LogDebug(
